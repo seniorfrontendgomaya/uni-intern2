@@ -1,0 +1,516 @@
+"use client";
+
+import { useState } from "react";
+import toast from "react-hot-toast";
+import { Pencil, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Modal } from "@/components/ui/modal";
+import { DataTableShell } from "@/components/ui/data-table-shell";
+
+type Column = {
+  key: string;
+  label: string;
+  headerClassName?: string;
+  cellClassName?: string;
+};
+
+type Field = {
+  name: string;
+  label: string;
+  type?: "text" | "number" | "textarea" | "checkbox" | "file";
+  placeholder?: string;
+};
+
+type FormValue = string | boolean | File | null;
+type RowValue = string | number | boolean | null | undefined;
+
+type CrudTableProps = {
+  title: string;
+  addLabel: string;
+  searchPlaceholder: string;
+  columns: Column[];
+  rows: Array<Record<string, RowValue>>;
+  fields: Field[];
+  loading?: boolean;
+  skeletonRows?: number;
+  searchProps?: React.InputHTMLAttributes<HTMLInputElement>;
+  onCreate?: (
+    values: Record<string, FormValue>
+  ) => Promise<{ ok: boolean; message?: string }>;
+  onUpdate?: (
+    id: string,
+    patchData: Record<string, FormValue>
+  ) => Promise<{ ok: boolean; message?: string }>;
+  onDelete?: (id: string) => Promise<{ ok: boolean; message?: string }>;
+  pagination?: {
+    page: number;
+    perPage: number;
+    count: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+    onNext: () => void;
+    onPrev: () => void;
+    onPageSelect?: (page: number) => void;
+  };
+};
+
+export function CrudTable({
+  title,
+  addLabel,
+  searchPlaceholder,
+  columns,
+  rows,
+  fields,
+  loading = false,
+  skeletonRows = 10,
+  searchProps,
+  onCreate,
+  onUpdate,
+  onDelete,
+  pagination,
+}: CrudTableProps) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"create" | "update">("create");
+  const [saving, setSaving] = useState(false);
+  const [activeRowId, setActiveRowId] = useState<string | null>(null);
+  const [formValues, setFormValues] = useState<Record<string, FormValue>>(() =>
+    fields.reduce<Record<string, FormValue>>((acc, field) => {
+      if (field.type === "checkbox") {
+        acc[field.name] = false;
+        return acc;
+      }
+      if (field.type === "file") {
+        acc[field.name] = null;
+        return acc;
+      }
+      acc[field.name] = "";
+      return acc;
+    }, {})
+  );
+  const [initialValues, setInitialValues] = useState<Record<string, FormValue>>(
+    {}
+  );
+
+  const totalRows = rows.length;
+  const showCount = rows.length;
+  const totalPages = pagination
+    ? Math.max(1, Math.ceil(pagination.count / pagination.perPage))
+    : 1;
+  const visiblePages = pagination
+    ? (() => {
+        if (totalPages <= 3)
+          return Array.from({ length: totalPages }, (_, i) => i + 1);
+        const start = Math.max(
+          1,
+          Math.min(pagination.page - 1, totalPages - 2)
+        );
+        return [start, start + 1, start + 2];
+      })()
+    : [1, 2, 3];
+
+  return (
+    <>
+      <DataTableShell
+        title={title}
+        addLabel={addLabel}
+        searchPlaceholder={searchPlaceholder}
+        searchProps={searchProps}
+        onAdd={() => {
+          setModalMode("create");
+          setActiveRowId(null);
+          const emptyValues = fields.reduce<Record<string, FormValue>>(
+            (acc, field) => {
+              if (field.type === "checkbox") {
+                acc[field.name] = false;
+                return acc;
+              }
+              if (field.type === "file") {
+                acc[field.name] = null;
+                return acc;
+              }
+              acc[field.name] = "";
+              return acc;
+            },
+            {}
+          );
+          setFormValues(emptyValues);
+          setInitialValues(emptyValues);
+          setModalOpen(true);
+        }}
+        table={
+          <div className="overflow-hidden rounded-2xl border">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-brand text-xs uppercase text-white">
+                <tr className="h-12">
+                  {columns.map((column) => (
+                    <th
+                      key={column.key}
+                      className={column.headerClassName ?? "px-4 py-2"}
+                    >
+                      {column.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                {loading ? (
+                  Array.from({ length: skeletonRows }).map((_, rowIndex) => (
+                      <tr key={rowIndex} className="border-t">
+                        {columns.map((column, columnIndex) => {
+                          if (column.key === "actions") {
+                            return (
+                              <td
+                                key={column.key}
+                                className={
+                                  column.cellClassName ?? "w-24 px-4 py-2"
+                                }
+                              >
+                                <div className="flex items-center justify-center gap-2">
+                                  <div className="h-8 w-8 rounded-xl shimmer" />
+                                  <div className="h-8 w-8 rounded-xl shimmer" />
+                                </div>
+                              </td>
+                            );
+                          }
+
+                          const widthClass =
+                            columnIndex === 0
+                              ? "w-8"
+                              : columnIndex === 1
+                                ? "w-28"
+                                : "w-48";
+
+                          return (
+                            <td
+                              key={column.key}
+                              className={
+                                column.cellClassName ??
+                                "px-4 py-2 wrap-break-word whitespace-normal"
+                              }
+                            >
+                              <div
+                                className={`h-4 rounded-md shimmer ${widthClass}`}
+                              />
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))
+                ) : rows.length === 0 ? (
+                  <tr className="border-t">
+                    <td
+                      colSpan={columns.length}
+                      className="px-4 py-6 text-center text-sm text-muted-foreground"
+                    >
+                      No record found
+                    </td>
+                  </tr>
+                ) : (
+                  rows.map((row, index) => (
+                      <tr
+                        key={`${row.id ?? row.name ?? index}`}
+                        className="border-t transition hover:bg-brand/10 even:bg-muted/40"
+                      >
+                        {columns.map((column) => {
+                          if (column.key === "actions") {
+                            return (
+                              <td
+                                key={column.key}
+                                className={
+                                  column.cellClassName ?? "w-24 px-4 py-2"
+                                }
+                              >
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl border text-brand transition hover:border-brand/40 hover:bg-brand/10"
+                                    aria-label="Edit"
+                                    onClick={() => {
+                                      setModalMode("update");
+                                const rowId = String(row.id ?? "");
+                                setActiveRowId(rowId);
+                                const nextValues =
+                                  fields.reduce<Record<string, FormValue>>(
+                                    (acc, field) => {
+                                      if (field.type === "checkbox") {
+                                        acc[field.name] = Boolean(
+                                          row[field.name]
+                                        );
+                                        return acc;
+                                      }
+                                      if (field.type === "file") {
+                                        acc[field.name] = null;
+                                        return acc;
+                                      }
+                                      acc[field.name] = String(
+                                        row[field.name] ?? ""
+                                      );
+                                      return acc;
+                                    },
+                                    {}
+                                  );
+                                setFormValues(nextValues);
+                                setInitialValues(nextValues);
+                                      setModalOpen(true);
+                                    }}
+                                  >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-brand/30 text-brand transition hover:bg-brand/10"
+                                    aria-label="Delete"
+                              onClick={() => {
+                                setActiveRowId(String(row.id ?? ""));
+                                setConfirmOpen(true);
+                              }}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            );
+                          }
+
+                          return (
+                            <td
+                              key={column.key}
+                              className={
+                                column.cellClassName ??
+                                "px-4 py-2 wrap-break-word whitespace-normal"
+                              }
+                            >
+                              {row[column.key]}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        }
+        pagination={
+          loading ? (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="h-4 w-32 rounded-md shimmer" />
+              <div className="flex items-center gap-2">
+                <div className="h-9 w-20 rounded-xl shimmer" />
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="h-9 w-9 rounded-xl shimmer"
+                    />
+                  ))}
+                </div>
+                <div className="h-9 w-20 rounded-xl shimmer" />
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+              <span>
+                {pagination
+                  ? `Showing ${
+                      pagination.count === 0
+                        ? 0
+                        : (pagination.page - 1) * pagination.perPage + 1
+                    }-${Math.min(
+                      pagination.page * pagination.perPage,
+                      pagination.count
+                    )} of ${pagination.count}`
+                  : `Showing 1-${showCount} of ${totalRows}`}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                  onClick={pagination?.onPrev}
+                  disabled={pagination ? !pagination.hasPrev : false}
+                >
+                  Previous
+                </button>
+                <div className="flex items-center gap-1">
+                  {visiblePages.map((pageNumber) => (
+                    <button
+                      key={pageNumber}
+                      className="h-9 w-9 rounded-xl border text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                      onClick={() => pagination?.onPageSelect?.(pageNumber)}
+                      disabled={
+                        pagination ? pageNumber === pagination.page : false
+                      }
+                    >
+                      {pageNumber}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                  onClick={pagination?.onNext}
+                  disabled={pagination ? !pagination.hasNext : false}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )
+        }
+      />
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete entry?"
+        description="This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={() => {
+          if (!onDelete || !activeRowId) {
+            setConfirmOpen(false);
+            return;
+          }
+
+          setSaving(true);
+          onDelete(activeRowId).then((result) => {
+            setSaving(false);
+            if (!result.ok) return;
+            setConfirmOpen(false);
+            if (result.message) {
+              toast.success(result.message);
+            }
+          });
+        }}
+        onCancel={() => setConfirmOpen(false)}
+      />
+      <Modal
+        open={modalOpen}
+        title={modalMode === "create" ? addLabel : `Update ${title}`}
+        onClose={() => setModalOpen(false)}
+        footer={
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              className="h-10 rounded-2xl border px-4 text-sm font-medium text-muted-foreground transition hover:border-brand/40 hover:text-foreground"
+              onClick={() => setModalOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="h-10 rounded-2xl bg-brand px-4 text-sm font-medium text-white shadow-sm transition hover:bg-brand/90"
+              disabled={saving}
+              onClick={() => {
+                if (modalMode === "create") {
+                  if (!onCreate) {
+                    setModalOpen(false);
+                    return;
+                  }
+
+                  setSaving(true);
+                  onCreate(formValues).then((result) => {
+                    setSaving(false);
+                    if (!result.ok) return;
+                    setModalOpen(false);
+                    if (result.message) {
+                      toast.success(result.message);
+                    }
+                  });
+                  return;
+                }
+
+                if (!onUpdate || !activeRowId) {
+                  setModalOpen(false);
+                  return;
+                }
+
+                const patchData = Object.fromEntries(
+                  Object.entries(formValues).filter(
+                    ([key, value]) => value !== initialValues[key]
+                  )
+                ) as Record<string, FormValue>;
+
+                setSaving(true);
+                onUpdate(activeRowId, patchData).then((result) => {
+                  setSaving(false);
+                  if (!result.ok) return;
+                  setModalOpen(false);
+                  if (result.message) {
+                    toast.success(result.message);
+                  }
+                });
+              }}
+            >
+              {saving
+                ? "Saving..."
+                : modalMode === "create"
+                  ? "Create"
+                  : "Update"}
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          {fields.map((field) => (
+            <div key={field.name}>
+              <label className="text-sm font-medium text-foreground">
+                {field.label}
+              </label>
+              {field.type === "textarea" ? (
+                <textarea
+                  placeholder={field.placeholder}
+                  className="mt-2 min-h-[96px] w-full resize-none rounded-lg border bg-background px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  value={String(formValues[field.name] ?? "")}
+                  onChange={(event) =>
+                    setFormValues((prev) => ({
+                      ...prev,
+                      [field.name]: event.target.value,
+                    }))
+                  }
+                />
+              ) : field.type === "checkbox" ? (
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border text-brand focus:ring-brand/30"
+                    checked={Boolean(formValues[field.name])}
+                    onChange={(event) =>
+                      setFormValues((prev) => ({
+                        ...prev,
+                        [field.name]: event.target.checked,
+                      }))
+                    }
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {field.placeholder || "Enabled"}
+                  </span>
+                </div>
+              ) : field.type === "file" ? (
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="mt-2 block w-full text-sm text-foreground file:mr-4 file:rounded-xl file:border-0 file:bg-brand/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand hover:file:bg-brand/20"
+                  onChange={(event) =>
+                    setFormValues((prev) => ({
+                      ...prev,
+                      [field.name]: event.target.files?.[0] ?? null,
+                    }))
+                  }
+                />
+              ) : (
+                <input
+                  type={field.type ?? "text"}
+                  placeholder={field.placeholder}
+                  className="mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  value={String(formValues[field.name] ?? "")}
+                  onChange={(event) =>
+                    setFormValues((prev) => ({
+                      ...prev,
+                      [field.name]: event.target.value,
+                    }))
+                  }
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      </Modal>
+    </>
+  );
+}

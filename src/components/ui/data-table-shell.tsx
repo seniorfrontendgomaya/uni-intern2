@@ -1,0 +1,73 @@
+"use client";
+
+import type { InputHTMLAttributes, ReactNode } from "react";
+
+type DataTableShellProps = {
+  title: string;
+  addLabel?: string;
+  searchPlaceholder?: string;
+  onAdd?: () => void;
+  table: ReactNode;
+  pagination: ReactNode;
+  searchProps?: InputHTMLAttributes<HTMLInputElement>;
+};
+
+export function DataTableShell({
+  title,
+  addLabel = "Add",
+  searchPlaceholder = "Search...",
+  onAdd,
+  table,
+  pagination,
+  searchProps,
+}: DataTableShellProps) {
+  const hasControlledValue =
+    searchProps &&
+    Object.prototype.hasOwnProperty.call(searchProps, "value");
+  const inputProps = hasControlledValue
+    ? { ...searchProps, value: searchProps?.value ?? "" }
+    : searchProps;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center justify-between sm:block">
+            <h2 className="text-lg flex items-center gap-2 font-semibold text-foreground">
+              {title}
+            </h2>
+            {onAdd ? (
+              <button
+                className="h-10 rounded-full bg-brand px-4 text-sm font-medium text-white shadow-sm transition hover:bg-brand/90 sm:hidden"
+                onClick={onAdd}
+              >
+                {addLabel}
+              </button>
+            ) : null}
+          </div>
+        </div>
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
+          <div className="relative w-full max-w-md sm:w-72">
+            <input
+              type="search"
+              placeholder={searchPlaceholder}
+              className="h-10 w-full rounded-full border bg-background px-4 text-sm text-foreground outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+              {...inputProps}
+            />
+          </div>
+          {onAdd ? (
+            <button
+              className="hidden h-10 items-center justify-center rounded-full bg-brand px-4 text-sm font-medium text-white shadow-sm transition hover:bg-brand/90 sm:inline-flex"
+              onClick={onAdd}
+            >
+              {addLabel}
+            </button>
+          ) : null}
+        </div>
+      </div>
+
+      {table}
+      {pagination}
+    </div>
+  );
+}
