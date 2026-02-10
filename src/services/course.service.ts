@@ -11,9 +11,20 @@ export type CourseListResponse = {
   data: ICourse[];
 };
 
-export const getCourses = (page = 1, perPage = 10) =>
-  api<CourseListResponse>(`/list_course/?per_page=${perPage}&page=${page}`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
+export const getCourses = (page = 1, perPage = 10, searchTerm?: string) => {
+  const searchParam = searchTerm
+    ? `&search=${encodeURIComponent(searchTerm)}`
+    : "";
+
+  return api<CourseListResponse>(
+    `/list_course/?per_page=${perPage}&page=${page}${searchParam}`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+};
+
+export const getAllCourses = (searchTerm?: string) =>
+  getCourses(1, -1, searchTerm);

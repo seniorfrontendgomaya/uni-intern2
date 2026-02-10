@@ -48,6 +48,9 @@ export const getCities = async (
 export const searchCities = (searchTerm: string, page = 1, perPage = 10) =>
   getCities(page, perPage, searchTerm);
 
+export const getAllCities = (searchTerm?: string) =>
+  getCities(1, -1, searchTerm);
+
 export const createCity = (payload: CityCreatePayload) =>
   api<CityMutationResponse>("/create_city/", {
     method: "POST",

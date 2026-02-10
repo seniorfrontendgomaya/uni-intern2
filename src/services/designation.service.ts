@@ -48,6 +48,9 @@ export const getDesignations = (
 export const searchDesignations = (searchTerm: string, page = 1, perPage = 10) =>
   getDesignations(page, perPage, searchTerm);
 
+export const getAllDesignations = (searchTerm?: string) =>
+  getDesignations(1, -1, searchTerm);
+
 export const createDesignation = (payload: DesignationCreatePayload) =>
   api<DesignationMutationResponse>("/create_designation/", {
     method: "POST",

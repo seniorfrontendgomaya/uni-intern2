@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { Pencil, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -14,18 +14,26 @@ type Column = {
   cellClassName?: string;
 };
 
-type Field = {
+export type Field = {
   name: string;
   label: string;
-  type?: "text" | "number" | "textarea" | "checkbox" | "file";
+  type?: "text" | "number" | "textarea" | "checkbox" | "file" | "password";
   placeholder?: string;
 };
 
 type FormValue = string | boolean | File | null;
-type RowValue = string | number | boolean | null | undefined;
+type RowValue = React.ReactNode;
+
+type CrudActionResult = {
+  ok: boolean;
+  message?: string;
+  fieldErrors?: Record<string, string[]>;
+  formError?: string;
+};
 
 type CrudTableProps = {
-  title: string;
+  title: React.ReactNode;
+  subtitle?: React.ReactNode;
   addLabel: string;
   searchPlaceholder: string;
   columns: Column[];
@@ -34,14 +42,18 @@ type CrudTableProps = {
   loading?: boolean;
   skeletonRows?: number;
   searchProps?: React.InputHTMLAttributes<HTMLInputElement>;
+  modalPanelClassName?: string;
+  modalBodyClassName?: string;
+  extraActions?: (row: Record<string, RowValue>) => React.ReactNode;
+  headerRightExtra?: React.ReactNode;
   onCreate?: (
     values: Record<string, FormValue>
-  ) => Promise<{ ok: boolean; message?: string }>;
+  ) => Promise<CrudActionResult>;
   onUpdate?: (
     id: string,
     patchData: Record<string, FormValue>
-  ) => Promise<{ ok: boolean; message?: string }>;
-  onDelete?: (id: string) => Promise<{ ok: boolean; message?: string }>;
+  ) => Promise<CrudActionResult>;
+  onDelete?: (id: string) => Promise<CrudActionResult>;
   pagination?: {
     page: number;
     perPage: number;
@@ -56,6 +68,7 @@ type CrudTableProps = {
 
 export function CrudTable({
   title,
+  subtitle,
   addLabel,
   searchPlaceholder,
   columns,
@@ -64,6 +77,10 @@ export function CrudTable({
   loading = false,
   skeletonRows = 10,
   searchProps,
+  modalPanelClassName,
+  modalBodyClassName,
+  extraActions,
+  headerRightExtra,
   onCreate,
   onUpdate,
   onDelete,
@@ -74,6 +91,8 @@ export function CrudTable({
   const [modalMode, setModalMode] = useState<"create" | "update">("create");
   const [saving, setSaving] = useState(false);
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [formError, setFormError] = useState<string | null>(null);
   const [formValues, setFormValues] = useState<Record<string, FormValue>>(() =>
     fields.reduce<Record<string, FormValue>>((acc, field) => {
       if (field.type === "checkbox") {
@@ -113,9 +132,11 @@ export function CrudTable({
     <>
       <DataTableShell
         title={title}
+        subtitle={subtitle}
         addLabel={addLabel}
         searchPlaceholder={searchPlaceholder}
         searchProps={searchProps}
+        headerRightExtra={headerRightExtra}
         onAdd={() => {
           setModalMode("create");
           setActiveRowId(null);
@@ -136,6 +157,8 @@ export function CrudTable({
           );
           setFormValues(emptyValues);
           setInitialValues(emptyValues);
+          setFieldErrors({});
+          setFormError(null);
           setModalOpen(true);
         }}
         table={
@@ -222,6 +245,7 @@ export function CrudTable({
                                 }
                               >
                                 <div className="flex items-center justify-center gap-2">
+                                  {extraActions ? extraActions(row) : null}
                                   <button
                                     className="inline-flex h-8 w-8 items-center justify-center rounded-xl border text-brand transition hover:border-brand/40 hover:bg-brand/10"
                                     aria-label="Edit"
@@ -251,6 +275,8 @@ export function CrudTable({
                                   );
                                 setFormValues(nextValues);
                                 setInitialValues(nextValues);
+                                setFieldErrors({});
+                                setFormError(null);
                                       setModalOpen(true);
                                     }}
                                   >
@@ -382,13 +408,23 @@ export function CrudTable({
       <Modal
         open={modalOpen}
         title={modalMode === "create" ? addLabel : `Update ${title}`}
-        onClose={() => setModalOpen(false)}
+        panelClassName={modalPanelClassName}
+        bodyClassName={modalBodyClassName}
+        onClose={() => {
+          setModalOpen(false);
+          setFieldErrors({});
+          setFormError(null);
+        }}
         footer={
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             <button
               type="button"
               className="h-10 rounded-2xl border px-4 text-sm font-medium text-muted-foreground transition hover:border-brand/40 hover:text-foreground"
-              onClick={() => setModalOpen(false)}
+              onClick={() => {
+                setModalOpen(false);
+                setFieldErrors({});
+                setFormError(null);
+              }}
             >
               Cancel
             </button>
@@ -406,8 +442,14 @@ export function CrudTable({
                   setSaving(true);
                   onCreate(formValues).then((result) => {
                     setSaving(false);
-                    if (!result.ok) return;
+                    if (!result.ok) {
+                      setFieldErrors(result.fieldErrors ?? {});
+                      setFormError(result.formError ?? null);
+                      return;
+                    }
                     setModalOpen(false);
+                    setFieldErrors({});
+                    setFormError(null);
                     if (result.message) {
                       toast.success(result.message);
                     }
@@ -429,8 +471,14 @@ export function CrudTable({
                 setSaving(true);
                 onUpdate(activeRowId, patchData).then((result) => {
                   setSaving(false);
-                  if (!result.ok) return;
+                  if (!result.ok) {
+                    setFieldErrors(result.fieldErrors ?? {});
+                    setFormError(result.formError ?? null);
+                    return;
+                  }
                   setModalOpen(false);
+                  setFieldErrors({});
+                  setFormError(null);
                   if (result.message) {
                     toast.success(result.message);
                   }
@@ -447,6 +495,11 @@ export function CrudTable({
         }
       >
         <div className="space-y-4">
+          {formError ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {formError}
+            </div>
+          ) : null}
           {fields.map((field) => (
             <div key={field.name}>
               <label className="text-sm font-medium text-foreground">
@@ -458,10 +511,19 @@ export function CrudTable({
                   className="mt-2 min-h-[96px] w-full resize-none rounded-lg border bg-background px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
                   value={String(formValues[field.name] ?? "")}
                   onChange={(event) =>
-                    setFormValues((prev) => ({
-                      ...prev,
-                      [field.name]: event.target.value,
-                    }))
+                    setFormValues((prev) => {
+                      if (fieldErrors[field.name]) {
+                        setFieldErrors((current) => {
+                          const next = { ...current };
+                          delete next[field.name];
+                          return next;
+                        });
+                      }
+                      return {
+                        ...prev,
+                        [field.name]: event.target.value,
+                      };
+                    })
                   }
                 />
               ) : field.type === "checkbox" ? (
@@ -471,10 +533,19 @@ export function CrudTable({
                     className="h-4 w-4 rounded border text-brand focus:ring-brand/30"
                     checked={Boolean(formValues[field.name])}
                     onChange={(event) =>
-                      setFormValues((prev) => ({
-                        ...prev,
-                        [field.name]: event.target.checked,
-                      }))
+                      setFormValues((prev) => {
+                        if (fieldErrors[field.name]) {
+                          setFieldErrors((current) => {
+                            const next = { ...current };
+                            delete next[field.name];
+                            return next;
+                          });
+                        }
+                        return {
+                          ...prev,
+                          [field.name]: event.target.checked,
+                        };
+                      })
                     }
                   />
                   <span className="text-sm text-muted-foreground">
@@ -487,10 +558,19 @@ export function CrudTable({
                   accept="image/*"
                   className="mt-2 block w-full text-sm text-foreground file:mr-4 file:rounded-xl file:border-0 file:bg-brand/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand hover:file:bg-brand/20"
                   onChange={(event) =>
-                    setFormValues((prev) => ({
-                      ...prev,
-                      [field.name]: event.target.files?.[0] ?? null,
-                    }))
+                    setFormValues((prev) => {
+                      if (fieldErrors[field.name]) {
+                        setFieldErrors((current) => {
+                          const next = { ...current };
+                          delete next[field.name];
+                          return next;
+                        });
+                      }
+                      return {
+                        ...prev,
+                        [field.name]: event.target.files?.[0] ?? null,
+                      };
+                    })
                   }
                 />
               ) : (
@@ -500,13 +580,31 @@ export function CrudTable({
                   className="mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
                   value={String(formValues[field.name] ?? "")}
                   onChange={(event) =>
-                    setFormValues((prev) => ({
-                      ...prev,
-                      [field.name]: event.target.value,
-                    }))
+                    setFormValues((prev) => {
+                      if (fieldErrors[field.name]) {
+                        setFieldErrors((current) => {
+                          const next = { ...current };
+                          delete next[field.name];
+                          return next;
+                        });
+                      }
+                      return {
+                        ...prev,
+                        [field.name]: event.target.value,
+                      };
+                    })
                   }
                 />
               )}
+              {fieldErrors[field.name]?.length ? (
+                <div className="mt-1 space-y-0.5">
+                  {fieldErrors[field.name].map((message, index) => (
+                    <p key={index} className="text-xs text-red-600">
+                      {message}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
             </div>
           ))}
         </div>

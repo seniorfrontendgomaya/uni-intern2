@@ -22,13 +22,14 @@ export async function api<T>(
         ...(options?.headers || {}),
       },
     });
-
     
 
     if (!res.ok) {
       switch (res.status) {
         case 400:
-          throw new ValidationError(await safeJson(res));
+          throw new ValidationError(await safeJson(res), res.status);
+        case 422:
+          throw new ValidationError(await safeJson(res), res.status);
         case 401:
           throw new UnauthorizedError(await safeJson(res));
         case 404:

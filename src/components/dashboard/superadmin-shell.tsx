@@ -30,9 +30,8 @@ const navItems: NavItem[] = [
   { label: "Perk", href: "/superadmin/perk", icon: <ShieldCheck className="h-4 w-4" /> },
   { label: "Companies", href: "/superadmin/companies", icon: <Building2 className="h-4 w-4" /> },
   { label: "Universities", href: "/superadmin/universities", icon: <University className="h-4 w-4" /> },
-  { label: "Video Category", href: "/superadmin/video-category", icon: <Folder className="h-4 w-4" /> },
-  { label: "Video Subcategory", href: "/superadmin/video-subcategory", icon: <Folder className="h-4 w-4" /> },
-  { label: "Video Courses", href: "/superadmin/video-courses", icon: <PlayCircle className="h-4 w-4" /> },
+  { label: "Video Courses", href: "/superadmin/video-category", icon: <PlayCircle className="h-4 w-4" /> },
+  // { label: "Video Courses", href: "/superadmin/video-courses", icon: <PlayCircle className="h-4 w-4" /> },
   { label: "Resume List", href: "/superadmin/resume-list", icon: <GraduationCap className="h-4 w-4" /> },
 ];
 
@@ -119,7 +118,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
                 <p className="text-xs uppercase text-muted-foreground">
                   Superadmin panel
                 </p>
-                <h1 className="text-lg font-semibold">{pageTitle}</h1>
+                {/* <h1 className="text-lg font-semibold">{pageTitle}</h1> */}
               </div>
               <button
                 type="button"

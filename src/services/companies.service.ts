@@ -8,6 +8,7 @@ export type CompanyCreatePayload = {
   name: string;
   email: string;
   mobile: string;
+  password: string;
   description: string;
   location: string[];
   category: string[];
@@ -18,23 +19,26 @@ export type CompanyCreatePayload = {
   perk: string[];
   start_amount: number;
   end_amount: number;
-  start_day: string;
+  start_day?: string;
   start_anual_salary: number;
   end_anual_salary: number;
   number_of_opening: number;
   about: string;
   apply: string;
   key_responsibility: string;
-  apply_start_date: string;
-  apply_end_date: string;
+  apply_start_date?: string;
+  apply_end_date?: string;
+  qualification: string;
+  education: string;
+  user_type: string;
   active: boolean;
   placement_gurantee_course: boolean;
-  is_fast_response: boolean;
+  is_fast_response?: boolean;
 };
 
 export type CompanyUpdatePayload = {
   companyId: string;
-  patchData: Partial<CompanyCreatePayload>;
+  patchData: Partial<Omit<CompanyCreatePayload, "user_type">>;
 };
 
 type CompanyListNormalized = CompanyListResponse & {
@@ -75,7 +79,7 @@ export const searchCompanies = (searchTerm: string, page = 1, perPage = 10) =>
   getCompanies(page, perPage, searchTerm);
 
 export const createCompany = (payload: CompanyCreatePayload) =>
-  api<CompanyMutationResponse>("/create_company/", {
+  api<CompanyMutationResponse>("create_company/", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,

@@ -1,13 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { CrudTable } from "@/components/ui/crud-table";
+import { CrudTable, type Field } from "@/components/ui/crud-table";
 import {
-  useDeleteVideoCategory,
-  useUpdateVideoCategory,
-  useVideoCategoriesPaginated,
-  useVideoCategory,
-} from "@/hooks/useVideoCategory";
+  useDeleteVideoCourse,
+  useUpdateVideoCourse,
+  useVideoCoursesPaginated,
+  useVideoCourse,
+} from "@/hooks/useVideoCourse";
 
 const columns = [
   {
@@ -27,7 +28,7 @@ const columns = [
     label: "Description",
     headerClassName: "px-4 py-2",
     cellClassName:
-      "px-4 py-2 text-muted-foreground wrap-break-word whitespace-normal max-w-[360px]",
+      "px-4 py-2 text-muted-foreground truncate max-w-[360px]",
   },
   {
     key: "fee",
@@ -49,7 +50,7 @@ const columns = [
   },
 ];
 
-const fields = [
+const fields: Field[] = [
   { name: "name", label: "Name", placeholder: "Enter name" },
   { name: "title", label: "Title", placeholder: "Enter title" },
   {
@@ -60,12 +61,12 @@ const fields = [
   },
   { name: "fee", label: "Fee", type: "number", placeholder: "Enter fee" },
   {
-    name: "banner_image",
+    name: "image",
     label: "Banner Image",
     type: "file",
   },
   {
-    name: "placement_gurantee_course",
+    name: "is_placement_gurantee",
     label: "Placement Guarantee",
     type: "checkbox",
     placeholder: "Placement guarantee",
@@ -131,27 +132,34 @@ export function VideoCategoryPage() {
     hasPrev,
     loading,
     refresh,
-  } = useVideoCategoriesPaginated(10, searchTerm);
-  const { data: createVideoCategory } = useVideoCategory();
-  const { data: updateVideoCategory } = useUpdateVideoCategory();
-  const { data: deleteVideoCategory } = useDeleteVideoCategory();
+  } = useVideoCoursesPaginated(10);
+  const { data: createVideoCourse } = useVideoCourse();
+  const { data: updateVideoCourse } = useUpdateVideoCourse();
+  const { data: deleteVideoCourse } = useDeleteVideoCourse();
 
-  const rows = items.map((item, index) => ({
-    id: item.id,
-    name: item.name,
-    title: item.title,
-    description: item.description ?? "-",
-    fee: item.fee ? String(item.fee) : "-",
-    placement_label: item.placement_gurantee_course ? "Yes" : "No",
-    placement_gurantee_course: item.placement_gurantee_course,
-    banner_image: null,
-    what_you_learn: item.what_you_learn ?? "",
-    requirement: item.requirement ?? "",
-    detail: item.detail ?? "",
-    reason: item.reason ?? "",
-    for_who: item.for_who ?? "",
-    sr: String((page - 1) * perPage + index + 1),
-  }));
+  const rows = items.map((item, index) => {
+    const fullDescription = item.description ?? "-";
+    return {
+      id: item.id,
+      name: item.name,
+      title: item.title,
+      description: (
+        <span className="block truncate" title={fullDescription}>
+          {fullDescription}
+        </span>
+      ),
+      fee: item.fee != null ? String(item.fee) : "-",
+      placement_label: item.is_placement_gurantee ? "Yes" : "No",
+      is_placement_gurantee: item.is_placement_gurantee,
+      image: null,
+      what_you_learn: item.what_you_learn ?? "",
+      requirement: item.requirement ?? "",
+      detail: item.detail ?? "",
+      reason: item.reason ?? "",
+      for_who: item.for_who ?? "",
+      sr: String((page - 1) * perPage + index + 1),
+    };
+  });
 
   return (
     <CrudTable
@@ -162,6 +170,27 @@ export function VideoCategoryPage() {
       rows={rows}
       fields={fields}
       loading={loading}
+      extraActions={(row) => (
+        <>
+          <button
+            type="button"
+            className="inline-flex h-8 items-center justify-center rounded-xl border border-brand/40 px-2 text-xs font-medium text-brand transition hover:bg-brand/10"
+            onClick={() => {
+              // Placeholder: wire up detailed view if needed
+              // eslint-disable-next-line no-console
+              console.log("View video category", row.id);
+            }}
+          >
+            View
+          </button>
+          <Link
+            href={`/superadmin/video-subcategory?categoryId=${row.id}`}
+            className="inline-flex h-8 items-center justify-center rounded-xl border border-brand/40 px-2 text-xs font-medium text-brand transition hover:bg-brand/10"
+          >
+            Subcategory
+          </Link>
+        </>
+      )}
       searchProps={{
         value: searchTerm,
         onChange: (event) => {
@@ -170,20 +199,48 @@ export function VideoCategoryPage() {
         },
       }}
       onCreate={async (values) => {
-        const result = await createVideoCategory(buildFormData(values));
+        const result = await createVideoCourse(buildFormData(values));
         if (result.ok) refresh();
         return { ok: result.ok, message: result.data?.message };
       }}
       onUpdate={async (id, patchData) => {
-        const result = await updateVideoCategory({
+        const entries = Object.entries(patchData);
+
+        const hasImage = patchData.image && patchData.image instanceof File;
+
+        if (hasImage) {
+          const formValues: Record<string, string | boolean | File | null> =
+            Object.fromEntries(entries);
+          const formData = buildFormData(formValues);
+          const result = await updateVideoCourse({
+            categoryId: id,
+            patchData: formData,
+          });
+          if (result.ok) refresh();
+          return { ok: result.ok, message: result.data?.message };
+        }
+
+        const jsonPatch: Record<string, string | boolean> = {};
+        entries.forEach(([key, value]) => {
+          if (value === null || value === undefined || value instanceof File) {
+            return;
+          }
+          if (typeof value === "boolean") {
+            jsonPatch[key] = value;
+          } else {
+            jsonPatch[key] = String(value);
+          }
+        });
+
+        const result = await updateVideoCourse({
           categoryId: id,
-          patchData: buildFormData(patchData),
+          patchData: jsonPatch,
         });
         if (result.ok) refresh();
         return { ok: result.ok, message: result.data?.message };
       }}
       onDelete={async (id) => {
-        const result = await deleteVideoCategory(id);
+        const result = await deleteVideoCourse(id);
         if (result.ok) refresh();
         return { ok: result.ok, message: result.data?.message };
       }}

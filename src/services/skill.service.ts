@@ -44,6 +44,9 @@ export const getSkills = (page = 1, perPage = 10, searchTerm?: string) => {
 export const searchSkills = (searchTerm: string, page = 1, perPage = 10) =>
   getSkills(page, perPage, searchTerm);
 
+export const getAllSkills = (searchTerm?: string) =>
+  getSkills(1, -1, searchTerm);
+
 export const createSkill = (payload: SkillCreatePayload) =>
   api<SkillMutationResponse>("/create_skill/", {
     method: "POST",

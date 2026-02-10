@@ -6,6 +6,19 @@ import { TagInput } from "@/components/ui/tag-input";
 import { useCompanyProfile } from "@/hooks/useCompany";
 import type { CompanyData, CompanyReference } from "@/types/company";
 
+const toDateInputValue = (value: unknown) => {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "";
+  const yyyyMMdd = raw.slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(yyyyMMdd) ? yyyyMMdd : "";
+};
+
+const getTodayLocalIsoDate = () => {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().slice(0, 10);
+};
+
 const emptyCompanyData = (): CompanyData => ({
   id: 0,
   user_type: "COMPANY",
@@ -66,6 +79,7 @@ export default function CompanyPage() {
   const [companyData, setCompanyData] = useState<CompanyData | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const { fetchProfile, loading } = useCompanyProfile();
+  const todayLocalIso = useMemo(() => getTodayLocalIsoDate(), []);
   const [formValues, setFormValues] = useState(() => {
     const seed = emptyCompanyData();
     return {
@@ -82,15 +96,15 @@ export default function CompanyPage() {
       perk: listToArray(seed.perk),
       start_amount: String(seed.start_amount),
       end_amount: String(seed.end_amount),
-      start_day: seed.start_day,
+      start_day: toDateInputValue(seed.start_day),
       start_anual_salary: String(seed.start_anual_salary),
       end_anual_salary: String(seed.end_anual_salary),
       number_of_opening: String(seed.number_of_opening),
       about: seed.about,
       apply: seed.apply,
       key_responsibility: seed.key_responsibility,
-      apply_start_date: seed.apply_start_date,
-      apply_end_date: seed.apply_end_date,
+      apply_start_date: toDateInputValue(seed.apply_start_date),
+      apply_end_date: toDateInputValue(seed.apply_end_date),
       active: seed.active,
       placement_gurantee_course: seed.placement_gurantee_course,
       is_fast_response: seed.is_fast_response,
@@ -122,15 +136,15 @@ export default function CompanyPage() {
       perk: listToArray(companyData.perk),
       start_amount: String(companyData.start_amount),
       end_amount: String(companyData.end_amount),
-      start_day: companyData.start_day,
+      start_day: toDateInputValue(companyData.start_day),
       start_anual_salary: String(companyData.start_anual_salary),
       end_anual_salary: String(companyData.end_anual_salary),
       number_of_opening: String(companyData.number_of_opening),
       about: companyData.about,
       apply: companyData.apply,
       key_responsibility: companyData.key_responsibility,
-      apply_start_date: companyData.apply_start_date,
-      apply_end_date: companyData.apply_end_date,
+      apply_start_date: toDateInputValue(companyData.apply_start_date),
+      apply_end_date: toDateInputValue(companyData.apply_end_date),
       active: companyData.active,
       placement_gurantee_course: companyData.placement_gurantee_course,
       is_fast_response: companyData.is_fast_response,
@@ -581,6 +595,7 @@ export default function CompanyPage() {
               <input
                 type="date"
                 className="mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+                min={todayLocalIso}
                 value={formValues.apply_start_date}
                 onChange={(event) =>
                   setFormValues((prev) => ({
@@ -597,6 +612,7 @@ export default function CompanyPage() {
               <input
                 type="date"
                 className="mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+                min={formValues.apply_start_date || todayLocalIso}
                 value={formValues.apply_end_date}
                 onChange={(event) =>
                   setFormValues((prev) => ({

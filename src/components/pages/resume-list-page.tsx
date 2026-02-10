@@ -12,7 +12,30 @@ const getInitials = (name: string) =>
     .join("") || "U";
 
 export function ResumeListPage() {
-  const { items, count, loading } = useResumeListPaginated(10);
+  const {
+    items,
+    count,
+    loading,
+    page,
+    setPage,
+    perPage,
+    hasNext,
+    hasPrev,
+  } = useResumeListPaginated(10);
+
+  const totalPages = Math.max(1, Math.ceil(count / perPage));
+  const visiblePages =
+    totalPages <= 3
+      ? Array.from({ length: totalPages }, (_, index) => index + 1)
+      : (() => {
+          const start = Math.max(1, Math.min(page - 1, totalPages - 2));
+          return [start, start + 1, start + 2];
+        })();
+
+  const role =
+    typeof window !== "undefined"
+      ? localStorage.getItem("role") ?? ""
+      : "";
 
   return (
     <div className="space-y-6">
@@ -74,8 +97,15 @@ export function ResumeListPage() {
                         {item.user_name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Candidate ID: {item.user}
+                        description: {item.description}
                       </p>
+                      {role === "UNIVERSITY" ? (
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-medium text-[16px] text-foreground">
+                            {item.company_name}
+                          </span>
+                        </p>
+                      ) : null}
                       <div className="mt-2 flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:gap-4">
                         <span className="inline-flex items-center gap-2">
                           <Mail className="h-3.5 w-3.5" />
@@ -122,6 +152,48 @@ export function ResumeListPage() {
             );
           })
         )}
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+        <span>
+          {count === 0
+            ? "Showing 0 of 0"
+            : `Showing ${(page - 1) * perPage + 1}-${Math.min(
+                page * perPage,
+                count
+              )} of ${count}`}
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+            onClick={() => setPage(Math.max(1, page - 1))}
+            disabled={!hasPrev}
+          >
+            Previous
+          </button>
+          <div className="flex items-center gap-1">
+            {visiblePages.map((pageNumber) => (
+              <button
+                key={pageNumber}
+                type="button"
+                className="h-9 w-9 rounded-xl border text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                onClick={() => setPage(pageNumber)}
+                disabled={pageNumber === page}
+              >
+                {pageNumber}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+            onClick={() => setPage(page + 1)}
+            disabled={!hasNext}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

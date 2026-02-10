@@ -36,6 +36,15 @@ export function handleError(error: unknown) {
 
   // Validation
   if (error instanceof ValidationError) {
+    const meta = error.meta as { message?: unknown } | undefined;
+    const isFieldLevel =
+      Boolean(meta?.message) &&
+      typeof meta?.message === 'object' &&
+      !Array.isArray(meta?.message);
+
+    // For 422 / field-level validation, forms should render errors inline.
+    if (error.status === 422 || isFieldLevel) return;
+
     toast.error(error.message);
     return;
   }

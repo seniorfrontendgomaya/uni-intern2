@@ -25,10 +25,17 @@ export default function LoginPage() {
     if (!result.ok) return;
   
     if (result.data) {
+      const role = result.data.user_type || "SUPERADMIN";
       localStorage.setItem("token", result.data.token);
-      localStorage.setItem("role", result.data.user_type || "SUPERADMIN");
-      
-      window.location.href = '/company/job-type';
+      localStorage.setItem("role", role);
+
+      if (role === "SUPERADMIN") {
+        window.location.href = "/superadmin/city";
+      } else if (role === "UNIVERSITY") {
+        window.location.href = "/university";
+      } else {
+        window.location.href = "/company/job-type";
+      }
     }
     console.log(result.data);
     toast.success('Login successful');

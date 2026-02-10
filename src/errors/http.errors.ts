@@ -14,8 +14,17 @@ export class UnauthorizedError extends BaseError {
 }
 
 export class ValidationError extends BaseError {
-  constructor(meta?: unknown) {
-    super((meta as { message?: string })?.message || "Validation failed.", "VALIDATION_ERROR", 400, meta);
+  constructor(meta?: unknown, status: number = 400) {
+    const message = (() => {
+      const raw = (meta as { message?: unknown })?.message;
+      if (typeof raw === "string" && raw.trim()) return raw;
+      // when backend returns field-level errors as an object, avoid "[object Object]"
+      if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+        return "Please fix the highlighted fields.";
+      }
+      return "Validation failed.";
+    })();
+    super(message, "VALIDATION_ERROR", status, meta);
   }
 }
 

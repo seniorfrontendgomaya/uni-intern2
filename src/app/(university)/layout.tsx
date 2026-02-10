@@ -1,0 +1,10 @@
+import { UniversityShell } from "@/components/dashboard/university-shell";
+
+export default function UniversityLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <UniversityShell>{children}</UniversityShell>;
+}
+

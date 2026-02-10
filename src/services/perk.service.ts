@@ -44,6 +44,9 @@ export const getPerks = (page = 1, perPage = 10, searchTerm?: string) => {
 export const searchPerks = (searchTerm: string, page = 1, perPage = 10) =>
   getPerks(page, perPage, searchTerm);
 
+export const getAllPerks = (searchTerm?: string) =>
+  getPerks(1, -1, searchTerm);
+
 export const createPerk = (payload: PerkCreatePayload) =>
   api<PerkMutationResponse>("/create_perk/", {
     method: "POST",

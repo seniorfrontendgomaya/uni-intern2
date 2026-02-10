@@ -48,6 +48,9 @@ export const getJobTypes = (
 export const searchJobTypes = (searchTerm: string, page = 1, perPage = 10) =>
   getJobTypes(page, perPage, searchTerm);
 
+export const getAllJobTypes = (searchTerm?: string) =>
+  getJobTypes(1, -1, searchTerm);
+
 
 export const createJobType = (payload: JobTypeCreatePayload) =>
   api<JobTypeMutationResponse>("/create_job_type/", {

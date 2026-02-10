@@ -48,6 +48,9 @@ export const getCategories = (
 export const searchCategories = (searchTerm: string, page = 1, perPage = 10) =>
   getCategories(page, perPage, searchTerm);
 
+export const getAllCategories = (searchTerm?: string) =>
+  getCategories(1, -1, searchTerm);
+
 export const createCategory = (payload: CategoryCreatePayload) =>
   api<CategoryMutationResponse>("/create_category/", {
     method: "POST",

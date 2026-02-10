@@ -7,6 +7,7 @@ import {
   useDeleteCategory,
   useUpdateCategory,
 } from "@/hooks/useCategory";
+import { extractFieldErrors } from "@/lib/validation-errors";
 import { useState } from "react";
 
 const columns = [
@@ -93,7 +94,11 @@ export function CategoryPage() {
           description: values.description ?? "",
         });
         if (result.ok) refresh();
-        return { ok: result.ok, message: result.data?.message };
+        return {
+          ok: result.ok,
+          message: result.data?.message,
+          fieldErrors: result.ok ? undefined : extractFieldErrors(result.error) ?? undefined,
+        };
       }}
       onUpdate={async (id, patchData) => {
         const result = await updateCategory({
@@ -101,7 +106,11 @@ export function CategoryPage() {
           patchData,
         });
         if (result.ok) refresh();
-        return { ok: result.ok, message: result.data?.message };
+        return {
+          ok: result.ok,
+          message: result.data?.message,
+          fieldErrors: result.ok ? undefined : extractFieldErrors(result.error) ?? undefined,
+        };
       }}
       onDelete={async (id) => {
         const result = await deleteCategory(id);
