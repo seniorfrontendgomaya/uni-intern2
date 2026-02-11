@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Home, Users, Upload, FileText, UserCircle, Menu } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ForbiddenPage } from "@/components/pages/forbidden-page";
+import { defaultRouteForRole } from "@/lib/route-guard";
 
 type NavItem = {
   label: string;
@@ -23,6 +25,7 @@ const cx = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
 
 export function UniversityShell({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
@@ -31,6 +34,37 @@ export function UniversityShell({ children }: { children: React.ReactNode }) {
     const match = navItems.find((item) => item.href === pathname);
     return match?.label ?? "University Dashboard";
   }, [pathname]);
+
+  const [auth, setAuth] = useState<{ token: string | null; role: string | null } | null>(
+    null
+  );
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    setAuth({ token, role });
+    if (!token) router.replace("/login");
+  }, [router]);
+
+  const token = auth?.token ?? null;
+  const role = auth?.role ?? null;
+
+  const allowedPrefix = "/university";
+  const pathOk =
+    pathname === allowedPrefix || pathname.startsWith(`${allowedPrefix}/`);
+  const roleOk = role === "UNIVERSITY";
+  const forbidden = Boolean(token) && !(pathOk && roleOk);
+
+  // Prevent hydration mismatch: render a stable placeholder until mounted.
+  if (!token) return <div className="h-screen bg-background" />;
+
+  if (forbidden) {
+    return (
+      <div className="h-screen overflow-hidden bg-background">
+        <ForbiddenPage homeHref={defaultRouteForRole(role)} />
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen overflow-hidden bg-background">
@@ -75,6 +109,13 @@ export function UniversityShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
+          <button
+            type="button"
+            className="inline-flex h-10 items-center justify-center rounded-full border bg-card px-4 text-sm font-medium text-foreground shadow-sm transition hover:border-university-accent/40"
+            onClick={() => setLogoutOpen(true)}
+          >
+            Logout
+          </button>
         </aside>
 
         <div className="flex h-full min-h-0 flex-col">
@@ -94,6 +135,13 @@ export function UniversityShell({ children }: { children: React.ReactNode }) {
                 </p>
                 <h1 className="text-lg font-semibold">{pageTitle}</h1>
               </div>
+              <button
+                type="button"
+                className="hidden items-center justify-center rounded-full border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:border-university-accent/40 md:inline-flex"
+                onClick={() => setLogoutOpen(true)}
+              >
+                Logout
+              </button>
             </div>
           </header>
 
@@ -153,7 +201,7 @@ export function UniversityShell({ children }: { children: React.ReactNode }) {
         </nav>
         <button
           type="button"
-          className="mt-6 inline-flex h-10 items-center justify-center rounded-full border bg-card px-4 text-sm font-medium text-foreground shadow-sm transition hover:border-brand/40"
+          className="mt-6 inline-flex h-10 items-center justify-center rounded-full border bg-card px-4 text-sm font-medium text-foreground shadow-sm transition hover:border-university-accent/40"
           onClick={() => setLogoutOpen(true)}
         >
           Logout

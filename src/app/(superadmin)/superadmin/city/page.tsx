@@ -24,7 +24,7 @@ const columns = [
   },
   {
     key: "description",
-    label: "Description",
+    label: "Address",
     headerClassName: "px-4 py-2",
     cellClassName:
       "px-4 py-2 text-muted-foreground wrap-break-word whitespace-normal max-w-[360px]",
@@ -41,9 +41,9 @@ const fields = [
   { name: "name", label: "Name", placeholder: "Enter city name" },
   {
     name: "description",
-    label: "Description",
+    label: "Address",
     type: "textarea",
-    placeholder: "Add a short description",
+    placeholder: "Add a short address ",
   },
 ];
 

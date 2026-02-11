@@ -16,3 +16,17 @@ export type UniversityStudentListResponse = {
   message?: string | null;
 };
 
+/** Shape for recent-student display (UI). All fields optional; pluggable with API response. */
+export type RecentStudent = {
+  id?: number;
+  first_name?: string | null;
+  last_name?: string | null;
+  image?: string | null;
+  email?: string | null;
+  mobile?: string | null;
+  qualification?: string | null;
+  location?: unknown[];
+  skills?: unknown[];
+  gender?: string | null;
+};
+

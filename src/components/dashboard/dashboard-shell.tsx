@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
   Building2,
@@ -12,6 +12,8 @@ import {
   University,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ForbiddenPage } from "@/components/pages/forbidden-page";
+import { defaultRouteForRole } from "@/lib/route-guard";
 
 type NavItem = {
   label: string;
@@ -71,6 +73,7 @@ const cx = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
@@ -79,6 +82,37 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     const match = navItems.find((item) => item.href === pathname);
     return match?.label ?? "Company Dashboard";
   }, [pathname]);
+
+  const [auth, setAuth] = useState<{ token: string | null; role: string | null } | null>(
+    null
+  );
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    setAuth({ token, role });
+    if (!token) router.replace("/login");
+  }, [router]);
+
+  const token = auth?.token ?? null;
+  const role = auth?.role ?? null;
+
+  const allowedPrefix = "/company";
+  const pathOk =
+    pathname === allowedPrefix || pathname.startsWith(`${allowedPrefix}/`);
+  const roleOk = role !== "SUPERADMIN" && role !== "UNIVERSITY";
+  const forbidden = Boolean(token) && !(pathOk && roleOk);
+
+  // Prevent hydration mismatch: render a stable placeholder until mounted.
+  if (!token) return <div className="h-screen bg-background" />;
+
+  if (forbidden) {
+    return (
+      <div className="h-screen overflow-hidden bg-background">
+        <ForbiddenPage homeHref={defaultRouteForRole(role)} />
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen overflow-hidden bg-background">
@@ -125,15 +159,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
-          <div className="rounded-2xl border bg-background p-4">
-            <p className="text-xs uppercase text-muted-foreground">
-              Quick status
-            </p>
-            <p className="mt-2 text-sm font-medium">14 active cohorts</p>
-            <p className="text-xs text-muted-foreground">
-              248 applications today
-            </p>
-          </div>
         </aside>
 
         <div className="flex h-full min-h-0 flex-col">
@@ -153,10 +178,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 </p>
                 <h1 className="text-lg font-semibold">{pageTitle}</h1>
               </div>
-              <div className="hidden items-center gap-3 rounded-full border bg-card px-4 py-2 text-sm text-muted-foreground shadow-sm md:flex">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                Live sync enabled
-              </div>
+
               <button
                 type="button"
                 className="hidden items-center justify-center rounded-full border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:border-brand/40 md:inline-flex"

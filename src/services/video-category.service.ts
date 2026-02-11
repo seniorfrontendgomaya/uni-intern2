@@ -27,7 +27,7 @@ export const getVideoCategories = async (
     ? `&search=${encodeURIComponent(searchTerm)}`
     : "";
   const raw = await api<VideoCategoryListResponse>(
-    `/course_category_list/?per_page=${perPage}&page=${page}${searchParam}`,
+    `course_category_list/?per_page=${perPage}&page=${page}${searchParam}`,
     {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,

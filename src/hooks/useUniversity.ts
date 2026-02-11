@@ -7,6 +7,7 @@ import {
   createUniversity,
   deleteUniversity,
   getUniversities,
+  getUniversityById,
   updateUniversity,
 } from "@/services/university.service";
 import type {
@@ -47,5 +48,22 @@ export function useDeleteUniversity() {
   const destroy = (id: string) => run(() => deleteUniversity(id));
 
   return { data: destroy, loading };
+}
+
+export function useGetUniversityById() {
+  const { run, loading } = useAsyncAction<University | null>();
+
+  const getById = useCallback(
+    (id: string) =>
+      run(async () => {
+        // Fetch single university by ID using the update endpoint with GET method
+        const response = await getUniversityById(id);
+        // The API response might have the university in response.data.data or response.data
+        return response.data || null;
+      }),
+    [run]
+  );
+
+  return { data: getById, loading };
 }
 

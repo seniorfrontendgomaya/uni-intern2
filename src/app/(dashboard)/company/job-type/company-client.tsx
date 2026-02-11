@@ -80,33 +80,34 @@ export function CompanyClient({
           setModalOpen(true);
         }}
         table={
-          <div className="overflow-hidden rounded-2xl border">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-brand text-xs uppercase text-white">
-                <tr className="h-12">
-                  <th className="w-20 px-4 py-2 text-center">Sr No</th>
-                  <th className="px-4 py-2">Name</th>
-                  <th className="px-4 py-2">Description</th>
-                  <th className="w-24 px-4 py-2 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
+          <div className="overflow-x-auto rounded-2xl border">
+            <div className="min-w-full">
+              <table className="w-full min-w-[600px] text-left text-sm">
+                <thead className="bg-brand text-xs uppercase text-white">
+                  <tr className="h-12">
+                    <th className="w-20 px-2 py-2 text-center text-xs sm:px-4 sm:text-xs">Sr No</th>
+                    <th className="px-2 py-2 text-xs sm:px-4 sm:text-xs">Name</th>
+                    <th className="px-2 py-2 text-xs sm:px-4 sm:text-xs">Description</th>
+                    <th className="w-24 px-2 py-2 text-center text-xs sm:px-4 sm:text-xs">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
                 {loading ? (
                   Array.from({ length: 10 }).map((_, index) => (
                       <tr key={index} className="border-t">
-                        <td className="w-16 px-4 py-2 text-center">
+                        <td className="w-16 px-2 py-2 text-center sm:px-4">
                           <div className="mx-auto h-4 w-6 rounded-md shimmer" />
                         </td>
-                        <td className="px-4 py-2">
+                        <td className="px-2 py-2 sm:px-4">
                           <div className="h-4 w-24 rounded-md shimmer" />
                         </td>
-                        <td className="px-4 py-2">
+                        <td className="px-2 py-2 sm:px-4">
                           <div className="h-4 w-40 rounded-md shimmer" />
                         </td>
-                        <td className="w-24 px-4 py-2">
-                          <div className="flex items-center justify-center gap-2">
-                            <div className="h-8 w-8 rounded-xl shimmer" />
-                            <div className="h-8 w-8 rounded-xl shimmer" />
+                        <td className="w-24 px-2 py-2 sm:px-4">
+                          <div className="flex items-center justify-center gap-1 sm:gap-2">
+                            <div className="h-7 w-7 rounded-xl shimmer sm:h-8 sm:w-8" />
+                            <div className="h-7 w-7 rounded-xl shimmer sm:h-8 sm:w-8" />
                           </div>
                         </td>
                       </tr>
@@ -115,7 +116,7 @@ export function CompanyClient({
                   <tr className="border-t">
                     <td
                       colSpan={4}
-                      className="px-4 py-6 text-center text-sm text-muted-foreground"
+                      className="px-2 py-6 text-center text-xs text-muted-foreground sm:px-4 sm:text-sm"
                     >
                       No record found
                     </td>
@@ -126,18 +127,19 @@ export function CompanyClient({
                         key={index}
                         className="border-t transition hover:bg-brand/10 even:bg-muted/40"
                       >
-                        <td className="w-16 px-4 py-2 text-center">
+                        <td className="w-16 px-2 py-2 text-center text-xs sm:px-4 sm:text-sm">
                           {(page - 1) * perPage + index + 1}
                         </td>
-                        <td className="px-4 py-2 font-medium">{item.name}</td>
-                        <td className="px-4 py-2 text-muted-foreground wrap-break-word whitespace-normal max-w-[360px]">
+                        <td className="px-2 py-2 text-xs font-medium wrap-break-word sm:px-4 sm:text-sm">{item.name}</td>
+                        <td className="px-2 py-2 text-xs text-muted-foreground wrap-break-word whitespace-normal max-w-[360px] sm:px-4 sm:text-sm">
                           {item.description}
                         </td>
-                        <td className="w-24 px-4 py-2">
-                          <div className="flex items-center justify-center gap-2">
+                        <td className="w-24 px-2 py-2 sm:px-4">
+                          <div className="flex items-center justify-center gap-1 sm:gap-2">
                             <button
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-xl border text-brand transition hover:border-brand/40 hover:bg-brand/10"
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-xl border text-brand transition hover:border-brand/40 hover:bg-brand/10 sm:h-8 sm:w-8"
                               aria-label="Edit"
+                              title="Edit"
                               onClick={() => {
                                 setModalMode("update");
                                 setActiveJobTypeId(item.id);
@@ -151,8 +153,9 @@ export function CompanyClient({
                               <Pencil className="h-3.5 w-3.5" />
                             </button>
                             <button
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-brand/30 text-brand transition hover:bg-brand/10"
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-xl border border-brand/30 text-brand transition hover:bg-brand/10 sm:h-8 sm:w-8"
                               aria-label="Delete"
+                              title="Delete"
                               onClick={() => {
                                 setDeleteTargetId(item.id);
                                 setConfirmOpen(true);
@@ -166,7 +169,8 @@ export function CompanyClient({
                     ))
                 )}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         }
         pagination={
@@ -187,23 +191,24 @@ export function CompanyClient({
               </div>
             </div>
           ) : (
-            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
-              <span>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-xs text-muted-foreground sm:text-sm">
                 Showing {showingStart}-{showingEnd} of {count}
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-2">
                 <button
-                  className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                  className="rounded-xl border px-2 py-1 text-xs transition hover:border-brand/40 hover:text-foreground disabled:opacity-60 sm:px-3 sm:text-sm"
                   onClick={onPrev}
                   disabled={!hasPrev}
                 >
-                  Previous
+                  <span className="hidden sm:inline">Previous</span>
+                  <span className="sm:hidden">Prev</span>
                 </button>
                 <div className="flex items-center gap-1">
                   {visiblePages.map((pageNumber) => (
                     <button
                       key={pageNumber}
-                      className="h-9 w-9 rounded-xl border text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                      className="h-8 w-8 rounded-xl border text-xs transition hover:border-brand/40 hover:text-foreground disabled:opacity-60 sm:h-9 sm:w-9 sm:text-sm"
                       onClick={() => onPageSelect?.(pageNumber)}
                       disabled={pageNumber === page}
                     >
@@ -212,7 +217,7 @@ export function CompanyClient({
                   ))}
                 </div>
                 <button
-                  className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                  className="rounded-xl border px-2 py-1 text-xs transition hover:border-brand/40 hover:text-foreground disabled:opacity-60 sm:px-3 sm:text-sm"
                   onClick={onNext}
                   disabled={!hasNext}
                 >

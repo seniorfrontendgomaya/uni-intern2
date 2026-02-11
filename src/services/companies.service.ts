@@ -95,3 +95,12 @@ export const updateCompany = ({ companyId, patchData }: CompanyUpdatePayload) =>
     },
     body: JSON.stringify(patchData),
   });
+
+export const getCompanyById = async (id: string): Promise<CompanyMutationResponse> => {
+  return api<CompanyMutationResponse>(`/update_company/${id}/`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+};

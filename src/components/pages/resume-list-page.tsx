@@ -36,6 +36,15 @@ export function ResumeListPage() {
     typeof window !== "undefined"
       ? localStorage.getItem("role") ?? ""
       : "";
+  const isUniversity = role === "UNIVERSITY";
+  const accentBar = isUniversity ? "bg-university-accent" : "bg-brand";
+  const accentBg = isUniversity ? "bg-university-accent" : "bg-brand";
+  const accentBgMuted = isUniversity ? "bg-university-accent/10" : "bg-brand/10";
+  const accentText = isUniversity ? "text-university-accent" : "text-brand";
+  const accentBorder = isUniversity ? "border-university-accent/30" : "border-brand/30";
+  const accentHover = isUniversity ? "hover:bg-university-accent/90" : "hover:bg-brand/90";
+  const accentHoverBorder = isUniversity ? "hover:border-university-accent/40" : "hover:border-brand/40";
+  const accentMutedHover = isUniversity ? "hover:bg-university-accent/10" : "hover:bg-brand/10";
 
   return (
     <div className="space-y-6">
@@ -54,9 +63,9 @@ export function ResumeListPage() {
           Array.from({ length: 3 }).map((_, index) => (
             <div
               key={index}
-              className="relative overflow-hidden rounded-2xl border bg-card p-5 shadow-sm"
+              className="relative overflow-hidden border bg-card p-5 shadow-sm"
             >
-              <div className="absolute left-0 top-0 h-full w-1 bg-brand" />
+              <div className={`absolute left-0 top-0 h-full w-1 ${accentBar}`} />
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-full shimmer" />
@@ -75,7 +84,7 @@ export function ResumeListPage() {
             </div>
           ))
         ) : items.length === 0 ? (
-          <div className="rounded-2xl border bg-card p-8 text-center text-sm text-muted-foreground">
+          <div className="border bg-card p-8 text-center text-sm text-muted-foreground">
             No record found
           </div>
         ) : (
@@ -84,12 +93,12 @@ export function ResumeListPage() {
             return (
               <div
                 key={item.id}
-                className="relative overflow-hidden rounded-2xl border bg-card p-5 shadow-sm"
+                className="relative overflow-hidden border bg-card p-5 shadow-sm"
               >
-                <div className="absolute left-0 top-0 h-full w-1 bg-brand" />
+                <div className={`absolute left-0 top-0 h-full w-1 ${accentBar}`} />
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-sm font-semibold text-brand">
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-full ${accentBgMuted} text-sm font-semibold ${accentText}`}>
                       {getInitials(item.user_name)}
                     </div>
                     <div>
@@ -97,7 +106,7 @@ export function ResumeListPage() {
                         {item.user_name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        description: {item.description}
+                        {item.description}
                       </p>
                       {role === "UNIVERSITY" ? (
                         <p className="text-xs text-muted-foreground">
@@ -133,7 +142,7 @@ export function ResumeListPage() {
                       href={resumeUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-brand/90"
+                      className={`inline-flex items-center gap-2 rounded-xl ${accentBg} px-4 py-2 text-xs font-semibold text-white shadow-sm transition ${accentHover}`}
                     >
                       <Eye className="h-4 w-4" />
                       View Resume
@@ -141,7 +150,7 @@ export function ResumeListPage() {
                     <a
                       href={resumeUrl}
                       download
-                      className="inline-flex items-center gap-2 rounded-xl border border-brand/30 px-4 py-2 text-xs font-semibold text-brand transition hover:bg-brand/10"
+                      className={`inline-flex items-center gap-2 rounded-xl border ${accentBorder} px-4 py-2 text-xs font-semibold ${accentText} transition ${accentMutedHover}`}
                     >
                       <Download className="h-4 w-4" />
                       Download
@@ -166,7 +175,7 @@ export function ResumeListPage() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+            className={`rounded-xl border px-3 py-1 text-sm transition ${accentHoverBorder} hover:text-foreground disabled:opacity-60`}
             onClick={() => setPage(Math.max(1, page - 1))}
             disabled={!hasPrev}
           >
@@ -177,7 +186,7 @@ export function ResumeListPage() {
               <button
                 key={pageNumber}
                 type="button"
-                className="h-9 w-9 rounded-xl border text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                className={`h-9 w-9 rounded-xl border text-sm transition ${accentHoverBorder} hover:text-foreground disabled:opacity-60`}
                 onClick={() => setPage(pageNumber)}
                 disabled={pageNumber === page}
               >
@@ -187,7 +196,7 @@ export function ResumeListPage() {
           </div>
           <button
             type="button"
-            className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+            className={`rounded-xl border px-3 py-1 text-sm transition ${accentHoverBorder} hover:text-foreground disabled:opacity-60`}
             onClick={() => setPage(page + 1)}
             disabled={!hasNext}
           >

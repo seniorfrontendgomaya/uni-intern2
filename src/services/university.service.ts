@@ -1,5 +1,6 @@
 import { api } from "@/lib/api";
 import type {
+  University,
   UniversityListResponse,
   UniversityMutationResponse,
 } from "@/types/university";
@@ -82,4 +83,13 @@ export const deleteUniversity = (id: string) =>
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
   });
+
+export const getUniversityById = async (id: string): Promise<UniversityMutationResponse> => {
+  return api<UniversityMutationResponse>(`/update_university/${id}/`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+};
 

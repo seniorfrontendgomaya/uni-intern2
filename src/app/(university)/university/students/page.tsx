@@ -8,6 +8,7 @@ import {
   useBulkUploadUniversityStudents,
   useUniversityStudentsPaginated,
 } from "@/hooks/useUniversityStudents";
+import { UNIVERSITY_THEME } from "@/lib/university-theme";
 
 export default function UniversityStudentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,7 +53,7 @@ export default function UniversityStudentsPage() {
           <input
             type="search"
             placeholder="Search students..."
-            className="h-10 w-full rounded-full border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 sm:w-72"
+            className={`h-10 w-full rounded-full border bg-background px-4 text-sm outline-none transition ${UNIVERSITY_THEME.inputFocus} sm:w-72`}
             value={searchTerm}
             onChange={(event) => {
               setSearchTerm(event.target.value);
@@ -61,7 +62,7 @@ export default function UniversityStudentsPage() {
           />
           <button
             type="button"
-            className="inline-flex h-10 items-center justify-center rounded-full bg-brand px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-brand/90"
+            className={`inline-flex h-10 items-center justify-center rounded-full ${UNIVERSITY_THEME.buttonPrimary} px-4 text-xs font-semibold shadow-sm transition`}
             onClick={() => setBulkModalOpen(true)}
           >
             Bulk upload
@@ -71,7 +72,7 @@ export default function UniversityStudentsPage() {
 
       <div className="overflow-hidden rounded-2xl border">
         <table className="w-full text-left text-sm">
-          <thead className="bg-brand text-xs uppercase text-white">
+          <thead className={UNIVERSITY_THEME.tableHeader}>
             <tr className="h-12">
               <th className="w-20 px-4 py-2 text-center">Sr No</th>
               <th className="px-4 py-2">Name</th>
@@ -140,7 +141,7 @@ export default function UniversityStudentsPage() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+            className="rounded-xl border px-3 py-1 text-sm transition hover:border-university-accent/40 hover:text-foreground disabled:opacity-60"
             onClick={() => setPage(Math.max(1, page - 1))}
             disabled={!hasPrev}
           >
@@ -151,7 +152,7 @@ export default function UniversityStudentsPage() {
               <button
                 key={pageNumber}
                 type="button"
-                className="h-9 w-9 rounded-xl border text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                className="h-9 w-9 rounded-xl border text-sm transition hover:border-university-accent/40 hover:text-foreground disabled:opacity-60"
                 onClick={() => setPage(pageNumber)}
                 disabled={pageNumber === page}
               >
@@ -161,7 +162,7 @@ export default function UniversityStudentsPage() {
           </div>
           <button
             type="button"
-            className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+            className="rounded-xl border px-3 py-1 text-sm transition hover:border-university-accent/40 hover:text-foreground disabled:opacity-60"
             onClick={() => setPage(page + 1)}
             disabled={!hasNext}
           >
@@ -175,18 +176,19 @@ export default function UniversityStudentsPage() {
         title="Bulk Student Upload"
         onClose={() => setBulkModalOpen(false)}
         panelClassName="w-[90vw] !max-w-2xl"
+        accentVariant="university"
         footer={
           <div className="flex justify-end gap-2">
             <button
               type="button"
-              className="h-9 rounded-full border px-4 text-xs font-medium text-muted-foreground transition hover:border-brand/40 hover:text-foreground"
+              className="h-9 rounded-full border px-4 text-xs font-medium text-muted-foreground transition hover:border-university-accent/40 hover:text-foreground"
               onClick={() => setBulkModalOpen(false)}
             >
               Cancel
             </button>
             <button
               type="button"
-              className="inline-flex h-9 items-center justify-center rounded-full bg-brand px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-brand/90 disabled:opacity-60"
+              className={`inline-flex h-9 items-center justify-center rounded-full ${UNIVERSITY_THEME.buttonPrimary} px-4 text-xs font-semibold shadow-sm transition disabled:opacity-60`}
               disabled={!file || bulkUploading}
               onClick={handleBulkUpload}
             >
@@ -197,7 +199,7 @@ export default function UniversityStudentsPage() {
       >
         <div className="space-y-6">
           <div className="flex flex-col items-center gap-4 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand/10 text-brand">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-university-accent-muted text-university-accent">
               <UploadCloud className="h-8 w-8" />
             </div>
             <div>
@@ -219,7 +221,7 @@ export default function UniversityStudentsPage() {
               <span className="text-muted-foreground">
                 {file ? file.name : "Choose File"}
               </span>
-              <span className="rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">
+              <span className="rounded-full bg-university-accent px-3 py-1 text-xs font-semibold text-white">
                 Browse
               </span>
               <input

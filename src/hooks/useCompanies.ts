@@ -7,6 +7,7 @@ import {
   CompanyUpdatePayload,
   createCompany,
   getCompanies,
+  getCompanyById,
   updateCompany,
 } from "@/services/companies.service";
 import type {
@@ -39,4 +40,21 @@ export function useUpdateCompany() {
   const update = (payload: CompanyUpdatePayload) => run(() => updateCompany(payload));
 
   return { data: update, loading };
+}
+
+export function useGetCompanyById() {
+  const { run, loading } = useAsyncAction<CompanyListItem | null>();
+
+  const getById = useCallback(
+    (id: string) =>
+      run(async () => {
+        // Fetch single company by ID using the update endpoint with GET method
+        const response = await getCompanyById(id);
+        // The API response might have the company in response.data.data or response.data
+        return response.data || null;
+      }),
+    [run]
+  );
+
+  return { data: getById, loading };
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { Eye } from "lucide-react";
 import { CrudTable } from "@/components/ui/crud-table";
 import {
   useDeleteUniversity,
@@ -78,6 +80,8 @@ const fields = [
     label: "Established Year",
     type: "number",
     placeholder: "e.g. 1999",
+    min: 1800,
+    max: 2080,
   },
   {
     name: "website",
@@ -144,7 +148,17 @@ export function UniversityPage() {
   const rows = items.map((item, index) => ({
     id: item.id,
     sr: String((page - 1) * perPage + index + 1),
-    logo: item.logo ? "Yes" : "No",
+    logo: item.logo ? (
+      <div className="flex items-center">
+        <img
+          src={item.logo}
+          alt={item.name ?? "University logo"}
+          className="h-8 w-8 rounded-full object-cover border"
+        />
+      </div>
+    ) : (
+      "-"
+    ),
     name: item.name,
     location: item.university_location ?? "-",
     established_year: item.established_year ?? "-",
@@ -167,6 +181,15 @@ export function UniversityPage() {
       loading={loading}
       modalPanelClassName="w-[90vw] !max-w-4xl"
       modalBodyClassName="max-h-[70vh] overflow-y-auto pr-2"
+      extraActions={(row) => (
+        <Link
+          href={`/superadmin/universities/${row.id}`}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-brand/40 text-brand transition hover:bg-brand/10"
+          aria-label="View"
+        >
+          <Eye className="h-3.5 w-3.5" />
+        </Link>
+      )}
       searchProps={{
         value: searchTerm,
         onChange: (event) => {
@@ -204,11 +227,24 @@ export function UniversityPage() {
           return { ok: result.ok, message: result.data?.message };
         }
 
-        const jsonPatch: Record<string, string | boolean> = {};
+        const jsonPatch: Record<string, string | boolean | number> = {};
         entries.forEach(([key, value]) => {
           if (value === null || value === undefined || value instanceof File) {
             return;
           }
+
+          if (key === "established_year") {
+            const raw = String(value).trim();
+            if (!raw) {
+              return;
+            }
+            const year = Number.parseInt(raw, 10);
+            if (!Number.isFinite(year)) return;
+            const clamped = Math.min(2080, Math.max(1800, year));
+            jsonPatch.established_year = clamped;
+            return;
+          }
+
           if (typeof value === "boolean") {
             jsonPatch[key] = value;
           } else {

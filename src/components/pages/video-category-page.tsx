@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Eye, FolderTree } from "lucide-react";
 import { CrudTable, type Field } from "@/components/ui/crud-table";
 import {
   useDeleteVideoCourse,
@@ -174,20 +175,24 @@ export function VideoCategoryPage() {
         <>
           <button
             type="button"
-            className="inline-flex h-8 items-center justify-center rounded-xl border border-brand/40 px-2 text-xs font-medium text-brand transition hover:bg-brand/10"
+            className="group relative inline-flex h-7 w-7 items-center justify-center rounded-xl border border-brand/40 text-brand transition hover:bg-brand/10 sm:h-8 sm:w-8"
             onClick={() => {
               // Placeholder: wire up detailed view if needed
               // eslint-disable-next-line no-console
               console.log("View video category", row.id);
             }}
+            title="View"
+            aria-label="View"
           >
-            View
+            <Eye className="h-3.5 w-3.5" />
           </button>
           <Link
             href={`/superadmin/video-subcategory?categoryId=${row.id}`}
-            className="inline-flex h-8 items-center justify-center rounded-xl border border-brand/40 px-2 text-xs font-medium text-brand transition hover:bg-brand/10"
+            className="group relative inline-flex h-7 w-7 items-center justify-center rounded-xl border border-brand/40 text-brand transition hover:bg-brand/10 sm:h-8 sm:w-8"
+            title="Subcategory"
+            aria-label="Subcategory"
           >
-            Subcategory
+            <FolderTree className="h-3.5 w-3.5" />
           </Link>
         </>
       )}

@@ -1,6 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Building2,
+  Briefcase,
+  DollarSign,
+  Users,
+  Calendar,
+  Award,
+  FileText,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { TagInput } from "@/components/ui/tag-input";
 import { useCompanyProfile } from "@/hooks/useCompany";
@@ -51,7 +65,7 @@ const emptyCompanyData = (): CompanyData => ({
 });
 
 const listToText = (list: CompanyReference[]) =>
-  list.length > 0 ? list.map((item) => item.name).join(", ") : "-";
+  list.length > 0 ? list.map((item) => item.name).join(", ") : "—";
 
 const listToArray = (list: CompanyReference[]) =>
   list.map((item) => item.name).filter(Boolean);
@@ -62,18 +76,25 @@ const textToList = (items: string[]) =>
     .filter(Boolean)
     .map((name, index) => ({ id: index + 1, name, description: "" }));
 
-const InfoRow = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) => (
-  <div className="grid gap-1 text-sm sm:grid-cols-[160px_1fr] sm:gap-3">
-    <span className="text-muted-foreground">{label}:</span>
-    <span className="font-medium text-foreground">{value}</span>
-  </div>
-);
+const getCompanyInitial = (name: string): string => {
+  const trimmed = name.trim();
+  if (!trimmed) return "C";
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2)
+    return (parts[0][0] + parts[1][0]).toUpperCase().slice(0, 2);
+  return trimmed[0].toUpperCase();
+};
+
+const formatCurrency = (amount: number | string | null | undefined): string => {
+  if (amount === null || amount === undefined || amount === "") return "—";
+  const num = typeof amount === "string" ? parseFloat(amount) : amount;
+  if (isNaN(num) || num === 0) return "—";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(num);
+};
 
 export default function CompanyPage() {
   const [companyData, setCompanyData] = useState<CompanyData | null>(null);
@@ -154,204 +175,463 @@ export default function CompanyPage() {
   if (loading && !companyData) {
     return (
       <div className="max-w-5xl">
-        <div className="rounded-3xl border bg-card p-6 shadow-sm sm:p-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-3">
-              <div className="h-6 w-48 rounded-md shimmer" />
-              <div className="flex gap-2">
-                <div className="h-6 w-24 rounded-full shimmer" />
-                <div className="h-6 w-36 rounded-full shimmer" />
+        <div className="relative border bg-card p-6 shadow-sm sm:p-8">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-muted/40 via-transparent to-muted/20" />
+          <div className="relative z-10 space-y-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-start gap-4">
+                <div className="h-16 w-16 shrink-0 animate-pulse rounded-full bg-muted" />
+                <div className="space-y-2">
+                  <div className="h-6 w-48 animate-pulse rounded-md bg-muted" />
+                  <div className="flex gap-2">
+                    <div className="h-5 w-20 animate-pulse rounded-full bg-muted" />
+                    <div className="h-5 w-32 animate-pulse rounded-full bg-muted" />
+                  </div>
+                </div>
               </div>
+              <div className="h-10 w-24 animate-pulse rounded-xl bg-muted" />
             </div>
-            <div className="h-10 w-24 rounded-xl shimmer" />
-          </div>
-          <div className="my-6 border-t" />
-          <div className="grid gap-6 lg:grid-cols-2">
-            {Array.from({ length: 2 }).map((_, col) => (
-              <div key={col} className="space-y-4">
-                {Array.from({ length: 7 }).map((__, row) => (
-                  <div
-                    key={row}
-                    className="grid gap-3 sm:grid-cols-[160px_1fr] items-center"
-                  >
-                    <div className="h-6 w-24 rounded-md shimmer" />
-                    <div className="h-6 w-32 rounded-md shimmer" />
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-          <div className="my-6 border-t" />
-          <div className="grid gap-6 lg:grid-cols-2">
-            {Array.from({ length: 2 }).map((_, col) => (
-              <div key={col} className="space-y-4">
-                {Array.from({ length: 3 }).map((__, row) => (
-                  <div key={row} className="grid gap-3 sm:grid-cols-[160px_1fr]">
-                    <div className="h-6 w-24 rounded-md shimmer" />
-                    <div className="h-6 w-40 rounded-md shimmer" />
-                  </div>
-                ))}
-              </div>
-            ))}
+            <div className="space-y-4">
+              <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+              <div className="h-20 w-full animate-pulse rounded-md bg-muted" />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-16 animate-pulse rounded-lg bg-muted" />
+              ))}
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
+  const companyName = companyData?.name || "Company";
+  const companyInitial = getCompanyInitial(companyName);
+
   return (
     <div className="max-w-5xl">
-      <div className="rounded-3xl border bg-card p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-foreground">
-              {companyData?.name || "Company"}
-            </h2>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                {companyData?.active ? "Active" : "Inactive"}
-              </span>
-              <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
-                {companyData?.placement_gurantee_course
-                  ? "Placement Guarantee"
-                  : "No Placement Guarantee"}
-              </span>
+      <div className="relative border bg-card p-6 shadow-sm sm:p-8">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-muted/40 via-transparent to-muted/20" />
+        <div className="relative z-10 space-y-6">
+          {/* Header Section */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xl font-semibold text-emerald-700">
+                {companyData?.image ? (
+                  <img
+                    src={companyData.image}
+                    alt={companyName}
+                    className="h-full w-full rounded-full object-cover"
+                  />
+                ) : (
+                  companyInitial
+                )}
+              </div>
+              <div>
+                <h2 className="text-2xl font-semibold text-foreground">
+                  {companyName}
+                </h2>
+                {companyData?.description && (
+                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                    {companyData.description}
+                  </p>
+                )}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
+                      companyData?.active
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {companyData?.active ? (
+                      <CheckCircle2 className="h-3 w-3" />
+                    ) : (
+                      <XCircle className="h-3 w-3" />
+                    )}
+                    {companyData?.active ? "Active" : "Inactive"}
+                  </span>
+                  {companyData?.placement_gurantee_course && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                      <Award className="h-3 w-3" />
+                      Placement Guarantee
+                    </span>
+                  )}
+                  {companyData?.is_fast_response && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-700">
+                      <Briefcase className="h-3 w-3" />
+                      Fast Response
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand/90"
+              onClick={() => {
+                if (!companyData) return;
+                setFormValues({
+                  name: companyData.name,
+                  email: companyData.email,
+                  mobile: companyData.mobile,
+                  description: companyData.description ?? "",
+                  location: listToArray(companyData.location),
+                  category: listToArray(companyData.category),
+                  job_type: listToArray(companyData.job_type),
+                  designation: listToArray(companyData.designation),
+                  skills: listToArray(companyData.skills),
+                  course: listToArray(companyData.course),
+                  perk: listToArray(companyData.perk),
+                  start_amount: String(companyData.start_amount),
+                  end_amount: String(companyData.end_amount),
+                  start_day: companyData.start_day,
+                  start_anual_salary: String(companyData.start_anual_salary),
+                  end_anual_salary: String(companyData.end_anual_salary),
+                  number_of_opening: String(companyData.number_of_opening),
+                  about: companyData.about,
+                  apply: companyData.apply,
+                  key_responsibility: companyData.key_responsibility,
+                  apply_start_date: companyData.apply_start_date,
+                  apply_end_date: companyData.apply_end_date,
+                  active: companyData.active,
+                  placement_gurantee_course:
+                    companyData.placement_gurantee_course,
+                  is_fast_response: companyData.is_fast_response,
+                });
+                setModalOpen(true);
+              }}
+              disabled={!hasProfile}
+            >
+              Update
+            </button>
+          </div>
+
+          {/* Contact Information */}
+          <div className="space-y-4">
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+              <Building2 className="h-5 w-5 text-brand" />
+              Contact Information
+            </h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {companyData?.email && (
+                <div className="flex items-center gap-3 rounded-lg border bg-background p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100">
+                    <Mail className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Email
+                    </p>
+                    <p className="mt-0.5 truncate text-sm font-medium text-foreground">
+                      {companyData.email}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {companyData?.mobile && (
+                <div className="flex items-center gap-3 rounded-lg border bg-background p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-100">
+                    <Phone className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Mobile
+                    </p>
+                    <p className="mt-0.5 truncate text-sm font-medium text-foreground">
+                      {companyData.mobile}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {companyData?.location?.length ? (
+                <div className="flex items-center gap-3 rounded-lg border bg-background p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-100">
+                    <MapPin className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Location
+                    </p>
+                    <p className="mt-0.5 text-sm font-medium text-foreground">
+                      {listToText(companyData.location)}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+              {companyData?.number_of_opening ? (
+                <div className="flex items-center gap-3 rounded-lg border bg-background p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-100">
+                    <Users className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Openings
+                    </p>
+                    <p className="mt-0.5 text-sm font-medium text-foreground">
+                      {companyData.number_of_opening} positions
+                    </p>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand/90"
-            onClick={() => {
-              if (!companyData) return;
-              setFormValues({
-                name: companyData.name,
-                email: companyData.email,
-                mobile: companyData.mobile,
-                description: companyData.description ?? "",
-                location: listToArray(companyData.location),
-                category: listToArray(companyData.category),
-                job_type: listToArray(companyData.job_type),
-                designation: listToArray(companyData.designation),
-                skills: listToArray(companyData.skills),
-                course: listToArray(companyData.course),
-                perk: listToArray(companyData.perk),
-                start_amount: String(companyData.start_amount),
-                end_amount: String(companyData.end_amount),
-                start_day: companyData.start_day,
-                start_anual_salary: String(companyData.start_anual_salary),
-                end_anual_salary: String(companyData.end_anual_salary),
-                number_of_opening: String(companyData.number_of_opening),
-                about: companyData.about,
-                apply: companyData.apply,
-                key_responsibility: companyData.key_responsibility,
-                apply_start_date: companyData.apply_start_date,
-                apply_end_date: companyData.apply_end_date,
-                active: companyData.active,
-                placement_gurantee_course:
-                  companyData.placement_gurantee_course,
-                is_fast_response: companyData.is_fast_response,
-              });
-              setModalOpen(true);
-            }}
-            disabled={!hasProfile}
-          >
-            Update
-          </button>
-        </div>
 
-        <div className="my-6 border-t" />
+          {/* Financial Information */}
+          {(companyData?.start_amount ||
+            companyData?.end_amount ||
+            companyData?.start_anual_salary ||
+            companyData?.end_anual_salary) && (
+            <div className="space-y-4">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                <DollarSign className="h-5 w-5 text-brand" />
+                Financial Details
+              </h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {companyData.start_amount && (
+                  <div className="rounded-lg border bg-background p-4">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Start Amount
+                    </p>
+                    <p className="mt-1 text-base font-semibold text-foreground">
+                      {formatCurrency(companyData.start_amount)}
+                    </p>
+                  </div>
+                )}
+                {companyData.end_amount && (
+                  <div className="rounded-lg border bg-background p-4">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      End Amount
+                    </p>
+                    <p className="mt-1 text-base font-semibold text-foreground">
+                      {formatCurrency(companyData.end_amount)}
+                    </p>
+                  </div>
+                )}
+                {companyData.start_anual_salary && (
+                  <div className="rounded-lg border bg-background p-4">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Start Annual Salary
+                    </p>
+                    <p className="mt-1 text-base font-semibold text-foreground">
+                      {formatCurrency(companyData.start_anual_salary)}
+                    </p>
+                  </div>
+                )}
+                {companyData.end_anual_salary && (
+                  <div className="rounded-lg border bg-background p-4">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      End Annual Salary
+                    </p>
+                    <p className="mt-1 text-base font-semibold text-foreground">
+                      {formatCurrency(companyData.end_anual_salary)}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">
-            Contact & Basic Info
-          </h3>
-          <div className="grid gap-6 lg:grid-cols-2">
+          {/* Skills, Courses, Perks */}
+          {(companyData?.skills?.length ||
+            companyData?.course?.length ||
+            companyData?.perk?.length ||
+            companyData?.designation?.length ||
+            companyData?.job_type?.length ||
+            companyData?.category?.length) && (
             <div className="space-y-4">
-              <InfoRow label="Email" value={companyData?.email || "-"} />
-              <InfoRow label="Mobile" value={companyData?.mobile || "-"} />
-              <InfoRow
-                label="Number of Openings"
-                value={companyData ? String(companyData.number_of_opening) : "-"}
-              />
-              <InfoRow
-                label="Start Amount"
-                value={companyData ? String(companyData.start_amount) : "-"}
-              />
-              <InfoRow
-                label="End Amount"
-                value={companyData ? String(companyData.end_amount) : "-"}
-              />
-              <InfoRow
-                label="Start Annual Salary"
-                value={companyData ? String(companyData.start_anual_salary) : "-"}
-              />
-              <InfoRow
-                label="End Annual Salary"
-                value={companyData ? String(companyData.end_anual_salary) : "-"}
-              />
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                <Briefcase className="h-5 w-5 text-brand" />
+                Requirements & Benefits
+              </h3>
+              <div className="space-y-4">
+                {companyData.skills?.length ? (
+                  <div>
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Skills
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {companyData.skills.map((skill) => (
+                        <span
+                          key={skill.id}
+                          className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700"
+                        >
+                          {skill.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {companyData.designation?.length ? (
+                  <div>
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Designations
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {companyData.designation.map((des) => (
+                        <span
+                          key={des.id}
+                          className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700"
+                        >
+                          {des.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {companyData.job_type?.length ? (
+                  <div>
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Job Types
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {companyData.job_type.map((jt) => (
+                        <span
+                          key={jt.id}
+                          className="rounded-full bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700"
+                        >
+                          {jt.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {companyData.course?.length ? (
+                  <div>
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Courses
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {companyData.course.map((crs) => (
+                        <span
+                          key={crs.id}
+                          className="rounded-full bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700"
+                        >
+                          {crs.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {companyData.perk?.length ? (
+                  <div>
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Perks
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {companyData.perk.map((p) => (
+                        <span
+                          key={p.id}
+                          className="rounded-full bg-pink-50 px-3 py-1 text-xs font-medium text-pink-700"
+                        >
+                          {p.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {companyData.category?.length ? (
+                  <div>
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Categories
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {companyData.category.map((cat) => (
+                        <span
+                          key={cat.id}
+                          className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700"
+                        >
+                          {cat.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
             </div>
-            <div className="space-y-4">
-              <InfoRow
-                label="Location"
-                value={companyData ? listToText(companyData.location) : "-"}
-              />
-              <InfoRow
-                label="Category"
-                value={companyData ? listToText(companyData.category) : "-"}
-              />
-              <InfoRow
-                label="Job Type"
-                value={companyData ? listToText(companyData.job_type) : "-"}
-              />
-              <InfoRow
-                label="Designation"
-                value={companyData ? listToText(companyData.designation) : "-"}
-              />
-              <InfoRow
-                label="Skills"
-                value={companyData ? listToText(companyData.skills) : "-"}
-              />
-              <InfoRow
-                label="Courses"
-                value={companyData ? listToText(companyData.course) : "-"}
-              />
-              <InfoRow
-                label="Perks"
-                value={companyData ? listToText(companyData.perk) : "-"}
-              />
-            </div>
-          </div>
-        </div>
+          )}
 
-        <div className="my-6 border-t" />
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">
-            About & Application
-          </h3>
-          <div className="grid gap-6 lg:grid-cols-2">
+          {/* About & Application Details */}
+          {(companyData?.about ||
+            companyData?.apply ||
+            companyData?.key_responsibility ||
+            companyData?.apply_start_date ||
+            companyData?.apply_end_date) && (
             <div className="space-y-4">
-              <InfoRow label="About" value={companyData?.about || "-"} />
-              <InfoRow
-                label="How to Apply"
-                value={companyData?.apply || "-"}
-              />
-              <InfoRow
-                label="Key Responsibility"
-                value={companyData?.key_responsibility || "-"}
-              />
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                <FileText className="h-5 w-5 text-brand" />
+                About & Application
+              </h3>
+              <div className="space-y-4">
+                {companyData.about && (
+                  <div className="rounded-lg border bg-background p-4">
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      About
+                    </p>
+                    <p className="text-sm leading-relaxed text-foreground">
+                      {companyData.about}
+                    </p>
+                  </div>
+                )}
+                {companyData.key_responsibility && (
+                  <div className="rounded-lg border bg-background p-4">
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Key Responsibilities
+                    </p>
+                    <p className="text-sm leading-relaxed text-foreground">
+                      {companyData.key_responsibility}
+                    </p>
+                  </div>
+                )}
+                {companyData.apply && (
+                  <div className="rounded-lg border bg-background p-4">
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      How to Apply
+                    </p>
+                    <p className="text-sm leading-relaxed text-foreground">
+                      {companyData.apply}
+                    </p>
+                  </div>
+                )}
+                {(companyData.apply_start_date ||
+                  companyData.apply_end_date) && (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {companyData.apply_start_date && (
+                      <div className="flex items-center gap-3 rounded-lg border bg-background p-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100">
+                          <Calendar className="h-5 w-5 text-indigo-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Apply Start Date
+                          </p>
+                          <p className="mt-0.5 text-sm font-medium text-foreground">
+                            {companyData.apply_start_date}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {companyData.apply_end_date && (
+                      <div className="flex items-center gap-3 rounded-lg border bg-background p-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100">
+                          <Calendar className="h-5 w-5 text-indigo-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Apply End Date
+                          </p>
+                          <p className="mt-0.5 text-sm font-medium text-foreground">
+                            {companyData.apply_end_date}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="space-y-4">
-              <InfoRow
-                label="Apply Start Date"
-                value={companyData?.apply_start_date || "-"}
-              />
-              <InfoRow
-                label="Apply End Date"
-                value={companyData?.apply_end_date || "-"}
-              />
-            </div>
-          </div>
+          )}
         </div>
       </div>
 

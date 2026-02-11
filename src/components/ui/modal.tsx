@@ -10,6 +10,8 @@ type ModalProps = {
   footer?: React.ReactNode;
   panelClassName?: string;
   bodyClassName?: string;
+  /** Use "university" for violet accent on close button (e.g. university students page). */
+  accentVariant?: "brand" | "university";
 };
 
 const cx = (...classes: Array<string | false | null | undefined>) =>
@@ -23,7 +25,12 @@ export function Modal({
   footer,
   panelClassName,
   bodyClassName,
+  accentVariant = "brand",
 }: ModalProps) {
+  const closeButtonClass =
+    accentVariant === "university"
+      ? "rounded-xl border px-3 py-1 text-sm text-muted-foreground transition hover:border-university-accent/40 hover:text-foreground"
+      : "rounded-xl border px-3 py-1 text-sm text-muted-foreground transition hover:border-brand/40 hover:text-foreground";
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -44,7 +51,7 @@ export function Modal({
       <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
       <div
         className={cx(
-          "relative w-full max-h-[90vh] max-w-lg overflow-hidden rounded-2xl border bg-card p-6 shadow-xl",
+          "relative flex w-full max-h-[90vh] max-w-lg flex-col overflow-hidden rounded-2xl border bg-card p-6 shadow-xl",
           panelClassName
         )}
       >
@@ -54,14 +61,16 @@ export function Modal({
           </div>
           <button
             type="button"
-            className="rounded-xl border px-3 py-1 text-sm text-muted-foreground transition hover:border-brand/40 hover:text-foreground"
+            className={closeButtonClass}
             onClick={onClose}
           >
             Close
           </button>
         </div>
-        <div className={cx("mt-5", bodyClassName)}>{children}</div>
-        {footer ? <div className="mt-6">{footer}</div> : null}
+        <div className={cx("mt-5 min-h-0 flex-1 overflow-y-auto", bodyClassName)}>
+          {children}
+        </div>
+        {footer ? <div className="mt-6 shrink-0">{footer}</div> : null}
       </div>
     </div>
   );

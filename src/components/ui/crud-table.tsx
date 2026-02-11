@@ -19,6 +19,8 @@ export type Field = {
   label: string;
   type?: "text" | "number" | "textarea" | "checkbox" | "file" | "password";
   placeholder?: string;
+  min?: number;
+  max?: number;
 };
 
 type FormValue = string | boolean | File | null;
@@ -162,21 +164,22 @@ export function CrudTable({
           setModalOpen(true);
         }}
         table={
-          <div className="overflow-hidden rounded-2xl border">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-brand text-xs uppercase text-white">
-                <tr className="h-12">
-                  {columns.map((column) => (
-                    <th
-                      key={column.key}
-                      className={column.headerClassName ?? "px-4 py-2"}
-                    >
-                      {column.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="text-sm">
+          <div className="overflow-x-auto rounded-2xl border">
+            <div className="min-w-full">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead className="bg-brand text-xs uppercase text-white">
+                  <tr className="h-12">
+                    {columns.map((column) => (
+                      <th
+                        key={column.key}
+                        className={column.headerClassName ?? "px-2 py-2 text-xs sm:px-4 sm:text-xs"}
+                      >
+                        {column.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
                 {loading ? (
                   Array.from({ length: skeletonRows }).map((_, rowIndex) => (
                       <tr key={rowIndex} className="border-t">
@@ -189,9 +192,9 @@ export function CrudTable({
                                   column.cellClassName ?? "w-24 px-4 py-2"
                                 }
                               >
-                                <div className="flex items-center justify-center gap-2">
-                                  <div className="h-8 w-8 rounded-xl shimmer" />
-                                  <div className="h-8 w-8 rounded-xl shimmer" />
+                                <div className="flex items-center justify-center gap-1 sm:gap-2">
+                                  <div className="h-7 w-7 rounded-xl shimmer sm:h-8 sm:w-8" />
+                                  <div className="h-7 w-7 rounded-xl shimmer sm:h-8 sm:w-8" />
                                 </div>
                               </td>
                             );
@@ -244,11 +247,12 @@ export function CrudTable({
                                   column.cellClassName ?? "w-24 px-4 py-2"
                                 }
                               >
-                                <div className="flex items-center justify-center gap-2">
+                                <div className="flex items-center justify-center gap-1 sm:gap-2">
                                   {extraActions ? extraActions(row) : null}
                                   <button
-                                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl border text-brand transition hover:border-brand/40 hover:bg-brand/10"
+                                    className="inline-flex h-7 w-7 items-center justify-center rounded-xl border text-brand transition hover:border-brand/40 hover:bg-brand/10 sm:h-8 sm:w-8"
                                     aria-label="Edit"
+                                    title="Edit"
                                     onClick={() => {
                                       setModalMode("update");
                                 const rowId = String(row.id ?? "");
@@ -283,8 +287,9 @@ export function CrudTable({
                                     <Pencil className="h-3.5 w-3.5" />
                                   </button>
                                   <button
-                                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-brand/30 text-brand transition hover:bg-brand/10"
+                                    className="inline-flex h-7 w-7 items-center justify-center rounded-xl border border-brand/30 text-brand transition hover:bg-brand/10 sm:h-8 sm:w-8"
                                     aria-label="Delete"
+                                    title="Delete"
                               onClick={() => {
                                 setActiveRowId(String(row.id ?? ""));
                                 setConfirmOpen(true);
@@ -302,7 +307,7 @@ export function CrudTable({
                               key={column.key}
                               className={
                                 column.cellClassName ??
-                                "px-4 py-2 wrap-break-word whitespace-normal"
+                                "px-2 py-2 break-words whitespace-normal sm:px-4"
                               }
                             >
                               {row[column.key]}
@@ -313,7 +318,8 @@ export function CrudTable({
                     ))
                 )}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         }
         pagination={
@@ -334,8 +340,8 @@ export function CrudTable({
               </div>
             </div>
           ) : (
-            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
-              <span>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-xs text-muted-foreground sm:text-sm">
                 {pagination
                   ? `Showing ${
                       pagination.count === 0
@@ -347,19 +353,20 @@ export function CrudTable({
                     )} of ${pagination.count}`
                   : `Showing 1-${showCount} of ${totalRows}`}
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-2">
                 <button
-                  className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                  className="rounded-xl border px-2 py-1 text-xs transition hover:border-brand/40 hover:text-foreground disabled:opacity-60 sm:px-3 sm:text-sm"
                   onClick={pagination?.onPrev}
                   disabled={pagination ? !pagination.hasPrev : false}
                 >
-                  Previous
+                  <span className="hidden sm:inline">Previous</span>
+                  <span className="sm:hidden">Prev</span>
                 </button>
                 <div className="flex items-center gap-1">
                   {visiblePages.map((pageNumber) => (
                     <button
                       key={pageNumber}
-                      className="h-9 w-9 rounded-xl border text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                      className="h-8 w-8 rounded-xl border text-xs transition hover:border-brand/40 hover:text-foreground disabled:opacity-60 sm:h-9 sm:w-9 sm:text-sm"
                       onClick={() => pagination?.onPageSelect?.(pageNumber)}
                       disabled={
                         pagination ? pageNumber === pagination.page : false
@@ -370,7 +377,7 @@ export function CrudTable({
                   ))}
                 </div>
                 <button
-                  className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                  className="rounded-xl border px-2 py-1 text-xs transition hover:border-brand/40 hover:text-foreground disabled:opacity-60 sm:px-3 sm:text-sm"
                   onClick={pagination?.onNext}
                   disabled={pagination ? !pagination.hasNext : false}
                 >
@@ -502,32 +509,9 @@ export function CrudTable({
           ) : null}
           {fields.map((field) => (
             <div key={field.name}>
-              <label className="text-sm font-medium text-foreground">
-                {field.label}
-              </label>
-              {field.type === "textarea" ? (
-                <textarea
-                  placeholder={field.placeholder}
-                  className="mt-2 min-h-[96px] w-full resize-none rounded-lg border bg-background px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
-                  value={String(formValues[field.name] ?? "")}
-                  onChange={(event) =>
-                    setFormValues((prev) => {
-                      if (fieldErrors[field.name]) {
-                        setFieldErrors((current) => {
-                          const next = { ...current };
-                          delete next[field.name];
-                          return next;
-                        });
-                      }
-                      return {
-                        ...prev,
-                        [field.name]: event.target.value,
-                      };
-                    })
-                  }
-                />
-              ) : field.type === "checkbox" ? (
-                <div className="mt-2 flex items-center gap-2">
+              {field.type === "checkbox" ? (
+                <label className="mt-2 flex items-center gap-2 text-sm font-medium text-foreground">
+                  {field.label}
                   <input
                     type="checkbox"
                     className="h-4 w-4 rounded border text-brand focus:ring-brand/30"
@@ -548,53 +532,88 @@ export function CrudTable({
                       })
                     }
                   />
-                  <span className="text-sm text-muted-foreground">
-                    {field.placeholder || "Enabled"}
-                  </span>
-                </div>
+                </label>
+              ) : field.type === "textarea" ? (
+                <>
+                  <label className="text-sm font-medium text-foreground">
+                    {field.label}
+                  </label>
+                  <textarea
+                    placeholder={field.placeholder}
+                    className="mt-2 min-h-[96px] w-full resize-none rounded-lg border bg-background px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+                    value={String(formValues[field.name] ?? "")}
+                    onChange={(event) =>
+                      setFormValues((prev) => {
+                        if (fieldErrors[field.name]) {
+                          setFieldErrors((current) => {
+                            const next = { ...current };
+                            delete next[field.name];
+                            return next;
+                          });
+                        }
+                        return {
+                          ...prev,
+                          [field.name]: event.target.value,
+                        };
+                      })
+                    }
+                  />
+                </>
               ) : field.type === "file" ? (
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="mt-2 block w-full text-sm text-foreground file:mr-4 file:rounded-xl file:border-0 file:bg-brand/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand hover:file:bg-brand/20"
-                  onChange={(event) =>
-                    setFormValues((prev) => {
-                      if (fieldErrors[field.name]) {
-                        setFieldErrors((current) => {
-                          const next = { ...current };
-                          delete next[field.name];
-                          return next;
-                        });
-                      }
-                      return {
-                        ...prev,
-                        [field.name]: event.target.files?.[0] ?? null,
-                      };
-                    })
-                  }
-                />
+                <>
+                  <label className="text-sm font-medium text-foreground">
+                    {field.label}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="mt-2 block w-full text-sm text-foreground file:mr-4 file:rounded-xl file:border-0 file:bg-brand/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand hover:file:bg-brand/20"
+                    onChange={(event) =>
+                      setFormValues((prev) => {
+                        if (fieldErrors[field.name]) {
+                          setFieldErrors((current) => {
+                            const next = { ...current };
+                            delete next[field.name];
+                            return next;
+                          });
+                        }
+                        return {
+                          ...prev,
+                          [field.name]: event.target.files?.[0] ?? null,
+                        };
+                      })
+                    }
+                  />
+                </>
               ) : (
-                <input
-                  type={field.type ?? "text"}
-                  placeholder={field.placeholder}
-                  className="mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
-                  value={String(formValues[field.name] ?? "")}
-                  onChange={(event) =>
-                    setFormValues((prev) => {
-                      if (fieldErrors[field.name]) {
-                        setFieldErrors((current) => {
-                          const next = { ...current };
-                          delete next[field.name];
-                          return next;
-                        });
-                      }
-                      return {
-                        ...prev,
-                        [field.name]: event.target.value,
-                      };
-                    })
-                  }
-                />
+                <>
+                  <label className="text-sm font-medium text-foreground">
+                    {field.label}
+                  </label>
+                  <input
+                    type={field.type ?? "text"}
+                    placeholder={field.placeholder}
+                    min={field.type === "number" ? field.min ?? 0 : undefined}
+                    max={field.type === "number" ? field.max : undefined}
+                    className="mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+                    value={String(formValues[field.name] ?? "")}
+                    onChange={(event) =>
+                      setFormValues((prev) => {
+                        if (fieldErrors[field.name]) {
+                          setFieldErrors((current) => {
+                            const next = { ...current };
+                            delete next[field.name];
+                            return next;
+                          });
+                        }
+                        return {
+                          ...prev,
+                          [field.name]: event.target.value,
+                        };
+                      })
+                    }
+                  />
+                </>
               )}
               {fieldErrors[field.name]?.length ? (
                 <div className="mt-1 space-y-0.5">

@@ -47,54 +47,45 @@ type VideoCourseListNormalized = VideoCourseListResponse & {
   message: string | null;
 };
 
-function normalizeListPayload(raw: any): VideoCourse[] {
-  if (Array.isArray(raw)) {
-    return raw as VideoCourse[];
-  }
-  if (raw && Array.isArray(raw.data)) {
-    return raw.data as VideoCourse[];
-  }
-  return [];
-}
-
 export const getVideoCourses = async (
   page = 1,
   perPage = 10
 ): Promise<VideoCourseListNormalized> => {
-  const raw = await api<any>("/course_category_list/", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
+  // Use backend pagination instead of slicing on the client
+  const raw = await api<any>(
+    `/course_category_list/?per_page=${perPage}&page=${page}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
 
-  const all = normalizeListPayload(raw);
-  const count = all.length;
-  const start = (page - 1) * perPage;
-  const end = start + perPage;
-  const data = all.slice(start, end);
-  const hasNextPage = count > page * perPage;
+  const data: VideoCourse[] = Array.isArray(raw?.data) ? raw.data : [];
+  const count: number = typeof raw?.count === "number" ? raw.count : data.length;
 
-  const base: VideoCourseListResponse = {
-    statusCode: 200,
-    count,
-    data,
-    message: raw?.message ?? null,
-  };
+  const hasNextPage: boolean =
+    typeof raw?.hasNextPage === "boolean"
+      ? raw.hasNextPage
+      : count > page * perPage;
 
   return {
-    ...base,
+    statusCode: raw?.statusCode ?? 200,
+    count,
+    data,
     hasNextPage,
-    next: hasNextPage ? "next" : null,
-    previous: page > 1 ? "previous" : null,
-    message: base.message ?? null,
+    next: (raw?.next as string | null) ?? (hasNextPage ? "next" : null),
+    previous:
+      (raw?.previous as string | null) ?? (page > 1 ? "previous" : null),
+    message: raw?.message ?? null,
   };
 };
 
 export const getVideoCourseById = async (
   id: string
 ): Promise<VideoCourse | null> => {
-  const raw = await api<any>(`/course_category_list/${id}`, {
+  const raw = await api<any>(`course_category_list/${id}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -116,7 +107,7 @@ export const createVideoCourse = (payload: VideoCourseCreatePayload) => {
   const isFormData =
     typeof FormData !== "undefined" && payload instanceof FormData;
 
-  return api<VideoCourseMutationResponse>("/course_category_list/", {
+  return api<VideoCourseMutationResponse>("course_category_list/", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -133,7 +124,7 @@ export const updateVideoCourse = ({
     typeof FormData !== "undefined" && patchData instanceof FormData;
 
   return api<VideoCourseMutationResponse>(
-    `/update_course_category/${categoryId}/`,
+    `update_course_category/${categoryId}/`,
     {
       method: "PATCH",
       headers: {

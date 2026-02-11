@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import { DataTableShell } from "@/components/ui/data-table-shell";
 import { Modal } from "@/components/ui/modal";
 import { extractFieldErrors } from "@/lib/validation-errors";
@@ -637,28 +638,29 @@ export function CompaniesPage() {
           },
         }}
         table={
-          <div className="overflow-hidden rounded-2xl border">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-brand text-xs uppercase text-white">
-                <tr className="h-12">
-                  {columns.map((column) => (
-                    <th
-                      key={column.key}
-                      className={column.headerClassName ?? "px-4 py-2"}
-                    >
-                      {column.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
+          <div className="overflow-x-auto rounded-2xl border">
+            <div className="min-w-full">
+              <table className="w-full min-w-[800px] text-left text-sm">
+                <thead className="bg-brand text-xs uppercase text-white">
+                  <tr className="h-12">
+                    {columns.map((column) => (
+                      <th
+                        key={column.key}
+                        className={column.headerClassName ?? "px-2 py-2 text-xs sm:px-4 sm:text-xs"}
+                      >
+                        {column.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
                 {loading ? (
                   Array.from({ length: 10 }).map((_, rowIndex) => (
                     <tr key={`skeleton-${rowIndex}`} className="h-12">
                       {columns.map((column) => (
                         <td
                           key={`${column.key}-${rowIndex}`}
-                          className="px-4 py-2"
+                          className="px-2 py-2 sm:px-4"
                         >
                           <div className="h-4 w-full rounded-md shimmer" />
                         </td>
@@ -669,7 +671,7 @@ export function CompaniesPage() {
                   <tr>
                     <td
                       colSpan={columns.length}
-                      className="px-4 py-6 text-center text-sm text-muted-foreground"
+                      className="px-2 py-6 text-center text-xs text-muted-foreground sm:px-4 sm:text-sm"
                     >
                       No record found
                     </td>
@@ -677,25 +679,34 @@ export function CompaniesPage() {
                 ) : (
                   rows.map((row) => (
                     <tr key={row.id} className="h-12">
-                      <td className="px-4 py-2 text-center">{row.sr}</td>
-                      <td className="px-4 py-2 font-medium">{row.name}</td>
-                      <td className="px-4 py-2 text-muted-foreground wrap-break-word whitespace-normal max-w-[360px]">
+                      <td className="px-2 py-2 text-center text-xs sm:px-4 sm:text-sm">{row.sr}</td>
+                      <td className="px-2 py-2 text-xs font-medium wrap-break-word sm:px-4 sm:text-sm">{row.name}</td>
+                      <td className="px-2 py-2 text-xs text-muted-foreground wrap-break-word whitespace-normal max-w-[360px] sm:px-4 sm:text-sm">
                         {row.description}
                       </td>
-                      <td className="px-4 py-2 wrap-break-word whitespace-normal max-w-[240px]">
+                      <td className="px-2 py-2 text-xs wrap-break-word whitespace-normal max-w-[240px] sm:px-4 sm:text-sm">
                         {row.location}
                       </td>
-                      <td className="px-4 py-2">{row.active}</td>
-                      <td className="px-4 py-2">{row.placement}</td>
-                      <td className="px-4 py-2">
-                        <div className="flex items-center justify-center gap-2">
+                      <td className="px-2 py-2 text-xs sm:px-4 sm:text-sm">{row.active}</td>
+                      <td className="px-2 py-2 text-xs sm:px-4 sm:text-sm">{row.placement}</td>
+                      <td className="px-2 py-2 sm:px-4">
+                        <div className="flex items-center justify-center gap-1 sm:gap-2">
+                          <Link
+                            href={`/superadmin/companies/${row.id}`}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-xl border border-brand/40 text-brand transition hover:bg-brand/10 sm:h-8 sm:w-8"
+                            aria-label="View"
+                            title="View"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                          </Link>
                           <button
                             type="button"
                             className={cx(
-                              "inline-flex h-8 w-8 items-center justify-center rounded-xl border text-brand transition",
+                              "inline-flex h-7 w-7 items-center justify-center rounded-xl border text-brand transition sm:h-8 sm:w-8",
                               "hover:border-brand/40 hover:bg-brand/10"
                             )}
                             aria-label="Edit"
+                            title="Edit"
                             onClick={() => {
                               if (row.raw) {
                                 openUpdateModal(row.raw);
@@ -707,10 +718,11 @@ export function CompaniesPage() {
                           <button
                             type="button"
                             className={cx(
-                              "inline-flex h-8 w-8 items-center justify-center rounded-xl border text-muted-foreground",
+                              "inline-flex h-7 w-7 items-center justify-center rounded-xl border text-muted-foreground sm:h-8 sm:w-8",
                               "cursor-not-allowed opacity-60"
                             )}
                             aria-label="Delete"
+                            title="Delete"
                             disabled
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -721,27 +733,29 @@ export function CompaniesPage() {
                   ))
                 )}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         }
         pagination={
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-muted-foreground sm:text-sm">
               Showing {rows.length} of {count} entries
             </p>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-2">
               <button
-                className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                className="rounded-xl border px-2 py-1 text-xs transition hover:border-brand/40 hover:text-foreground disabled:opacity-60 sm:px-3 sm:text-sm"
                 onClick={() => setPage((current) => Math.max(1, current - 1))}
                 disabled={!hasPrev}
               >
-                Previous
+                <span className="hidden sm:inline">Previous</span>
+                <span className="sm:hidden">Prev</span>
               </button>
               <div className="flex items-center gap-1">
                 {visiblePages.map((pageNumber) => (
                   <button
                     key={pageNumber}
-                    className="h-9 w-9 rounded-xl border text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                    className="h-8 w-8 rounded-xl border text-xs transition hover:border-brand/40 hover:text-foreground disabled:opacity-60 sm:h-9 sm:w-9 sm:text-sm"
                     onClick={() => setPage(pageNumber)}
                     disabled={pageNumber === page}
                   >
@@ -750,7 +764,7 @@ export function CompaniesPage() {
                 ))}
               </div>
               <button
-                className="rounded-xl border px-3 py-1 text-sm transition hover:border-brand/40 hover:text-foreground disabled:opacity-60"
+                className="rounded-xl border px-2 py-1 text-xs transition hover:border-brand/40 hover:text-foreground disabled:opacity-60 sm:px-3 sm:text-sm"
                 onClick={() => setPage((current) => current + 1)}
                 disabled={!hasNext}
               >
