@@ -15,16 +15,26 @@ export function handleError(error: unknown) {
 
   // Auth
   if (error instanceof UnauthorizedError) {
-    toast.error('Please login again');
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('role');
-      const shouldRedirect = window.location.pathname !== '/login';
-      if (shouldRedirect) {
-        window.setTimeout(() => {
-          window.location.assign('/login');
-        }, 1500);
+    // Check if this is a login attempt (no token) vs session expiration (has token)
+    const hasToken = typeof window !== 'undefined' && localStorage.getItem('token');
+    
+    if (hasToken) {
+      // Session expired - clear auth and redirect
+      toast.error('Please login again');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        const shouldRedirect = window.location.pathname !== '/login';
+        if (shouldRedirect) {
+          window.setTimeout(() => {
+            window.location.assign('/login');
+          }, 1500);
+        }
       }
+    } else {
+      // Login attempt failed - don't redirect or clear storage
+      // The error message will be handled by the login form
+      // Don't show toast here as login forms handle their own error messages
     }
     return;
   }

@@ -1,0 +1,146 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { ChevronDown, Menu, UserCircle, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { UniInternLogo } from "@/components/ui/uniintern-logo";
+
+type NavItem = {
+  label: string;
+  href: string;
+};
+
+const navItems: NavItem[] = [
+  { label: "Home", href: "/student" },
+  { label: "Resume", href: "/student/resume" },
+  { label: "Internship", href: "/student/internship" },
+  { label: "Courses", href: "/student/courses" },
+  { label: "Chat", href: "/student/chat" },
+];
+
+export function StudentProfileMenu() {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+
+  const goToProfile = () => {
+    setOpen(false);
+    router.push("/profile");
+  };
+
+  const goToChangePassword = () => {
+    setOpen(false);
+    router.push("/change-password");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("uniintern:auth-changed"));
+    }
+    setOpen(false);
+    router.replace("/");
+  };
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="inline-flex items-center justify-center rounded-full text-xs font-semibold text-foreground transition hover:border-primary/40 hover:text-primary bg-card"
+      >
+        <UserCircle className="h-8 w-8 mt-1.5" />
+      </button>
+
+      {open ? (
+        <div className="absolute right-0 z-50 mt-2 w-40 overflow-hidden rounded-md border bg-white text-sm shadow-lg">
+          <button
+            type="button"
+            onClick={goToProfile}
+            className="block w-full px-3 py-2 text-left hover:bg-muted"
+          >
+            Profile
+          </button>
+          <button
+            type="button"
+            onClick={goToChangePassword}
+            className="block w-full px-3 py-2 text-left hover:bg-muted"
+          >
+            Change password
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="block w-full px-3 py-2 text-left text-red-600 hover:bg-red-50"
+          >
+            Logout
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function StudentHeader() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+        {/* Brand */}
+        <Link href="/" className="mr-auto font-bold text-gray-900">
+          <UniInternLogo className="h-5 w-auto" />
+        </Link>
+
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="transition hover:text-foreground"
+            >
+              {item.label}
+            </Link>
+          ))}
+          <StudentProfileMenu />
+        </nav>
+
+        {/* Mobile actions */}
+        <div className="flex items-center gap-2 md:hidden">
+          <StudentProfileMenu />
+          <button
+            type="button"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border bg-card text-foreground shadow-sm transition hover:border-primary/40"
+            aria-label="Toggle navigation"
+            onClick={() => setOpen((prev) => !prev)}
+          >
+            {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile nav */}
+      {open ? (
+        <div className="border-t bg-background/95 px-4 pb-3 pt-2 shadow-sm sm:px-6 md:hidden">
+          <nav className="flex flex-col gap-1 text-sm font-medium text-muted-foreground">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-xl px-3 py-2 transition hover:bg-muted hover:text-foreground"
+                onClick={() => setOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      ) : null}
+    </header>
+  );
+}
+
+export default StudentHeader;
+

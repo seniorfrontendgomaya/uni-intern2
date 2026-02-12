@@ -241,7 +241,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
           localStorage.removeItem("token");
           localStorage.removeItem("role");
           setLogoutOpen(false);
-          window.location.assign("/login");
+          router.replace("/");
         }}
         onCancel={() => setLogoutOpen(false)}
       />

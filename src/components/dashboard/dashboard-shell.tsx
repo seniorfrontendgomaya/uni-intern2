@@ -3,14 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Bell,
-  Building2,
-  GraduationCap,
-  Menu,
-  ShieldCheck,
-  University,
-} from "lucide-react";
+import { Briefcase, Building2, GraduationCap, Menu, ShieldCheck, University } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ForbiddenPage } from "@/components/pages/forbidden-page";
 import { defaultRouteForRole } from "@/lib/route-guard";
@@ -51,6 +44,11 @@ const navItems: NavItem[] = [
     label: "Perk",
     href: "/company/perk",
     icon: <ShieldCheck className="h-4 w-4" />,
+  },
+  {
+    label: "Vacancy",
+    href: "/company/vacancy",
+    icon: <Briefcase className="h-4 w-4" />,
   },
   {
     label: "Company",
@@ -186,13 +184,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               >
                 Logout
               </button>
-              <button
-                type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border bg-card text-foreground shadow-sm"
-                aria-label="Notifications"
-              >
-                <Bell className="h-4 w-4" />
-              </button>
             </div>
           </header>
 
@@ -268,7 +259,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           localStorage.removeItem("token");
           localStorage.removeItem("role");
           setLogoutOpen(false);
-          window.location.assign("/login");
+          // Use Next.js client-side routing instead of full page reload
+          router.replace("/");
         }}
         onCancel={() => setLogoutOpen(false)}
       />

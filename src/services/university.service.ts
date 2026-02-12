@@ -92,4 +92,3 @@ export const getUniversityById = async (id: string): Promise<UniversityMutationR
     },
   });
 };
-
