@@ -6,6 +6,8 @@ import { Menu, X } from "lucide-react";
 import { UniInternLogo } from "@/components/ui/uniintern-logo";
 import { LoginModal } from "@/components/ui/login-modal";
 import { StudentProfileMenu } from "@/components/ui/student-header";
+import { InternshipNavItem } from "@/components/ui/internship-nav-item";
+import { CoursesNavItem } from "@/components/ui/courses-nav-item";
 
 type NavItem = {
   label: string;
@@ -59,15 +61,29 @@ export function LandingHeader() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
-          {(isStudent ? studentNavItems : publicNavItems).map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="transition hover:text-foreground"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {(isStudent ? studentNavItems : publicNavItems).map((item) =>
+            item.label === "Internship" ? (
+              <InternshipNavItem
+                key={item.href}
+                basePath={item.href}
+                className="transition hover:text-foreground text-muted-foreground"
+              />
+            ) : item.label === "Courses" ? (
+              <CoursesNavItem
+                key={item.href}
+                basePath={item.href}
+                className="transition hover:text-foreground text-muted-foreground"
+              />
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="transition hover:text-foreground"
+              >
+                {item.label}
+              </Link>
+            )
+          )}
           {isStudent ? (
             <StudentProfileMenu />
           ) : (

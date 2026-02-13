@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLogin, useSuperLogin } from "@/hooks/useAuth";
+import { fetchAndStoreStudentProfile } from "@/services/student-profile.service";
 import { toast } from "react-hot-toast";
 
 export default function LoginPage() {
@@ -57,7 +58,9 @@ export default function LoginPage() {
         ? "/superadmin/city"
         : role === "UNIVERSITY"
           ? "/university"
-          : "/company";
+          : role === "STUDENT"
+            ? "/"
+            : "/company";
   }, []);
 
   useEffect(() => {
@@ -75,10 +78,12 @@ export default function LoginPage() {
         ? "/superadmin/city"
         : role === "UNIVERSITY"
           ? "/university"
-          : "/company";
+          : role === "STUDENT"
+            ? "/"
+            : "/company";
 
     router.replace(target);
-  }, [router, defaultTargetForRole]);
+  }, [router]);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -93,15 +98,21 @@ export default function LoginPage() {
       localStorage.setItem("token", result.data.token);
       localStorage.setItem("role", role);
 
+      if (role === "STUDENT") {
+        await fetchAndStoreStudentProfile();
+      }
+
       const target =
         role === "SUPERADMIN"
           ? "/superadmin/city"
           : role === "UNIVERSITY"
             ? "/university"
-            : "/company";
+            : role === "STUDENT"
+              ? "/"
+              : "/company";
       router.replace(target);
     }
-    toast.success('Login successful');
+    toast.success("Login successful");
 
   };
 

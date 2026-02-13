@@ -1,22 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import { UploadCloud } from "lucide-react";
+import { UploadCloud, Pencil, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Modal } from "@/components/ui/modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   useBulkUploadUniversityStudents,
   useUniversityStudentsPaginated,
+  useDeleteUniversityStudent,
+  useUpdateUniversityStudent,
 } from "@/hooks/useUniversityStudents";
+import type { UniversityStudent } from "@/types/university-student";
 import { UNIVERSITY_THEME } from "@/lib/university-theme";
 
 export default function UniversityStudentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { items, page, setPage, perPage, count, hasNext, hasPrev, loading } =
+  const { items, page, setPage, perPage, count, hasNext, hasPrev, loading, refresh } =
     useUniversityStudentsPaginated(10, searchTerm);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const { upload, loading: bulkUploading } = useBulkUploadUniversityStudents();
+  const { delete: deleteStudent, loading: deleting } = useDeleteUniversityStudent();
+  const { update: updateStudent, loading: updating } = useUpdateUniversityStudent();
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<number | null>(null);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [studentToUpdate, setStudentToUpdate] = useState<UniversityStudent | null>(null);
+  const [formValues, setFormValues] = useState({
+    email: "",
+    mobile: "",
+  });
 
   const totalPages = Math.max(1, Math.ceil(count / perPage));
   const visiblePages =
@@ -38,6 +52,55 @@ export default function UniversityStudentsPage() {
     toast.success("Students uploaded successfully");
     setBulkModalOpen(false);
     setFile(null);
+    refresh();
+  };
+
+  const handleDeleteClick = (studentId: number) => {
+    setStudentToDelete(studentId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!studentToDelete) return;
+
+    const result = await deleteStudent(studentToDelete);
+    if (result.ok) {
+      toast.success(result.data?.message || "Student deleted successfully");
+      setDeleteConfirmOpen(false);
+      setStudentToDelete(null);
+      refresh();
+    } else {
+      toast.error("Failed to delete student");
+    }
+  };
+
+  const handleUpdateClick = (student: UniversityStudent) => {
+    setStudentToUpdate(student);
+    setFormValues({
+      email: student.email || "",
+      mobile: student.mobile || "",
+    });
+    setUpdateModalOpen(true);
+  };
+
+  const handleUpdateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!studentToUpdate) return;
+
+    const payload = {
+      email: formValues.email.trim() || null,
+      mobile: formValues.mobile.trim() || null,
+    };
+
+    const result = await updateStudent(studentToUpdate.id, payload);
+    if (result.ok) {
+      toast.success(result.data?.message || "Student updated successfully");
+      setUpdateModalOpen(false);
+      setStudentToUpdate(null);
+      refresh();
+    } else {
+      toast.error("Failed to update student");
+    }
   };
 
   return (
@@ -78,6 +141,7 @@ export default function UniversityStudentsPage() {
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Email</th>
               <th className="px-4 py-2">Phone Number</th>
+              <th className="w-24 px-4 py-2 text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60">
@@ -96,12 +160,15 @@ export default function UniversityStudentsPage() {
                   <td className="px-4 py-2">
                     <div className="h-4 w-32 rounded-md shimmer" />
                   </td>
+                  <td className="px-4 py-2">
+                    <div className="mx-auto h-4 w-16 rounded-md shimmer" />
+                  </td>
                 </tr>
               ))
             ) : items.length === 0 ? (
               <tr>
                 <td
-                  colSpan={4}
+                  colSpan={5}
                   className="px-4 py-6 text-center text-sm text-muted-foreground"
                 >
                   No record found
@@ -121,6 +188,29 @@ export default function UniversityStudentsPage() {
                   </td>
                   <td className="px-4 py-2 text-muted-foreground">
                     {student.mobile}
+                  </td>
+                  <td className="px-4 py-2">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-university-accent/40 text-university-accent transition hover:bg-university-accent/10"
+                        aria-label="Update"
+                        title="Update"
+                        onClick={() => handleUpdateClick(student)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-red-300 text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+                        aria-label="Delete"
+                        title="Delete"
+                        disabled={deleting}
+                        onClick={() => handleDeleteClick(student.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -257,6 +347,83 @@ export default function UniversityStudentsPage() {
             </ol>
           </div>
         </div>
+      </Modal>
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        title="Delete Student?"
+        description="Are you sure you want to delete this student? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setDeleteConfirmOpen(false);
+          setStudentToDelete(null);
+        }}
+        accentVariant="university"
+      />
+
+      <Modal
+        open={updateModalOpen}
+        title="Update Student"
+        onClose={() => {
+          setUpdateModalOpen(false);
+          setStudentToUpdate(null);
+        }}
+        accentVariant="university"
+        panelClassName="w-[90vw] !max-w-2xl"
+        footer={
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              className="h-9 rounded-full border px-4 text-xs font-medium text-muted-foreground transition hover:border-university-accent/40 hover:text-foreground"
+              onClick={() => {
+                setUpdateModalOpen(false);
+                setStudentToUpdate(null);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={`inline-flex h-9 items-center justify-center rounded-full ${UNIVERSITY_THEME.buttonPrimary} px-4 text-xs font-semibold shadow-sm transition disabled:opacity-60`}
+              disabled={updating}
+              onClick={handleUpdateSubmit}
+            >
+              {updating ? "Updating..." : "Update Student"}
+            </button>
+          </div>
+        }
+      >
+        <form onSubmit={handleUpdateSubmit} className="space-y-6">
+          <div>
+            <label className="text-sm font-medium text-foreground">
+              Email
+            </label>
+            <input
+              type="email"
+              className={`mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition ${UNIVERSITY_THEME.inputFocus}`}
+              value={formValues.email}
+              onChange={(e) =>
+                setFormValues((prev) => ({ ...prev, email: e.target.value }))
+              }
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-foreground">
+              Mobile
+            </label>
+            <input
+              type="text"
+              className={`mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition ${UNIVERSITY_THEME.inputFocus}`}
+              value={formValues.mobile}
+              onChange={(e) =>
+                setFormValues((prev) => ({ ...prev, mobile: e.target.value }))
+              }
+            />
+          </div>
+        </form>
       </Modal>
     </div>
   );

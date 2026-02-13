@@ -50,4 +50,48 @@ export const bulkUploadUniversityStudents = (payload: FormData) =>
     body: payload,
   });
 
+type DeleteUniversityStudentResponse = {
+  statusCode: number;
+  message: string;
+  data: null;
+};
+
+export const deleteUniversityStudent = (id: number) =>
+  api<DeleteUniversityStudentResponse>(`/university_student_api/${id}/`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
+type UpdateUniversityStudentPayload = {
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null;
+  mobile?: string | null;
+};
+
+type UpdateUniversityStudentResponse = {
+  statusCode: number;
+  message: string;
+  data: {
+    id: number;
+    email: string;
+    mobile: string | null;
+  };
+};
+
+export const updateUniversityStudent = (
+  id: number,
+  payload: UpdateUniversityStudentPayload
+) =>
+  api<UpdateUniversityStudentResponse>(`/university_student_api/${id}/`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
 

@@ -112,6 +112,7 @@ export function CrudTable({
   const [initialValues, setInitialValues] = useState<Record<string, FormValue>>(
     {}
   );
+  const [imagePreviews, setImagePreviews] = useState<Record<string, string>>({});
 
   const totalRows = rows.length;
   const showCount = rows.length;
@@ -161,6 +162,7 @@ export function CrudTable({
           setInitialValues(emptyValues);
           setFieldErrors({});
           setFormError(null);
+          setImagePreviews({});
           setModalOpen(true);
         }}
         table={
@@ -281,6 +283,27 @@ export function CrudTable({
                                 setInitialValues(nextValues);
                                 setFieldErrors({});
                                 setFormError(null);
+                                // Set image preview from row data if available
+                                const previews: Record<string, string> = {};
+                                fields.forEach((field) => {
+                                  if (field.type === "file") {
+                                    // Check for image_url field (stored separately for preview)
+                                    const imageUrl = row[`${field.name}_url`];
+                                    if (imageUrl && typeof imageUrl === "string") {
+                                      previews[field.name] = imageUrl;
+                                    } else {
+                                      // Fallback: try to extract from image element
+                                      const imgElement = row[field.name];
+                                      if (typeof imgElement === "object" && imgElement !== null && "props" in imgElement) {
+                                        const imgProps = (imgElement as any).props;
+                                        if (imgProps?.src) {
+                                          previews[field.name] = imgProps.src;
+                                        }
+                                      }
+                                    }
+                                  }
+                                });
+                                setImagePreviews(previews);
                                       setModalOpen(true);
                                     }}
                                   >
@@ -564,25 +587,50 @@ export function CrudTable({
                   <label className="text-sm font-medium text-foreground">
                     {field.label}
                   </label>
+                  {imagePreviews[field.name] && (
+                    <div className="mt-2 mb-2">
+                      <img
+                        src={imagePreviews[field.name]}
+                        alt="Preview"
+                        className="h-24 w-24 rounded-lg object-cover border"
+                      />
+                    </div>
+                  )}
                   <input
                     type="file"
                     accept="image/*"
                     className="mt-2 block w-full text-sm text-foreground file:mr-4 file:rounded-xl file:border-0 file:bg-brand/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand hover:file:bg-brand/20"
-                    onChange={(event) =>
-                      setFormValues((prev) => {
-                        if (fieldErrors[field.name]) {
-                          setFieldErrors((current) => {
-                            const next = { ...current };
-                            delete next[field.name];
-                            return next;
-                          });
-                        }
-                        return {
-                          ...prev,
-                          [field.name]: event.target.files?.[0] ?? null,
+                    onChange={(event) => {
+                      const file = event.target.files?.[0] ?? null;
+                      if (fieldErrors[field.name]) {
+                        setFieldErrors((current) => {
+                          const next = { ...current };
+                          delete next[field.name];
+                          return next;
+                        });
+                      }
+                      setFormValues((prev) => ({
+                        ...prev,
+                        [field.name]: file,
+                      }));
+                      // Create preview for image files
+                      if (file && file.type.startsWith("image/")) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setImagePreviews((prev) => ({
+                            ...prev,
+                            [field.name]: reader.result as string,
+                          }));
                         };
-                      })
-                    }
+                        reader.readAsDataURL(file);
+                      } else {
+                        setImagePreviews((prev) => {
+                          const next = { ...prev };
+                          delete next[field.name];
+                          return next;
+                        });
+                      }
+                    }}
                   />
                 </>
               ) : (

@@ -54,7 +54,7 @@ type ProfileFormState = {
 };
 
 export default function UniversityProfilePage() {
-  const { profile, loading, saving, patchProfile } = useUniversityProfile();
+  const { profile, loading, saving, patchProfile, fetchProfile } = useUniversityProfile();
   const [editOpen, setEditOpen] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
@@ -162,6 +162,8 @@ export default function UniversityProfilePage() {
 
     toast.success("Profile updated");
     setEditOpen(false);
+    // Refresh profile data to ensure UI is updated
+    await fetchProfile();
   };
 
   return (

@@ -17,6 +17,12 @@ const columns = [
     cellClassName: "w-16 px-4 py-2 text-center",
   },
   {
+    key: "image",
+    label: "Image",
+    headerClassName: "w-24 px-4 py-2 text-center",
+    cellClassName: "w-24 px-4 py-2 text-center",
+  },
+  {
     key: "name",
     label: "Name",
     headerClassName: "px-4 py-2",
@@ -62,6 +68,11 @@ const fields: Field[] = [
     label: "Description",
     type: "textarea",
     placeholder: "Add a short description",
+  },
+  {
+    name: "image",
+    label: "Image",
+    type: "file",
   },
   {
     name: "duration",
@@ -114,6 +125,18 @@ export function CoursesPage() {
     return {
       id: item.id,
       sr: String((page - 1) * perPage + index + 1),
+      image: item.image ? (
+        <img
+          src={item.image}
+          alt={item.name}
+          className="h-12 w-12 rounded-lg object-cover"
+        />
+      ) : (
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
+          No Image
+        </div>
+      ),
+      image_url: item.image, // Store URL for preview in update modal
       name: item.name,
       description: item.description ?? "-",
       duration: item.duration ? String(item.duration) : "-",
@@ -142,6 +165,7 @@ export function CoursesPage() {
       onCreate={async (values) => {
         const rawDuration = values.duration;
         const rawFees = values.fees;
+        const imageFile = values.image instanceof File ? values.image : null;
 
         const durationNumber =
           rawDuration !== undefined &&
@@ -156,6 +180,32 @@ export function CoursesPage() {
           String(rawFees).trim() !== ""
             ? Math.max(0, Number(rawFees))
             : undefined;
+
+        // Use FormData if image is present, otherwise use JSON
+        if (imageFile) {
+          const formData = new FormData();
+          formData.append("name", String(values.name ?? "").trim());
+          formData.append("description", String(values.description ?? "").trim());
+          if (durationNumber !== undefined && !Number.isNaN(durationNumber)) {
+            formData.append("duration", String(durationNumber));
+          }
+          if (feesNumber !== undefined && !Number.isNaN(feesNumber)) {
+            formData.append("fees", String(feesNumber));
+          }
+          formData.append("placement_gurantee", String(Boolean(values.placement_gurantee)));
+          formData.append("image", imageFile);
+
+          const result = await createCourse(formData);
+          if (result.ok) {
+            await refresh();
+          }
+
+          return {
+            ok: result.ok,
+            message:
+              (result.data as any)?.message || "Course created successfully",
+          };
+        }
 
         const payload = {
           name: String(values.name ?? "").trim(),
@@ -183,6 +233,58 @@ export function CoursesPage() {
         };
       }}
       onUpdate={async (id, patchData) => {
+        const imageFile = patchData.image instanceof File ? patchData.image : null;
+        
+        // Use FormData if image is present
+        if (imageFile) {
+          const formData = new FormData();
+          
+          if (patchData.name !== undefined) {
+            formData.append("name", String(patchData.name ?? "").trim());
+          }
+          if (patchData.description !== undefined) {
+            formData.append("description", String(patchData.description ?? "").trim());
+          }
+          if (patchData.duration !== undefined) {
+            const value = String(patchData.duration ?? "").trim();
+            if (value === "") {
+              formData.append("duration", "");
+            } else {
+              const num = Math.max(0, Number(value));
+              formData.append("duration", !Number.isNaN(num) ? String(num) : "");
+            }
+          }
+          if (patchData.fees !== undefined) {
+            const value = String(patchData.fees ?? "").trim();
+            if (value === "") {
+              formData.append("fees", "");
+            } else {
+              const num = Math.max(0, Number(value));
+              formData.append("fees", !Number.isNaN(num) ? String(num) : "");
+            }
+          }
+          if (patchData.placement_gurantee !== undefined) {
+            formData.append("placement_gurantee", String(Boolean(patchData.placement_gurantee)));
+          }
+          formData.append("image", imageFile);
+
+          const result = await updateCourse({
+            courseId: id,
+            patchData: formData,
+          });
+
+          if (result.ok) {
+            await refresh();
+          }
+
+          return {
+            ok: result.ok,
+            message:
+              (result.data as any)?.message || "Course updated successfully",
+          };
+        }
+
+        // Use JSON if no image
         const patch: any = {};
 
         if (patchData.name !== undefined) {

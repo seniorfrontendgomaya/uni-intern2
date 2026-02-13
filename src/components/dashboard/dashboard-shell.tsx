@@ -46,8 +46,8 @@ const navItems: NavItem[] = [
     icon: <ShieldCheck className="h-4 w-4" />,
   },
   {
-    label: "Vacancy",
-    href: "/company/vacancy",
+    label: "Hiring",
+    href: "/company/hiring",
     icon: <Briefcase className="h-4 w-4" />,
   },
   {

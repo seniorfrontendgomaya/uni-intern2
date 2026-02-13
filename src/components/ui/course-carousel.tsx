@@ -2,11 +2,79 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
 import type { CourseCard } from "@/types/course-card";
 
 interface CourseCarouselProps {
   courses: CourseCard[];
+}
+
+function CourseCarouselCard({ course }: { course: CourseCard }) {
+  const [imageError, setImageError] = useState(false);
+  const [imageSrc, setImageSrc] = useState(course.image || "/assets/courses/course-default.jpg");
+
+  const handleImageError = () => {
+    if (!imageError) {
+      setImageError(true);
+      setImageSrc("/assets/courses/course-default.jpg");
+    }
+  };
+
+  return (
+    <article className="min-w-[280px] max-w-[280px] shrink-0 rounded-lg border bg-white shadow-sm transition hover:shadow-md sm:min-w-[300px] sm:max-w-[300px]">
+      {/* Course Image */}
+      <div className="relative h-40 w-full overflow-hidden rounded-t-lg bg-gray-100">
+        {imageError || !imageSrc || imageSrc === "/assets/courses/course-default.jpg" ? (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orange-100 to-orange-200">
+            <div className="flex flex-col items-center justify-center gap-2 text-orange-400">
+              <BookOpen className="h-12 w-12" />
+              <span className="text-xs font-medium text-orange-500">Course Image</span>
+            </div>
+          </div>
+        ) : (
+          <Image
+            src={imageSrc}
+            alt={course.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 280px, 300px"
+            onError={handleImageError}
+          />
+        )}
+      </div>
+
+      {/* Course Content */}
+      <div className="p-4">
+        {/* Title */}
+        <h3 className="line-clamp-2 text-sm font-semibold text-gray-900">
+          {course.title}
+        </h3>
+
+        {/* Provider */}
+        <p className="mt-1 text-xs text-gray-600">{course.provider}</p>
+
+        {/* Tag */}
+        {course.tag && (
+          <div className="mt-2">
+            <span
+              className={`rounded px-2 py-0.5 text-xs font-medium text-white ${
+                course.tag.variant === "bestseller"
+                  ? "bg-green-600"
+                  : "bg-red-600"
+              }`}
+            >
+              {course.tag.label}
+            </span>
+          </div>
+        )}
+
+        {/* Price */}
+        <p className="mt-3 text-lg font-bold text-gray-900">
+          ₹{course.price.toLocaleString()}
+        </p>
+      </div>
+    </article>
+  );
 }
 
 export function CourseCarousel({ courses }: CourseCarouselProps) {
@@ -96,61 +164,7 @@ export function CourseCarousel({ courses }: CourseCarouselProps) {
         onScroll={checkScrollability}
       >
         {courses.map((course) => (
-          <article
-            key={course.id}
-            className="min-w-[280px] max-w-[280px] shrink-0 rounded-lg border bg-white shadow-sm transition hover:shadow-md sm:min-w-[300px] sm:max-w-[300px]"
-          >
-            {/* Course Image */}
-            <div className="relative h-40 w-full overflow-hidden rounded-t-lg">
-              <Image
-                src={course.image}
-                alt={course.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 280px, 300px"
-              />
-            </div>
-
-            {/* Course Content */}
-            <div className="p-4">
-              {/* Title */}
-              <h3 className="line-clamp-2 text-sm font-semibold text-gray-900">
-                {course.title}
-              </h3>
-
-              {/* Provider */}
-              <p className="mt-1 text-xs text-gray-600">{course.provider}</p>
-
-              {/* Tag and Rating Row */}
-              <div className="mt-2 flex items-center gap-2">
-                {course.tag && (
-                  <span
-                    className={`rounded px-2 py-0.5 text-xs font-medium text-white ${
-                      course.tag.variant === "bestseller"
-                        ? "bg-green-600"
-                        : "bg-red-600"
-                    }`}
-                  >
-                    {course.tag.label}
-                  </span>
-                )}
-                <div className="flex items-center gap-1">
-                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                  <span className="text-xs font-medium text-gray-900">
-                    {course.rating.stars}
-                  </span>
-                  <span className="text-xs text-gray-600">
-                    ({course.rating.count} ratings)
-                  </span>
-                </div>
-              </div>
-
-              {/* Price */}
-              <p className="mt-3 text-lg font-bold text-gray-900">
-                ₹{course.price.toLocaleString()}
-              </p>
-            </div>
-          </article>
+          <CourseCarouselCard key={course.id} course={course} />
         ))}
       </div>
 

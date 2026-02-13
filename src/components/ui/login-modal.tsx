@@ -7,6 +7,7 @@ import Image from "next/image";
 import { X, Eye, EyeOff } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useLogin, useSuperLogin } from "@/hooks/useAuth";
+import { fetchAndStoreStudentProfile } from "@/services/student-profile.service";
 import { UniInternLogo } from "./uniintern-logo";
 import { UnauthorizedError } from "@/errors/http.errors";
 
@@ -82,6 +83,10 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
         localStorage.setItem("token", result.data.token);
         localStorage.setItem("role", role);
 
+        if (role === "STUDENT") {
+          await fetchAndStoreStudentProfile();
+        }
+
         // Map role to redirect path
         const target =
           role === "SUPERADMIN"
@@ -94,12 +99,12 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
         toast.success("Login successful");
         onClose(); // Close modal before redirect
-        
+
         // Dispatch auth-changed event to update header immediately
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("uniintern:auth-changed"));
         }
-        
+
         router.replace(target);
       }
     } catch (error) {

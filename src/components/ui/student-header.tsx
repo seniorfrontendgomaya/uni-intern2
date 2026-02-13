@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronDown, Menu, UserCircle, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { UniInternLogo } from "@/components/ui/uniintern-logo";
+import { InternshipNavItem } from "@/components/ui/internship-nav-item";
+import { CoursesNavItem } from "@/components/ui/courses-nav-item";
+import { clearStoredStudentProfile } from "@/services/student-profile.service";
 
 type NavItem = {
   label: string;
@@ -22,6 +25,29 @@ const navItems: NavItem[] = [
 export function StudentProfileMenu() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [userImage, setUserImage] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const img = localStorage.getItem("user_image");
+      const name = localStorage.getItem("user_name");
+      setUserImage(img);
+      setUserName(name);
+    }
+  }, []);
+
+  const getUserInitial = () => {
+    if (userName) {
+      const parts = userName.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase().slice(0, 2);
+      }
+      return userName.charAt(0).toUpperCase();
+    }
+    return "U";
+  };
 
   const goToProfile = () => {
     setOpen(false);
@@ -36,6 +62,7 @@ export function StudentProfileMenu() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    clearStoredStudentProfile();
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event("uniintern:auth-changed"));
     }
@@ -48,9 +75,23 @@ export function StudentProfileMenu() {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex items-center justify-center rounded-full text-xs font-semibold text-foreground transition hover:border-primary/40 hover:text-primary bg-card"
+        className="inline-flex items-center gap-1.5 rounded-full bg-white px-2 py-1.5 text-xs font-semibold text-foreground transition"
       >
-        <UserCircle className="h-8 w-8 mt-1.5" />
+        <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full  border bg-gray-100">
+          {userImage && !imageError ? (
+            <img
+              src={userImage}
+              alt=""
+              className="h-full w-full object-cover border-0.5 rounded-full"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <span className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-600">
+              {getUserInitial()}
+            </span>
+          )}
+        </div>
+        <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open ? (
@@ -95,15 +136,29 @@ export function StudentHeader() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="transition hover:text-foreground"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) =>
+            item.label === "Internship" ? (
+              <InternshipNavItem
+                key={item.href}
+                basePath={item.href}
+                className="transition hover:text-foreground text-muted-foreground"
+              />
+            ) : item.label === "Courses" ? (
+              <CoursesNavItem
+                key={item.href}
+                basePath={item.href}
+                className="transition hover:text-foreground text-muted-foreground"
+              />
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="transition hover:text-foreground"
+              >
+                {item.label}
+              </Link>
+            )
+          )}
           <StudentProfileMenu />
         </nav>
 

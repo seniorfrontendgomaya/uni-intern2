@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { api } from "@/lib/api";
+import { clearStoredStudentProfile } from "@/services/student-profile.service";
 import { LandingHeader } from "@/components/ui/landing-header";
 import { LandingFooter } from "@/components/ui/landing-footer";
 
@@ -65,7 +66,8 @@ export default function ChangePasswordPage() {
       // On success: clear localStorage and redirect
       localStorage.removeItem("token");
       localStorage.removeItem("role");
-      
+      clearStoredStudentProfile();
+
       // Dispatch auth-changed event to update header
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("uniintern:auth-changed"));

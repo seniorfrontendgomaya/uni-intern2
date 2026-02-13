@@ -5,4 +5,5 @@ export interface ICourse {
   duration?: string | null;
   fees?: string | null;
   placement_gurantee?: string | boolean | null;
+  image?: string | null;
 }

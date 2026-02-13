@@ -10,6 +10,8 @@ type ConfirmDialogProps = {
   cancelText?: string;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Use "university" for violet accent on buttons (e.g. university students page). */
+  accentVariant?: "brand" | "university";
 };
 
 export function ConfirmDialog({
@@ -20,7 +22,17 @@ export function ConfirmDialog({
   cancelText = "Cancel",
   onConfirm,
   onCancel,
+  accentVariant = "brand",
 }: ConfirmDialogProps) {
+  const cancelButtonClass =
+    accentVariant === "university"
+      ? "h-10 rounded-2xl border px-4 text-sm font-medium text-muted-foreground transition hover:border-university-accent/40 hover:text-foreground"
+      : "h-10 rounded-2xl border px-4 text-sm font-medium text-muted-foreground transition hover:border-brand/40 hover:text-foreground";
+  
+  const confirmButtonClass =
+    accentVariant === "university"
+      ? "h-10 rounded-2xl bg-university-accent px-4 text-sm font-medium text-white shadow-sm transition hover:bg-university-accent/90"
+      : "h-10 rounded-2xl bg-brand px-4 text-sm font-medium text-white shadow-sm transition hover:bg-brand/90";
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -44,14 +56,14 @@ export function ConfirmDialog({
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
           <button
             type="button"
-            className="h-10 rounded-2xl border px-4 text-sm font-medium text-muted-foreground transition hover:border-brand/40 hover:text-foreground"
+            className={cancelButtonClass}
             onClick={onCancel}
           >
             {cancelText}
           </button>
           <button
             type="button"
-            className="h-10 rounded-2xl bg-brand px-4 text-sm font-medium text-white shadow-sm transition hover:bg-brand/90"
+            className={confirmButtonClass}
             onClick={onConfirm}
           >
             {confirmText}
