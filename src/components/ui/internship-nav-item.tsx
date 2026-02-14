@@ -8,7 +8,7 @@ import { InternshipMegaMenu } from "./internship-mega-menu";
 export interface InternshipNavItemProps {
   /** Label in the nav bar */
   label?: string;
-  /** Base path for internship pages (e.g. "/internship" or "/student/internship") */
+  /** Base path for internship pages (e.g. "/internships" or "/student/internships") */
   basePath: string;
   /** Optional class for the trigger link/button */
   className?: string;

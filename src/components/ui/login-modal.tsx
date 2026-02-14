@@ -8,6 +8,7 @@ import { X, Eye, EyeOff } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useLogin, useSuperLogin } from "@/hooks/useAuth";
 import { fetchAndStoreStudentProfile } from "@/services/student-profile.service";
+import { fetchAndStoreCompanyProfile } from "@/services/company-profile.service";
 import { UniInternLogo } from "./uniintern-logo";
 import { UnauthorizedError } from "@/errors/http.errors";
 
@@ -85,6 +86,9 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
         if (role === "STUDENT") {
           await fetchAndStoreStudentProfile();
+        }
+        if (role === "COMPANY") {
+          await fetchAndStoreCompanyProfile();
         }
 
         // Map role to redirect path

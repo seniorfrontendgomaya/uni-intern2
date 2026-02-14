@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { LandingHeader } from "@/components/ui/landing-header";
-import { LandingFooter } from "@/components/ui/landing-footer";
+import { FooterSSR } from "@/components/ui/footer-ssr";
 
 export const metadata = {
   title: "Privacy Policy | UNIINTERN",
@@ -240,7 +240,7 @@ export default function PrivacyPage() {
           </Link>
         </div>
       </main>
-      <LandingFooter />
+      <FooterSSR />
     </div>
   );
 }

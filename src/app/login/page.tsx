@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLogin, useSuperLogin } from "@/hooks/useAuth";
 import { fetchAndStoreStudentProfile } from "@/services/student-profile.service";
+import { fetchAndStoreCompanyProfile } from "@/services/company-profile.service";
 import { toast } from "react-hot-toast";
 
 export default function LoginPage() {
@@ -100,6 +101,9 @@ export default function LoginPage() {
 
       if (role === "STUDENT") {
         await fetchAndStoreStudentProfile();
+      }
+      if (role === "COMPANY") {
+        await fetchAndStoreCompanyProfile();
       }
 
       const target =

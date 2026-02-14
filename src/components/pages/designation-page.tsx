@@ -12,7 +12,7 @@ import { useState } from "react";
 const columns = [
   {
     key: "sr",
-    label: "Sr",
+    label: "S NO",
     headerClassName: "w-20 px-4 py-2 text-center",
     cellClassName: "w-16 px-4 py-2 text-center",
   },

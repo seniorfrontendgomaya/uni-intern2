@@ -50,6 +50,8 @@ export interface MessageChat {
   body?: string;
   sent_time?: string;
   sender?: number;
+  /** Some backends use created_by instead of sender */
+  created_by?: number;
   attachment?: string | { url?: string; type?: string; name?: string };
 }
 
@@ -147,8 +149,12 @@ function messageChatToChat(
   conversationId: string,
   currentUserId: number | null
 ): ChatMessage {
-  const senderId = m.sender != null ? String(m.sender) : "unknown";
-  const isOwn = currentUserId != null && m.sender === currentUserId;
+  const sender = m.sender ?? m.created_by;
+  const senderId = sender != null ? String(sender) : "unknown";
+  const isOwn =
+    currentUserId != null &&
+    sender != null &&
+    (m.sender === currentUserId || m.created_by === currentUserId);
   return {
     id: String(m.id),
     conversationId,

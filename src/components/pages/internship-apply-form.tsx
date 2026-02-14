@@ -2,16 +2,19 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { X, Pencil, Upload, ArrowLeft, ArrowUp } from "lucide-react";
+import { X, Pencil, ArrowLeft, ArrowUp } from "lucide-react";
+import { applyForInternship } from "@/services/student-internship.service";
+import toast from "react-hot-toast";
 
 interface InternshipApplyFormProps {
-  internshipId: string;
+  /** Company (employer) id for the API; from the internship detail. */
+  companyId: string | null;
   internshipTitle: string;
   companyName: string;
 }
 
 export function InternshipApplyForm({
-  internshipId,
+  companyId,
   internshipTitle,
   companyName,
 }: InternshipApplyFormProps) {
@@ -23,6 +26,7 @@ export function InternshipApplyForm({
   const [customResume, setCustomResume] = useState<File | null>(null);
   const [customResumeName, setCustomResumeName] = useState("");
   const [consentChecked, setConsentChecked] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -46,19 +50,40 @@ export function InternshipApplyForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!consentChecked) {
-      alert("Please confirm your consent before submitting the application.");
+      toast.error("Please confirm your consent before submitting the application.");
       return;
     }
-    // TODO: Implement API call to submit application
-    console.log("Submitting application:", {
-      internshipId,
-      availability,
-      customAvailability,
-      customResume,
-      consent: consentChecked,
-    });
-    // For now, just navigate back
-    router.back();
+    if (!companyId) {
+      toast.error("Missing company information. Please go back and try again.");
+      return;
+    }
+    if (!customResume) {
+      toast.error("Please upload a resume (PDF, DOC, or DOCX) to apply.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("company", companyId);
+      formData.append("resume", customResume, customResume.name);
+      formData.append(
+        "description",
+        availability === "immediate" ? "Available immediately" : (customAvailability || "")
+      );
+      formData.append("is_available", availability === "immediate" ? "true" : "false");
+
+      await applyForInternship(formData);
+      toast.success("Application submitted successfully.");
+      router.push("/student/internships");
+    } catch (err: unknown) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Failed to submit application. Please try again.";
+      toast.error(message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -175,14 +200,14 @@ export function InternshipApplyForm({
                 </div>
               </div>
 
-              {/* Custom Resume Section */}
+              {/* Resume upload (required for application) */}
               <div>
                 <h2 className="text-lg font-bold text-gray-900 mb-1">
-                  Custom resume{" "}
-                  <span className="text-sm font-normal text-gray-500">(optional)</span>
+                  Upload resume{" "}
+                  <span className="text-sm font-normal text-red-600">(required)</span>
                 </h2>
                 <p className="text-sm text-gray-600 mb-4">
-                  Employer can download and view this resume
+                  Employer can download and view this resume. PDF, DOC, or DOCX.
                 </p>
                 
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
@@ -262,10 +287,10 @@ export function InternshipApplyForm({
                 </button>
                 <button
                   type="submit"
-                  disabled={!consentChecked}
+                  disabled={!companyId || !consentChecked || !customResume || submitting}
                   className="px-6 py-2 bg-[#E61A3D] text-white text-sm font-medium rounded-full hover:bg-[#C81733] transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Submit
+                  {submitting ? "Submitting…" : "Submit"}
                 </button>
               </div>
           </form>

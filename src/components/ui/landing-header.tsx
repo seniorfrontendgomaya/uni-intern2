@@ -15,15 +15,15 @@ type NavItem = {
 };
 
 const publicNavItems: NavItem[] = [
-  { label: "Internship", href: "/internship" },
+  { label: "Internship", href: "/internships" },
   { label: "Courses", href: "/courses" },
-  { label: "Contact", href: "/contact" },
+  { label: "Contact", href: "/contact-us" },
 ];
 
 const studentNavItems: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "Resume", href: "/student/resume" },
-  { label: "Internship", href: "/student/internship" },
+  { label: "Internship", href: "/student/internships" },
   { label: "Courses", href: "/student/courses" },
   { label: "Chat", href: "/student/chat" },
 ];
@@ -47,6 +47,13 @@ export function LandingHeader() {
     return () => {
       window.removeEventListener("uniintern:auth-changed", loadRole);
     };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onOpenLoginModal = () => setIsLoginModalOpen(true);
+    window.addEventListener("open-login-modal", onOpenLoginModal);
+    return () => window.removeEventListener("open-login-modal", onOpenLoginModal);
   }, []);
 
   const isStudent = role === "STUDENT";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { X, MapPin, Calendar, DollarSign, Clock } from "lucide-react";
+import { X, MapPin, Calendar, DollarSign, Users, Briefcase, Building2 } from "lucide-react";
 import Image from "next/image";
 
 interface InternshipDetails {
@@ -19,22 +19,90 @@ interface InternshipDetails {
   skillsRequired?: string[];
   howToApply?: string;
   perks?: string[];
+  about?: string;
+  description?: string;
+  category?: string[];
+  job_type?: string[];
+  salaryRange?: string;
+  active?: boolean;
+  number_of_opening?: number;
 }
 
 interface InternshipDetailsModalProps {
   open: boolean;
   internship: InternshipDetails | null;
   onClose: () => void;
+  /** When true, show loading state inside the modal (e.g. while fetching detail from API). */
+  loading?: boolean;
+  /** When true and no internship, show error state (e.g. fetch failed). */
+  error?: boolean;
 }
 
 export function InternshipDetailsModal({
   open,
   internship,
   onClose,
+  loading = false,
+  error = false,
 }: InternshipDetailsModalProps) {
   const router = useRouter();
   
-  if (!open || !internship) return null;
+  if (!open) return null;
+
+  if (loading) {
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-[1px]"
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.target === e.currentTarget && onClose()}
+      >
+        <div className="relative w-full max-w-2xl rounded-2xl border bg-white shadow-xl p-12 flex items-center justify-center">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <p className="text-gray-500">Loading details…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !internship) {
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-[1px]"
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.target === e.currentTarget && onClose()}
+      >
+        <div className="relative w-full max-w-2xl rounded-2xl border bg-white shadow-xl p-12 flex flex-col items-center justify-center gap-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <p className="text-gray-600">Failed to load details.</p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!internship) return null;
 
   const handleApply = () => {
     // Store internship data in sessionStorage for the apply page
@@ -46,7 +114,7 @@ export function InternshipDetailsModal({
       })
     );
     // Navigate to apply page
-    router.push(`/student/internship/apply/${internship.id}`);
+    router.push(`/student/internships/apply/${internship.id}`);
     onClose();
   };
 
@@ -103,46 +171,116 @@ export function InternshipDetailsModal({
                   )}
                 </div>
 
-                {/* Company Name and Job Title */}
+                {/* Company name (main), then designation */}
                 <div className="flex-1 min-w-0">
                   <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                    {internship.title}
+                    {internship.companyName}
                   </h2>
-                  <p className="text-base text-gray-600">{internship.companyName}</p>
+                  {internship.title && (
+                    <p className="text-base text-gray-600">{internship.title}</p>
+                  )}
                 </div>
               </div>
 
               {/* Metadata Row */}
-              <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                <div className="flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4 text-gray-500" />
-                  <span>{internship.location}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <span>{internship.duration}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <DollarSign className="h-4 w-4 text-gray-500" />
-                  <span>{internship.dateRange}</span>
-                </div>
+              <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 flex-wrap">
+                {internship.location && (
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4 text-gray-500 shrink-0" />
+                    <span>{internship.location}</span>
+                  </div>
+                )}
+                {internship.duration && (
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="h-4 w-4 text-gray-500 shrink-0" />
+                    <span>{internship.duration}</span>
+                  </div>
+                )}
+                {internship.salaryRange && (
+                  <div className="flex items-center gap-1.5">
+                    <DollarSign className="h-4 w-4 text-gray-500 shrink-0" />
+                    <span>{internship.salaryRange}</span>
+                  </div>
+                )}
               </div>
 
-              {/* Posting Age Tag */}
-              <div className="flex items-center gap-2 mb-4">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-md border border-green-100">
-                  <Clock className="h-3 w-3" />
-                  {internship.postedTime}
-                </span>
+              {/* Badges: Actively Hiring, Active, Openings */}
+              <div className="flex items-center gap-2 mb-4 flex-wrap">
                 {internship.isActivelyHiring && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-600 text-white text-xs font-medium rounded-md">
                     Actively Hiring
                   </span>
                 )}
+                {internship.active && (
+                  <span className="inline-flex items-center px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-md border border-emerald-100">
+                    Active
+                  </span>
+                )}
+                {internship.number_of_opening != null && internship.number_of_opening > 0 && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-md">
+                    <Users className="h-3 w-3" />
+                    {internship.number_of_opening} opening{internship.number_of_opening !== 1 ? "s" : ""}
+                  </span>
+                )}
               </div>
 
               {/* Separator */}
-              <div className="border-t border-gray-200"></div>
+              <div className="border-t border-gray-200 pt-4 mb-4" />
+
+              {/* Description */}
+              {internship.description && (
+                <div className="mb-4">
+                  <h3 className="text-base font-bold text-gray-900 mb-2">Description</h3>
+                  <p className="text-sm text-gray-600">{internship.description}</p>
+                </div>
+              )}
+
+              {/* About */}
+              {internship.about && (
+                <div className="mb-4">
+                  <h3 className="text-base font-bold text-gray-900 mb-2">About</h3>
+                  <p className="text-sm text-gray-600">{internship.about}</p>
+                </div>
+              )}
+
+              {/* Category */}
+              {internship.category && internship.category.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-base font-bold text-gray-900 mb-2">Category</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {internship.category.map((name, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-gray-100 text-sm text-gray-700"
+                      >
+                        <Building2 className="h-3.5 w-3.5 text-gray-500" />
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Job type */}
+              {internship.job_type && internship.job_type.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-base font-bold text-gray-900 mb-2">Job type</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {internship.job_type.map((name, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-blue-50 text-sm text-blue-800"
+                      >
+                        <Briefcase className="h-3.5 w-3.5 text-blue-600" />
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Separator */}
+              <div className="border-t border-gray-200 pt-4 mb-4" />
             </div>
 
             {/* Vacancy Section with Requirements */}

@@ -17,7 +17,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { label: "Home", href: "/student" },
   { label: "Resume", href: "/student/resume" },
-  { label: "Internship", href: "/student/internship" },
+  { label: "Internship", href: "/student/internships" },
   { label: "Courses", href: "/student/courses" },
   { label: "Chat", href: "/student/chat" },
 ];
@@ -51,12 +51,12 @@ export function StudentProfileMenu() {
 
   const goToProfile = () => {
     setOpen(false);
-    router.push("/profile");
+    router.push("/student/profile");
   };
 
   const goToChangePassword = () => {
     setOpen(false);
-    router.push("/change-password");
+    router.push("/student/change-password");
   };
 
   const handleLogout = () => {

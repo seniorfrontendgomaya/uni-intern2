@@ -1,4 +1,153 @@
+"use client";
+
+import React from "react";
 import Link from "next/link";
+import { getFooterData } from "@/services/footer.service";
+import type { FooterLink } from "@/services/footer.service";
+
+const QUICK_LINKS: FooterLink[] = [
+  { label: "Hire interns for your company", href: "#" },
+  { label: "Post a job", href: "#" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Contact us", href: "/contact-us" },
+];
+
+export interface FooterClientProps {
+  locations: FooterLink[];
+  skills: FooterLink[];
+  placementCourses: FooterLink[];
+}
+
+/** Presentational footer: no API calls, only renders the data it receives. */
+export function FooterClient({
+  locations,
+  skills,
+  placementCourses,
+}: FooterClientProps) {
+  return (
+    <footer className="mt-16 bg-[#050816] text-slate-200">
+      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+              Internships by location
+            </p>
+            <ul className="mt-3 space-y-2">
+              {locations.map((link) => (
+                <li key={link.href + link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-slate-400 transition hover:text-slate-100"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+              Internships by skills
+            </p>
+            <ul className="mt-3 space-y-2">
+              {skills.map((link) => (
+                <li key={link.href + link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-slate-400 transition hover:text-slate-100"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+              Placement Guarantee Courses
+            </p>
+            <ul className="mt-3 space-y-2">
+              {placementCourses.map((link) => (
+                <li key={link.href + link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-slate-400 transition hover:text-slate-100"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+              Quick links
+            </p>
+            <ul className="mt-3 space-y-2">
+              {QUICK_LINKS.map((link) => (
+                <li key={link.href + link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-slate-400 transition hover:text-slate-100"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-10 border-t border-slate-800 pt-6">
+          <p className="text-sm text-slate-500">
+            © 2025, UNIINTERN. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/** Client-mounted footer: fetches on mount (deduped by getFooterData cache). Use on public internships list. */
+export function FooterClientMount() {
+  const [data, setData] = React.useState<FooterClientProps | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    getFooterData()
+      .then((d) => {
+        if (!cancelled) setData(d);
+      })
+      .catch(() => {
+        if (!cancelled) setData({ locations: [], skills: [], placementCourses: [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!data) {
+    return (
+      <footer className="mt-16 bg-[#050816] text-slate-200">
+        <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+          <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
+            {["Internships by location", "Internships by skills", "Placement Guarantee Courses", "Quick links"].map((title) => (
+              <div key={title}>
+                <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">{title}</p>
+                <ul className="mt-3 space-y-2 text-sm text-slate-500">Loading…</ul>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10 border-t border-slate-800 pt-6">
+            <p className="text-sm text-slate-500">© 2025, UNIINTERN. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
+  return <FooterClient {...data} />;
+}
 
 type FooterSection = {
   title: string;
@@ -46,11 +195,12 @@ const sections: FooterSection[] = [
       { label: "Hire interns for your company", href: "#" },
       { label: "Post a job", href: "#" },
       { label: "Privacy", href: "/privacy" },
-      { label: "Contact us", href: "#" },
+      { label: "Contact us", href: "/contact-us" },
     ],
   },
 ];
 
+/** Static footer (fallback). Prefer FooterSSR or FooterClientMount for dynamic links. */
 export function LandingFooter() {
   return (
     <footer className="mt-16 bg-[#050816] text-slate-200">
@@ -88,4 +238,3 @@ export function LandingFooter() {
 }
 
 export default LandingFooter;
-

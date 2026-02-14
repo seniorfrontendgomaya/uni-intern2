@@ -5,10 +5,12 @@ import { usePaginated } from "./usePaginated";
 import {
   CompanyCreatePayload,
   CompanyUpdatePayload,
+  CompanyProfilePatch,
   createCompany,
   getCompanies,
   getCompanyById,
   updateCompany,
+  updateCompanyWithFormData,
 } from "@/services/companies.service";
 import type {
   CompanyListItem,
@@ -38,6 +40,15 @@ export function useUpdateCompany() {
   const { run, loading } = useAsyncAction<CompanyMutationResponse>();
 
   const update = (payload: CompanyUpdatePayload) => run(() => updateCompany(payload));
+
+  return { data: update, loading };
+}
+
+export function useUpdateCompanyWithFormData() {
+  const { run, loading } = useAsyncAction<CompanyMutationResponse>();
+
+  const update = (payload: { companyId: string; data: CompanyProfilePatch }) =>
+    run(() => updateCompanyWithFormData(payload));
 
   return { data: update, loading };
 }

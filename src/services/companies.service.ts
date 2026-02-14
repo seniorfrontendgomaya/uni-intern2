@@ -78,6 +78,43 @@ export const getCompanies = async (
 export const searchCompanies = (searchTerm: string, page = 1, perPage = 10) =>
   getCompanies(page, perPage, searchTerm);
 
+/** Build minimal create payload from profile fields only (for superadmin simple create). */
+export function minimalCompanyCreatePayload(values: {
+  name: string;
+  email: string;
+  mobile: string;
+  password: string;
+  description: string;
+}): CompanyCreatePayload {
+  return {
+    user_type: "COMPANY",
+    name: values.name,
+    email: values.email,
+    mobile: values.mobile,
+    password: values.password,
+    description: values.description,
+    location: [],
+    category: [],
+    job_type: [],
+    designation: [],
+    skills: [],
+    course: [],
+    perk: [],
+    start_amount: 0,
+    end_amount: 0,
+    start_anual_salary: 0,
+    end_anual_salary: 0,
+    number_of_opening: 0,
+    about: "",
+    apply: "",
+    key_responsibility: "",
+    qualification: "",
+    education: "",
+    active: true,
+    placement_gurantee_course: false,
+  };
+}
+
 export const createCompany = (payload: CompanyCreatePayload) =>
   api<CompanyMutationResponse>("create_company/", {
     method: "POST",
@@ -95,6 +132,43 @@ export const updateCompany = ({ companyId, patchData }: CompanyUpdatePayload) =>
     },
     body: JSON.stringify(patchData),
   });
+
+/** Profile fields + optional image file for superadmin company update. */
+export type CompanyProfilePatch = {
+  name: string;
+  email: string;
+  mobile: string;
+  description: string;
+  password?: string;
+  image?: File | null;
+};
+
+/** PATCH update_company with FormData so image can be included. Use when image is a File. */
+export const updateCompanyWithFormData = ({
+  companyId,
+  data,
+}: {
+  companyId: string;
+  data: CompanyProfilePatch;
+}) => {
+  const formData = new FormData();
+  formData.append("name", data.name);
+  formData.append("email", data.email);
+  formData.append("mobile", data.mobile);
+  formData.append("description", data.description);
+  if (data.password != null && data.password !== "")
+    formData.append("password", data.password);
+  if (data.image instanceof File) {
+    formData.append("image", data.image, data.image.name);
+  }
+  return api<CompanyMutationResponse>(`/update_company/${companyId}/`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: formData,
+  });
+};
 
 export const getCompanyById = async (id: string): Promise<CompanyMutationResponse> => {
   return api<CompanyMutationResponse>(`/update_company/${id}/`, {

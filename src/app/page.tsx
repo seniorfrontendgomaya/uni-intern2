@@ -1,5 +1,5 @@
 import { LandingHeader } from "@/components/ui/landing-header";
-import { LandingFooter } from "@/components/ui/landing-footer";
+import { FooterSSR } from "@/components/ui/footer-ssr";
 import { LandingHeroSection } from "@/components/ui/landing-hero-section";
 import { LandingCompaniesSection } from "@/components/ui/landing-companies-section";
 import { LandingRecommendedSection } from "@/components/ui/landing-recommended-section";
@@ -17,7 +17,7 @@ export default function Home() {
       <LandingPlacementSection />
       <LandingCompaniesSection />
       <LandingTestimonialsSection />
-      <LandingFooter />
+      <FooterSSR />
     </div>
   );
 }
