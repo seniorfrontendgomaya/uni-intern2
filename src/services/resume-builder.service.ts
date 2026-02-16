@@ -21,11 +21,22 @@ export const getResumeUserProfile = () =>
     headers: getAuthHeaders(),
   });
 
-export const updateResumeUserProfile = (formData: FormData) =>
-  api<{ message: string; data: any }>("update_student_profile/", {
+export type ResumeUserProfilePatchPayload = Partial<{
+  first_name: string;
+  last_name: string;
+  email: string;
+  country_code: string;
+  mobile: string;
+  gender: string;
+  language: number[];
+  location: number[];
+}>;
+
+export const updateResumeUserProfile = (payload: ResumeUserProfilePatchPayload) =>
+  api<{ message: string; data: any }>("get_student_profile/", {
     method: "PATCH",
     headers: getAuthHeaders(),
-    body: formData,
+    body: JSON.stringify(payload),
   });
 
 // Career Objective
@@ -60,37 +71,83 @@ export const getUserEducation = () =>
     headers: getAuthHeaders(),
   });
 
-export const createUserEducation = (data: {
-  name: string;
-  start_year: string;
-  end_year: string | null;
-  degree: string;
-  stream: string;
-  cgpa: number;
-  cgpa2: string;
-  education: string;
-  school_name: string;
-  is_ongoing: boolean;
-}) =>
+export type EducationCreatePayload =
+  | {
+      education: "secondary";
+      school_name: string;
+      board: string;
+      cgpa: string;
+      cgpa2: string;
+      year_of_completion: string;
+    }
+  | {
+      education: "senior secondary";
+      school_name: string;
+      board: string;
+      cgpa: string;
+      cgpa2: string;
+      year_of_completion: string;
+      stream: string;
+    }
+  | {
+      education: "graduation/ post graduation";
+      name: string;
+      degree: string;
+      school_name: string;
+      start_year: string;
+      end_year: string | null;
+      stream: string;
+      cgpa: string;
+      cgpa2: string;
+      is_ongoing: boolean;
+    }
+  | {
+      education: "diploma";
+      name: string;
+      degree: string;
+      school_name: string;
+      start_year: string;
+      end_year: string | null;
+      stream: string;
+      cgpa: string;
+      cgpa2: string;
+      is_ongoing: boolean;
+    }
+  | {
+      education: "Phd";
+      name: string;
+      school_name: string;
+      start_year: string;
+      end_year: string | null;
+      stream: string;
+      cgpa: string;
+      cgpa2: string;
+      is_ongoing: boolean;
+    };
+
+export const createUserEducation = (data: EducationCreatePayload) =>
   api<{ message: string; data: any }>("create_user_education/", {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
 
-export const updateUserEducation = (
-  id: number,
-  data: {
-    school_name?: string;
-    name?: string;
-    start_year?: string;
-    end_year?: string | null;
-    stream?: string;
-    cgpa?: number;
-    cgpa2?: string;
-    is_ongoing?: boolean;
-  }
-) =>
+export type EducationUpdatePayload = Partial<{
+  education: string;
+  school_name: string;
+  board: string;
+  cgpa: string;
+  cgpa2: string;
+  year_of_completion: string;
+  name: string;
+  degree: string;
+  start_year: string;
+  end_year: string | null;
+  stream: string;
+  is_ongoing: boolean;
+}>;
+
+export const updateUserEducation = (id: number, data: EducationUpdatePayload) =>
   api<{ message: string; data: any }>(`update_user_education/${id}/`, {
     method: "PATCH",
     headers: getAuthHeaders(),
@@ -272,10 +329,12 @@ export const deleteUserAccomplishment = (id: number) =>
   });
 
 // Languages
-export const getLanguages = () =>
-  api<LanguageResponse>("get_language/", {
+export const getLanguages = (search?: string) => {
+  const searchParam = search?.trim() ? `?search=${encodeURIComponent(search.trim())}` : "";
+  return api<LanguageResponse>(`get_language/${searchParam}`, {
     headers: getAuthHeaders(),
   });
+};
 
 // Resume Download
 export const downloadResume = async () => {

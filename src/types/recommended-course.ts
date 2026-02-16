@@ -1,7 +1,15 @@
 /** API response from recommended_course_api */
 export interface RecommendedCourseApiEntry {
   name?: string;
-  course?: { name?: string }[];
+  course?: Array<{
+    id?: number | string;
+    name?: string;
+    description?: string;
+    image?: string | null;
+    fees?: number | string | null;
+    duration?: number | string | null;
+    placement_gurantee?: boolean;
+  }>;
   start_anual_salary?: number | string | null;
   end_anual_salary?: number | string | null;
 }

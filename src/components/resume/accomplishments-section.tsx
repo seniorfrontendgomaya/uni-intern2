@@ -36,8 +36,8 @@ export function AccomplishmentsSection() {
         }
       }
     } catch (error) {
-      console.error("Failed to fetch accomplishments:", error);
-      toast.error("Failed to load accomplishments");
+      // console.error("Failed to fetch accomplishments:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to load accomplishments");
     } finally {
       setLoading(false);
     }
@@ -60,8 +60,8 @@ export function AccomplishmentsSection() {
       setEditingId(null);
       fetchAccomplishments();
     } catch (error) {
-      console.error("Failed to update accomplishment:", error);
-      toast.error("Failed to update accomplishment");
+      // console.error("Failed to update accomplishment:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update accomplishment");
     }
   };
 
@@ -87,8 +87,8 @@ export function AccomplishmentsSection() {
       setNewText("");
       fetchAccomplishments();
     } catch (error) {
-      console.error("Failed to create accomplishment:", error);
-      toast.error("Failed to add accomplishment");
+      // console.error("Failed to create accomplishment:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to add accomplishment");
     }
   };
 
@@ -105,7 +105,7 @@ export function AccomplishmentsSection() {
       setAccomplishments(accomplishments.filter((acc) => acc.id !== itemToDelete));
       toast.success("Accomplishment deleted");
     } catch (error) {
-      console.error("Failed to delete accomplishment:", error);
+      // console.error("Failed to delete accomplishment:", error);
       toast.error("Failed to delete accomplishment");
     } finally {
       setItemToDelete(null);

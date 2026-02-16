@@ -17,6 +17,7 @@ export type CourseCreatePayloadData = {
   duration?: number | string | null;
   fees?: number | string | null;
   placement_gurantee?: boolean;
+  is_recomended?: boolean;
 };
 
 export type CourseCreatePayload = FormData | CourseCreatePayloadData;
@@ -207,6 +208,145 @@ export interface CourseCategoryDetailResponse {
   statusCode: number;
   message: string | null;
   data: CourseCategoryDetailItem;
+}
+
+// --- Course Sub Category List (by category_id) ---
+
+export interface CourseSubCategoryItem {
+  id: number;
+  name: string;
+  description: string;
+  course_category: number;
+  total_duration: number;
+  course_count: number;
+  course_category_name: string;
+  course_category_fee: number;
+  course_category_image: string | null;
+}
+
+export interface CourseSubCategoryListResponse {
+  statusCode: number;
+  hasNextPage: boolean;
+  next: string | null;
+  previous: string | null;
+  count: number;
+  message: string | null;
+  data: CourseSubCategoryItem[];
+}
+
+/** Get course sub-category list by category_id (for student course listing) */
+export async function getCourseSubCategoryList(
+  categoryId: number
+): Promise<CourseSubCategoryListResponse> {
+  const token = localStorage.getItem("token");
+  const res = await fetch(
+    `${BASE}/course_sub_category_list/?category_id=${encodeURIComponent(categoryId)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Failed to load subcategories: ${res.status}`);
+  }
+
+  const json = (await res.json()) as CourseSubCategoryListResponse;
+  return json;
+}
+
+/** Get course sub-category list without filter (for default /courses and /student/courses) */
+export async function getCourseSubCategoryListAll(): Promise<CourseSubCategoryListResponse> {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${BASE}/course_sub_category_list/`, {
+    method: "GET",
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to load subcategories: ${res.status}`);
+  }
+
+  const json = (await res.json()) as CourseSubCategoryListResponse;
+  return json;
+}
+
+// --- Course Detail List (by sub_category_id) ---
+
+export interface CourseDetailListItem {
+  id: number;
+  name: string;
+  description: string;
+  duration: number;
+  video: string | null;
+  course_sub_category: number;
+}
+
+export interface CourseDetailListCategory {
+  id: number;
+  name: string;
+  title: string;
+  description: string;
+  course_owner: number;
+  owner_name: string;
+  fee: number | string;
+  image: string | null;
+  is_placement_gurantee: boolean;
+  what_you_learn: string;
+  requirement: string;
+  detail: string;
+  reason: string;
+  for_who: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CourseDetailListSubCategory {
+  id: number;
+  name: string;
+  description: string;
+  course_category: CourseDetailListCategory;
+}
+
+export interface CourseDetailListResponse {
+  statusCode?: number;
+  message?: string | null;
+  data?: CourseDetailListItem[];
+  course_sub_category?: CourseDetailListSubCategory;
+}
+
+/** Get course detail list by sub_category_id (param from card's course_category key) */
+export async function getCourseDetailList(
+  subCategoryId: number
+): Promise<CourseDetailListResponse> {
+  const token = localStorage.getItem("token");
+  const res = await fetch(
+    `${BASE}/course_detail_list/?sub_category_id=${encodeURIComponent(subCategoryId)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Failed to load course details: ${res.status}`);
+  }
+
+  const json = (await res.json()) as CourseDetailListResponse;
+  console.log("course_detail_list response:", json);
+  return json;
 }
 
 /** Get single course category by ID (for detail page) */

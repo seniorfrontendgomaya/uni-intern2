@@ -30,7 +30,7 @@ export class ValidationError extends BaseError {
 
 export class NotFoundError extends BaseError {
   constructor(meta?: unknown) {
-    console.log("meta", meta);
+    // console.log("meta", meta);
     super((meta as { message?: string })?.message || "Resource not found.", "NOT_FOUND", 404);
   }
 }

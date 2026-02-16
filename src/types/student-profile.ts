@@ -21,7 +21,7 @@ export interface StudentProfile {
   country_code: string;
   mobile: string;
   qualification: string | null;
-  location: string[];
+  location: { id: number; name: string }[];
   skills: Skill[];
   gender: string;
   education: string;

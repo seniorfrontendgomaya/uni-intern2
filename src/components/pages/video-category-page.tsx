@@ -133,7 +133,7 @@ export function VideoCategoryPage() {
     hasPrev,
     loading,
     refresh,
-  } = useVideoCoursesPaginated(10);
+  } = useVideoCoursesPaginated(10, searchTerm);
   const { data: createVideoCourse } = useVideoCourse();
   const { data: updateVideoCourse } = useUpdateVideoCourse();
   const { data: deleteVideoCourse } = useDeleteVideoCourse();
@@ -149,6 +149,8 @@ export function VideoCategoryPage() {
           {fullDescription}
         </span>
       ),
+      // Store the actual string value for form editing
+      description_value: item.description ?? "",
       fee: item.fee != null ? String(item.fee) : "-",
       placement_label: item.is_placement_gurantee ? "Yes" : "No",
       is_placement_gurantee: item.is_placement_gurantee,

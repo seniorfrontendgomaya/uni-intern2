@@ -13,20 +13,22 @@ interface CourseCardProps {
 
 export function CourseCard({ course, basePath = "/student/courses" }: CourseCardProps) {
   const [imageError, setImageError] = useState(false);
-  const [imageSrc, setImageSrc] = useState(course.image || "/assets/courses/course-default.jpg");
+  const [imageSrc, setImageSrc] = useState(course.image);
 
   const handleImageError = () => {
     if (!imageError) {
       setImageError(true);
-      setImageSrc("/assets/courses/course-default.jpg");
+      setImageSrc(null);
     }
   };
+
+  const shouldShowFallback = imageError || !imageSrc || imageSrc === null;
 
   return (
     <Link href={`${basePath}/${course.id}`} className="h-full">
       <article className="h-full flex flex-col rounded-lg border bg-white shadow-sm transition hover:shadow-md overflow-hidden cursor-pointer">
         <div className="relative h-40 w-full shrink-0 overflow-hidden bg-gray-100">
-          {imageError || !imageSrc || imageSrc === "/assets/courses/course-default.jpg" ? (
+          {shouldShowFallback ? (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orange-100 to-orange-200">
               <div className="flex flex-col items-center justify-center gap-2 text-orange-400">
                 <BookOpen className="h-12 w-12" />
@@ -48,7 +50,6 @@ export function CourseCard({ course, basePath = "/student/courses" }: CourseCard
           <h3 className="line-clamp-2 text-sm font-semibold text-gray-900">
             {course.title}
           </h3>
-          <p className="mt-1 text-xs text-gray-600">{course.provider}</p>
           {course.tag && (
             <div className="mt-2">
               <span

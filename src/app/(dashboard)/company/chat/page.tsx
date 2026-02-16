@@ -93,7 +93,7 @@ export default function CompanyChatPage() {
           }
         }
       } catch (e) {
-        console.error("Failed to send message:", e);
+        ("Failed to send message:", e);
       }
     },
     [contacts, wsSend, wsConnected, sendMessage]

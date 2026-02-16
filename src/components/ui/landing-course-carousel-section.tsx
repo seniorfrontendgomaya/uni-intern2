@@ -15,9 +15,9 @@ export function LandingCourseCarouselSection({
   if (!courses.length) return null;
 
   return (
-    <section className="w-full bg-white py-10 md:py-12">
+    <section className="w-full bg-white py-6 md:py-8">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <h2 className="mb-6 text-xl font-semibold text-foreground md:text-2xl">
+        <h2 className="mb-4 text-xl font-semibold text-foreground md:text-2xl">
           {title}
         </h2>
         <CourseCarousel courses={courses} />

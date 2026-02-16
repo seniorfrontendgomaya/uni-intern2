@@ -11,10 +11,10 @@ import { AccomplishmentsSection } from "@/components/resume/accomplishments-sect
 
 export default function ResumeBuilderPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white px-4 sm:px-6">
       {/* Header Message */}
       <div className="border-gray-200">
-        <div className="mx-auto max-w-4xl px-8 py-3 text-center">
+        <div className="mx-auto max-w-4xl px-4 sm:px-8 py-3 text-center">
           <p className="text-xs text-gray-500">
             This is the resume companies will see when you apply
           </p>

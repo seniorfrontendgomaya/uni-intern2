@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Modal } from "@/components/ui/modal";
+import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import {
   useVideoCourseDetailCreate,
   useVideoCourseDetailDelete,
@@ -38,6 +39,17 @@ export function VideoCoursesPage({
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [subcategoryName, setSubcategoryName] = useState<string | null>(null);
   const [categoryName, setCategoryName] = useState<string | null>(null);
+  
+  // Track initial values for comparison during update
+  const [initialValues, setInitialValues] = useState<{
+    name: string;
+    description: string;
+    duration: string;
+    course_sub_category: string;
+  } | null>(null);
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: number; name: string } | null>(null);
 
   const backHref = useMemo(() => {
     if (categoryId) {
@@ -85,6 +97,7 @@ export function VideoCoursesPage({
     setDuration("");
     setVideoFile(null);
     setVideoUrl(null);
+    setInitialValues(null);
     setModalOpen(true);
   };
 
@@ -92,11 +105,21 @@ export function VideoCoursesPage({
     const course = items.find((item) => item.id === id);
     if (!course) return;
     setEditingId(String(id));
-    setName(course.name);
-    setDescription(course.description ?? "");
-    setDuration(course.duration ?? "");
+    const courseName = course.name;
+    const courseDescription = course.description ?? "";
+    const courseDuration = course.duration ?? "";
+    setName(courseName);
+    setDescription(courseDescription);
+    setDuration(courseDuration);
     setVideoFile(null);
     setVideoUrl(course.video ?? null);
+    // Store initial values for comparison
+    setInitialValues({
+      name: courseName,
+      description: courseDescription,
+      duration: courseDuration,
+      course_sub_category: subCategoryId,
+    });
     setModalOpen(true);
   };
 
@@ -116,47 +139,72 @@ export function VideoCoursesPage({
         const res = await create(formData);
         if (!res.ok) return;
       } else {
-        const hasVideo = Boolean(videoFile);
-        if (hasVideo) {
-          const formData = new FormData();
+        // Only send changed fields in the update payload
+        const formData = new FormData();
+        let hasChanges = false;
+
+        // Compare current values with initial values
+        if (initialValues) {
+          if (name !== initialValues.name) {
+            formData.append("name", name);
+            hasChanges = true;
+          }
+          if (description !== initialValues.description) {
+            formData.append("description", description);
+            hasChanges = true;
+          }
+          if (duration !== initialValues.duration) {
+            formData.append("duration", duration);
+            hasChanges = true;
+          }
+          if (subCategoryId !== initialValues.course_sub_category) {
+            formData.append("course_sub_category", subCategoryId);
+            hasChanges = true;
+          }
+        } else {
+          // Fallback: if initial values not set, send all fields
           formData.append("name", name);
           formData.append("description", description);
           formData.append("duration", duration);
           formData.append("course_sub_category", subCategoryId);
-          if (videoFile) {
-            formData.append("video", videoFile);
-          }
+          hasChanges = true;
+        }
+
+        // Always include video if a new file is selected
+        if (videoFile) {
+          formData.append("video", videoFile);
+          hasChanges = true;
+        }
+
+        // Only send update if there are changes
+        if (hasChanges) {
           const res = await update({
             courseId: editingId,
             patchData: formData,
           });
           if (!res.ok) return;
-        } else {
-          const jsonPatch: Record<string, string> = {
-            name,
-            description,
-            duration,
-            course_sub_category: subCategoryId,
-          };
-          const res = await update({
-            courseId: editingId,
-            patchData: jsonPatch,
-          });
-          if (!res.ok) return;
         }
       }
       setModalOpen(false);
+      setInitialValues(null);
       await refresh();
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    const res = await destroy(String(id));
+  const handleDeleteClick = (id: number, courseName: string) => {
+    setItemToDelete({ id, name: courseName });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (itemToDelete === null) return;
+    const res = await destroy(String(itemToDelete.id));
     if (res.ok) {
       await refresh();
     }
+    setItemToDelete(null);
   };
 
   return (
@@ -253,7 +301,7 @@ export function VideoCoursesPage({
                 <button
                   type="button"
                   className="inline-flex flex-1 items-center justify-center rounded-md bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-rose-600"
-                  onClick={() => handleDelete(course.id)}
+                  onClick={() => handleDeleteClick(course.id, course.name)}
                 >
                   Delete
                 </button>
@@ -266,7 +314,10 @@ export function VideoCoursesPage({
       <Modal
         open={modalOpen}
         title={editingId ? "Edit course" : "Add course"}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {
+          setModalOpen(false);
+          setInitialValues(null);
+        }}
         footer={
           <div className="flex justify-end gap-2">
             <button
@@ -342,6 +393,18 @@ export function VideoCoursesPage({
           </div>
         </div>
       </Modal>
+
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setItemToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete video course"
+        message="Are you sure you want to delete this video course?"
+        itemName={itemToDelete?.name}
+      />
     </div>
   );
 }

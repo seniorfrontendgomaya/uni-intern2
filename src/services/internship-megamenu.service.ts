@@ -44,12 +44,37 @@ export async function fetchTopPlacementCourses(jobType: JobTypeFilter): Promise<
   return parseListResponse(json);
 }
 
-export async function fetchAllMegamenuData(jobType: JobTypeFilter) {
+export type MegamenuData = {
+  locations: string[];
+  profiles: string[];
+  categories: string[];
+  placements: string[];
+};
+
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const cache: Partial<Record<JobTypeFilter, { data: MegamenuData; ts: number }>> = {};
+
+function getCached(jobType: JobTypeFilter): MegamenuData | null {
+  const entry = cache[jobType];
+  if (!entry || Date.now() - entry.ts > CACHE_TTL_MS) return null;
+  return entry.data;
+}
+
+function setCached(jobType: JobTypeFilter, data: MegamenuData) {
+  cache[jobType] = { data, ts: Date.now() };
+}
+
+/** Fetches megamenu data; uses in-memory cache per jobType to avoid calling APIs on every page/mount. */
+export async function fetchAllMegamenuData(jobType: JobTypeFilter): Promise<MegamenuData> {
+  const cached = getCached(jobType);
+  if (cached) return cached;
   const [locations, profiles, categories, placements] = await Promise.all([
     fetchTopLocations(jobType),
     fetchTopProfile(jobType),
     fetchTopCategory(jobType),
     fetchTopPlacementCourses(jobType),
   ]);
-  return { locations, profiles, categories, placements };
+  const data = { locations, profiles, categories, placements };
+  setCached(jobType, data);
+  return data;
 }

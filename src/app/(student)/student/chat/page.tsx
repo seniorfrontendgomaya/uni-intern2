@@ -96,7 +96,7 @@ export default function StudentChatPage() {
           }
         }
       } catch (e) {
-        console.error("Failed to send message:", e);
+        // console.error("Failed to send message:", e);
       }
     },
     [contacts, wsSend, wsConnected, sendMessage]

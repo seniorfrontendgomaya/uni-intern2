@@ -41,7 +41,7 @@ export default function StudentProfilePage() {
   const [languageSearch, setLanguageSearch] = useState("");
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
-  const [selectedCity, setSelectedCity] = useState<{ id: number; name: string } | null>(null);
+  const [selectedCities, setSelectedCities] = useState<{ id: number; name: string }[]>([]);
   const [citySearch, setCitySearch] = useState("");
   const [cityOptions, setCityOptions] = useState<City[]>([]);
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
@@ -56,7 +56,7 @@ export default function StudentProfilePage() {
         setProfile(response.data[0]);
       }
     } catch (error) {
-      console.error("Failed to fetch profile:", error);
+      // console.error("Failed to fetch profile:", error);
       toast.error("Failed to load profile. Please try again.");
     } finally {
       setLoading(false);
@@ -87,9 +87,14 @@ export default function StudentProfilePage() {
     });
     setImagePreview(profile.image ?? null);
     const loc = profile.location;
-    setSelectedCity(
-      Array.isArray(loc) && loc.length > 0 ? { id: 0, name: String(loc[0]) } : null
-    );
+    if (Array.isArray(loc) && loc.length > 0) {
+      const validLocations = loc
+        .filter((l) => l && typeof l === "object" && "id" in l && "name" in l)
+        .map((l) => ({ id: l.id, name: l.name }));
+      setSelectedCities(validLocations);
+    } else {
+      setSelectedCities([]);
+    }
   }, [profile]);
 
   const openModal = async () => {
@@ -107,9 +112,14 @@ export default function StudentProfilePage() {
       setImageFile(null);
       setImagePreview(profile.image ?? null);
       const loc = profile.location;
-      setSelectedCity(
-        Array.isArray(loc) && loc.length > 0 ? { id: 0, name: String(loc[0]) } : null
-      );
+      if (Array.isArray(loc) && loc.length > 0) {
+        const validLocations = loc
+          .filter((l) => l && typeof l === "object" && "id" in l && "name" in l)
+          .map((l) => ({ id: l.id, name: l.name }));
+        setSelectedCities(validLocations);
+      } else {
+        setSelectedCities([]);
+      }
       setCitySearch("");
       setCityOptions([]);
       setCityDropdownOpen(false);
@@ -131,7 +141,7 @@ export default function StudentProfilePage() {
     setSaving(true);
     try {
       const location: number[] | undefined =
-        selectedCity && selectedCity.id > 0 ? [selectedCity.id] : undefined;
+        selectedCities.length > 0 ? selectedCities.map((c) => c.id) : undefined;
       const payload: StudentProfilePatch = {
         first_name: form.first_name || undefined,
         last_name: form.last_name || undefined,
@@ -184,12 +194,14 @@ export default function StudentProfilePage() {
   };
 
   const addLocation = (city: City) => {
-    setSelectedCity({ id: city.id, name: city.name });
+    if (!selectedCities.some((c) => c.id === city.id)) {
+      setSelectedCities([...selectedCities, { id: city.id, name: city.name }]);
+    }
     setCitySearch("");
     setCityDropdownOpen(false);
   };
-  const removeLocation = () => {
-    setSelectedCity(null);
+  const removeLocation = (id: number) => {
+    setSelectedCities(selectedCities.filter((c) => c.id !== id));
   };
 
   useEffect(() => {
@@ -330,7 +342,11 @@ export default function StudentProfilePage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Location</p>
-                    <p className="mt-0.5 text-gray-900">{profile.location.join(", ")}</p>
+                    <p className="mt-0.5 text-gray-900">
+                      {profile.location
+                        .map((loc) => (typeof loc === "object" && loc?.name ? loc.name : String(loc)))
+                        .join(", ")}
+                    </p>
                   </div>
                 </div>
               )}
@@ -510,19 +526,24 @@ export default function StudentProfilePage() {
           </div>
           <div ref={cityDropdownRef} className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            {selectedCity && (
-              <div className="mb-2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-sm font-medium text-orange-700 border border-orange-100">
-                  {selectedCity.name}
-                  <button
-                    type="button"
-                    onClick={removeLocation}
-                    className="rounded-full p-0.5 hover:bg-orange-200/60"
-                    aria-label={`Remove ${selectedCity.name}`}
+            {selectedCities.length > 0 && (
+              <div className="mb-2 flex flex-wrap gap-1.5">
+                {selectedCities.map((city) => (
+                  <span
+                    key={city.id}
+                    className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-sm font-medium text-orange-700 border border-orange-100"
                   >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </span>
+                    {city.name}
+                    <button
+                      type="button"
+                      onClick={() => removeLocation(city.id)}
+                      className="rounded-full p-0.5 hover:bg-orange-200/60"
+                      aria-label={`Remove ${city.name}`}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </span>
+                ))}
               </div>
             )}
             <input
@@ -539,20 +560,21 @@ export default function StudentProfilePage() {
                   <p className="px-3 py-2 text-sm text-gray-500">Searching…</p>
                 ) : !citySearch.trim() ? (
                   <p className="px-3 py-2 text-sm text-gray-500">Type to search cities.</p>
-                ) : cityOptions.length === 0 ? (
+                ) : cityOptions.filter((c) => !selectedCities.some((s) => s.id === c.id)).length === 0 ? (
                   <p className="px-3 py-2 text-sm text-gray-500">No cities found.</p>
                 ) : (
-                  cityOptions.map((city) => (
-                    <button
-                      key={city.id}
-                      type="button"
-                      onClick={() => addLocation(city)}
-                      disabled={selectedCity?.id === city.id}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 disabled:bg-orange-50 disabled:text-orange-700 disabled:cursor-default"
-                    >
-                      {city.name}
-                    </button>
-                  ))
+                  cityOptions
+                    .filter((c) => !selectedCities.some((s) => s.id === c.id))
+                    .map((city) => (
+                      <button
+                        key={city.id}
+                        type="button"
+                        onClick={() => addLocation(city)}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
+                      >
+                        {city.name}
+                      </button>
+                    ))
                 )}
               </div>
             )}

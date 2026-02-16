@@ -11,20 +11,22 @@ interface CourseCarouselProps {
 
 function CourseCarouselCard({ course }: { course: CourseCard }) {
   const [imageError, setImageError] = useState(false);
-  const [imageSrc, setImageSrc] = useState(course.image || "/assets/courses/course-default.jpg");
+  const [imageSrc, setImageSrc] = useState(course.image);
 
   const handleImageError = () => {
     if (!imageError) {
       setImageError(true);
-      setImageSrc("/assets/courses/course-default.jpg");
+      setImageSrc(null);
     }
   };
+
+  const shouldShowFallback = imageError || !imageSrc || imageSrc === null;
 
   return (
     <article className="min-w-[280px] max-w-[280px] shrink-0 rounded-lg border bg-white shadow-sm transition hover:shadow-md sm:min-w-[300px] sm:max-w-[300px]">
       {/* Course Image */}
       <div className="relative h-40 w-full overflow-hidden rounded-t-lg bg-gray-100">
-        {imageError || !imageSrc || imageSrc === "/assets/courses/course-default.jpg" ? (
+        {shouldShowFallback ? (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orange-100 to-orange-200">
             <div className="flex flex-col items-center justify-center gap-2 text-orange-400">
               <BookOpen className="h-12 w-12" />
@@ -50,8 +52,19 @@ function CourseCarouselCard({ course }: { course: CourseCard }) {
           {course.title}
         </h3>
 
-        {/* Provider */}
-        <p className="mt-1 text-xs text-gray-600">{course.provider}</p>
+        {/* Description (optional) */}
+        {course.description && (
+          <p className="mt-2 text-xs text-gray-700 line-clamp-2">
+            {course.description}
+          </p>
+        )}
+
+        {/* Duration (optional) */}
+        {typeof course.duration === "number" && (
+          <p className="mt-1 text-xs text-gray-500">
+            Duration: {course.duration}
+          </p>
+        )}
 
         {/* Tag */}
         {course.tag && (

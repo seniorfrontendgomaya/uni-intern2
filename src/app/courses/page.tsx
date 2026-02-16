@@ -38,7 +38,7 @@ export default function CoursesPage() {
         const mappedCourses = response.data.map(mapToCourseCard);
         setCourses(mappedCourses);
       } catch (err) {
-        console.error("Failed to load courses:", err);
+        // console.error("Failed to load courses:", err);
         setError("Failed to load courses. Please try again later.");
       } finally {
         setLoading(false);

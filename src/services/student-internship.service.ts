@@ -6,6 +6,7 @@ export type GetCompanyQuery = {
   category?: string;
   course?: string;
   job_type?: string;
+  salary_range?: string;
 };
 
 /** Item shape from get_company/ API (note: API returns "comapany" typo). */
@@ -19,6 +20,8 @@ export interface GetCompanyItem {
   description: string | null;
   location: Array<{ id: number; name: string; description: string }>;
   category: Array<{ id: number; name: string; description?: string }>;
+  job_type?: Array<{ id: number; name: string; description?: string; is_job_offer?: boolean }>;
+  skills?: Array<{ id: number; name: string; description?: string }>;
   start_amount: number | null;
   end_amount: number | null;
   start_day: string | null;
@@ -69,6 +72,7 @@ export async function fetchGetCompany(
   if (query.category?.trim()) params.category = query.category.trim();
   if (query.course?.trim()) params.course = query.course.trim();
   if (query.job_type?.trim()) params.job_type = query.job_type.trim();
+  if (query.salary_range?.trim()) params.salary_range = query.salary_range.trim();
 
   const url = getApiUrl("get_company/", Object.keys(params).length ? params : undefined);
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;

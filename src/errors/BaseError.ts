@@ -10,7 +10,6 @@ export abstract class BaseError extends Error {
       status?: number,
       meta?: unknown
     ) {
-    console.log("meta", meta);
       super(message);
       this.code = code;
       this.status = status;

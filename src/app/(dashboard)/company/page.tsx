@@ -209,7 +209,7 @@ export default function CompanyPage() {
             }
           } catch (error) {
             toast.error("Failed to update profile");
-            console.error(error);
+            // console.error(error);
           } finally {
             setSaving(false);
           }

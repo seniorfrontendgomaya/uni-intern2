@@ -3,10 +3,12 @@ export interface CourseCard {
   name: string;
   title: string;
   provider: string;
-  image: string;
+  image: string | null;
   tag?: {
     label: string;
     variant: "bestseller" | "hot-new";
   };
   price: number;
+  description?: string;
+  duration?: number;
 }

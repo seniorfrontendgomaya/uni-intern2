@@ -12,6 +12,10 @@ import type { Education } from "@/types/resume-builder";
 import { formatDateRange, formatEducationType, formatScore } from "@/lib/resume-utils";
 import { toast } from "react-hot-toast";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
+import { SecondaryEducationForm } from "@/components/resume/secondary-education-form";
+import { SeniorSecondaryEducationForm } from "@/components/resume/senior-secondary-education-form";
+import { DiplomaEducationForm } from "@/components/resume/diploma-education-form";
+import { GraduationEducationForm } from "@/components/resume/graduation-education-form";
 
 export function EducationSection() {
   const [education, setEducation] = useState<Education[]>([]);
@@ -46,6 +50,15 @@ export function EducationSection() {
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const [chooseTypeOpen, setChooseTypeOpen] = useState(false);
+
+  const EDUCATION_TYPE_OPTIONS: { value: Education["education"]; label: string }[] = [
+    { value: "secondary", label: "Add secondary (X)" },
+    { value: "senior secondary", label: "Add senior secondary (XII)" },
+    { value: "diploma", label: "Add Diploma" },
+    { value: "graduation/ post graduation", label: "Add graduation/ Post-graduation" },
+    { value: "Phd", label: "Add PhD" },
+  ];
 
   useEffect(() => {
     fetchEducation();
@@ -57,12 +70,12 @@ export function EducationSection() {
       if (response.data) {
         setEducation(response.data);
         if (response.data.length === 0) {
-          setAddingNew(true);
+          setChooseTypeOpen(true);
         }
       }
     } catch (error) {
-      console.error("Failed to fetch education:", error);
-      toast.error("Failed to load education");
+      // console.error("Failed to fetch education:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to load education");
     } finally {
       setLoading(false);
     }
@@ -72,14 +85,17 @@ export function EducationSection() {
     setEditingId(edu.id);
     // Convert year strings to date format for date picker (YYYY -> YYYY-01-01)
     const startYear = edu.start_year ? `${edu.start_year}-01-01` : "";
-    const endYear = edu.end_year ? `${edu.end_year}-01-01` : "";
+    // For secondary/senior secondary, use year_of_completion; otherwise use end_year
+    const endYearValue = (edu.education === "secondary" || edu.education === "senior secondary")
+      ? (edu.year_of_completion ? `${edu.year_of_completion}-01-01` : "")
+      : (edu.end_year ? `${edu.end_year}-01-01` : "");
     setEditForm({
       school_name: edu.school_name || "",
       name: edu.name || "",
       degree: edu.degree || "",
       stream: edu.stream || "",
       start_year: startYear,
-      end_year: endYear,
+      end_year: endYearValue,
       is_ongoing: edu.is_ongoing,
       cgpa: edu.cgpa?.toString() || "",
       cgpa2: edu.cgpa2 || "",
@@ -105,39 +121,299 @@ export function EducationSection() {
     });
   };
 
-  const handleSaveEdit = async (id: number) => {
+  const handleUpdateSecondary = async (id: number, data: {
+    year_of_completion: string;
+    board: string;
+    school_name: string;
+    score_type: string;
+    score_value: string;
+    score_out_of: number;
+  }) => {
     try {
-      const updateData: any = {};
-      if (editForm.school_name) updateData.school_name = editForm.school_name;
-      if (editForm.name) updateData.name = editForm.name;
-      if (editForm.stream) updateData.stream = editForm.stream;
-      if (editForm.start_year) {
-        // Extract year from date string (YYYY-MM-DD -> YYYY)
-        updateData.start_year = editForm.start_year.split('-')[0];
-      }
-      if (editForm.end_year || editForm.is_ongoing) {
-        updateData.end_year = editForm.is_ongoing ? null : editForm.end_year.split('-')[0];
-      }
-      if (editForm.cgpa) updateData.cgpa = parseFloat(editForm.cgpa);
-      if (editForm.cgpa2) updateData.cgpa2 = editForm.cgpa2;
-      updateData.is_ongoing = editForm.is_ongoing;
-
+      const updateData: any = {
+        school_name: data.school_name,
+        board: data.board,
+        cgpa: String(data.score_out_of),
+        cgpa2: data.score_value || "0",
+        year_of_completion: data.year_of_completion,
+      };
       await updateUserEducation(id, updateData);
       toast.success("Education updated");
       setEditingId(null);
       fetchEducation();
     } catch (error) {
-      console.error("Failed to update education:", error);
-      toast.error("Failed to update education");
+      toast.error(error instanceof Error ? error.message : "Failed to update education");
+    }
+  };
+
+  const handleUpdateSeniorSecondary = async (id: number, data: {
+    year_of_completion: string;
+    board: string;
+    stream: string;
+    school_name: string;
+    score_type: string;
+    score_value: string;
+    score_out_of: number;
+  }) => {
+    try {
+      const updateData: any = {
+        school_name: data.school_name,
+        board: data.board,
+        stream: data.stream,
+        cgpa: String(data.score_out_of),
+        cgpa2: data.score_value || "0",
+        year_of_completion: data.year_of_completion,
+      };
+      await updateUserEducation(id, updateData);
+      toast.success("Education updated");
+      setEditingId(null);
+      fetchEducation();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update education");
+    }
+  };
+
+  const handleUpdateDiploma = async (id: number, data: {
+    college: string;
+    start_date: string;
+    end_date: string;
+    is_ongoing: boolean;
+    stream: string;
+    score_type: string;
+    score_value: string;
+    score_out_of: number;
+  }) => {
+    try {
+      // Convert date strings to datetime format (YYYY-MM-DD -> YYYY-MM-DDTHH:mm:ss)
+      const startYear = data.start_date ? `${data.start_date}T00:00:00` : "";
+      const endYear = data.is_ongoing ? null : (data.end_date ? `${data.end_date}T00:00:00` : null);
+      const updateData: any = {
+        school_name: data.college,
+        stream: data.stream || "",
+        cgpa: String(data.score_out_of),
+        cgpa2: data.score_value || "0",
+        start_year: startYear,
+        end_year: endYear,
+        is_ongoing: data.is_ongoing,
+      };
+      await updateUserEducation(id, updateData);
+      toast.success("Education updated");
+      setEditingId(null);
+      fetchEducation();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update education");
+    }
+  };
+
+  const handleUpdateGraduation = async (id: number, data: {
+    college: string;
+    start_date: string;
+    end_date: string;
+    is_ongoing: boolean;
+    degree: string;
+    stream: string;
+    score_type: string;
+    score_value: string;
+    score_out_of: number;
+  }) => {
+    try {
+      // Convert date strings to datetime format (YYYY-MM-DD -> YYYY-MM-DDTHH:mm:ss)
+      const startYear = data.start_date ? `${data.start_date}T00:00:00` : "";
+      const endYear = data.is_ongoing ? null : (data.end_date ? `${data.end_date}T00:00:00` : null);
+      const updateData: any = {
+        name: data.degree || "B.Tech",
+        degree: data.degree || "B.Tech",
+        school_name: data.college,
+        start_year: startYear,
+        end_year: endYear,
+        stream: data.stream || "",
+        cgpa: String(data.score_out_of),
+        cgpa2: data.score_value || "0",
+        is_ongoing: data.is_ongoing,
+      };
+      await updateUserEducation(id, updateData);
+      toast.success("Education updated");
+      setEditingId(null);
+      fetchEducation();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update education");
     }
   };
 
   const handleAdd = () => {
+    setChooseTypeOpen(true);
+  };
+
+  const handleChooseType = (educationType: Education["education"]) => {
+    setNewForm((prev) => ({ ...prev, education: educationType }));
+    setChooseTypeOpen(false);
     setAddingNew(true);
+  };
+
+  const handleCancelChooseType = () => {
+    setChooseTypeOpen(false);
+  };
+
+  const handleSaveSecondary = async (data: {
+    year_of_completion: string;
+    board: string;
+    school_name: string;
+    score_type: string;
+    score_value: string;
+    score_out_of: number;
+  }) => {
+    await createUserEducation({
+      education: "secondary",
+      school_name: data.school_name,
+      board: data.board,
+      cgpa: String(data.score_out_of),
+      cgpa2: data.score_value || "0",
+      year_of_completion: data.year_of_completion,
+    });
+    toast.success("Education added");
+    setAddingNew(false);
+    setNewForm({
+      school_name: "",
+      name: "",
+      degree: "",
+      stream: "",
+      start_year: "",
+      end_year: "",
+      is_ongoing: false,
+      cgpa: "",
+      cgpa2: "",
+      board: "",
+      education: "" as Education["education"],
+    });
+    fetchEducation();
+  };
+
+  const handleSaveSeniorSecondary = async (data: {
+    year_of_completion: string;
+    board: string;
+    stream: string;
+    school_name: string;
+    score_type: string;
+    score_value: string;
+    score_out_of: number;
+  }) => {
+    await createUserEducation({
+      education: "senior secondary",
+      school_name: data.school_name,
+      board: data.board,
+      cgpa: String(data.score_out_of),
+      cgpa2: data.score_value || "0",
+      year_of_completion: data.year_of_completion,
+      stream: data.stream,
+    });
+    toast.success("Education added");
+    setAddingNew(false);
+    setNewForm({
+      school_name: "",
+      name: "",
+      degree: "",
+      stream: "",
+      start_year: "",
+      end_year: "",
+      is_ongoing: false,
+      cgpa: "",
+      cgpa2: "",
+      board: "",
+      education: "" as Education["education"],
+    });
+    fetchEducation();
+  };
+
+  const handleSaveDiploma = async (data: {
+    college: string;
+    start_date: string;
+    end_date: string;
+    is_ongoing: boolean;
+    stream: string;
+    score_type: string;
+    score_value: string;
+    score_out_of: number;
+  }) => {
+    // Convert date strings to datetime format (YYYY-MM-DD -> YYYY-MM-DDTHH:mm:ss)
+    const startYear = data.start_date ? `${data.start_date}T00:00:00` : "";
+    const endYear = data.is_ongoing ? null : (data.end_date ? `${data.end_date}T00:00:00` : null);
+    await createUserEducation({
+      education: "diploma",
+      name: "Diploma",
+      degree: "Diploma",
+      school_name: data.college,
+      start_year: startYear,
+      end_year: endYear,
+      stream: data.stream || "",
+      cgpa: String(data.score_out_of),
+      cgpa2: data.score_value || "0",
+      is_ongoing: data.is_ongoing,
+    });
+    toast.success("Education added");
+    setAddingNew(false);
+    setNewForm({
+      school_name: "",
+      name: "",
+      degree: "",
+      stream: "",
+      start_year: "",
+      end_year: "",
+      is_ongoing: false,
+      cgpa: "",
+      cgpa2: "",
+      board: "",
+      education: "" as Education["education"],
+    });
+    fetchEducation();
+  };
+
+  const handleSaveGraduation = async (data: {
+    college: string;
+    start_date: string;
+    end_date: string;
+    is_ongoing: boolean;
+    degree: string;
+    stream: string;
+    score_type: string;
+    score_value: string;
+    score_out_of: number;
+  }) => {
+    // Convert date strings to datetime format (YYYY-MM-DD -> YYYY-MM-DDTHH:mm:ss)
+    const startYear = data.start_date ? `${data.start_date}T00:00:00` : "";
+    const endYear = data.is_ongoing ? null : (data.end_date ? `${data.end_date}T00:00:00` : null);
+    await createUserEducation({
+      education: "graduation/ post graduation",
+      name: data.degree || "B.Tech",
+      degree: data.degree || "B.Tech",
+      school_name: data.college,
+      start_year: startYear,
+      end_year: endYear,
+      stream: data.stream || "",
+      cgpa: String(data.score_out_of),
+      cgpa2: data.score_value || "0",
+      is_ongoing: data.is_ongoing,
+    });
+    toast.success("Education added");
+    setAddingNew(false);
+    setNewForm({
+      school_name: "",
+      name: "",
+      degree: "",
+      stream: "",
+      start_year: "",
+      end_year: "",
+      is_ongoing: false,
+      cgpa: "",
+      cgpa2: "",
+      board: "",
+      education: "" as Education["education"],
+    });
+    fetchEducation();
   };
 
   const handleCancelAdd = () => {
     setAddingNew(false);
+    setChooseTypeOpen(false);
     setNewForm({
       school_name: "",
       name: "",
@@ -154,24 +430,94 @@ export function EducationSection() {
   };
 
   const handleSaveNew = async () => {
-    if (!newForm.name || !newForm.school_name || !newForm.education) {
+    if (!newForm.school_name || !newForm.education) {
       toast.error("Please fill in required fields");
       return;
     }
 
     try {
-      await createUserEducation({
-        name: newForm.name,
-        start_year: newForm.start_year ? newForm.start_year.split('-')[0] : "",
-        end_year: newForm.is_ongoing ? null : (newForm.end_year ? newForm.end_year.split('-')[0] : ""),
-        degree: newForm.degree,
-        stream: newForm.stream,
-        cgpa: newForm.cgpa ? parseFloat(newForm.cgpa) : 100,
-        cgpa2: newForm.cgpa2 || "0",
-        education: newForm.education,
-        school_name: newForm.school_name,
-        is_ongoing: newForm.is_ongoing,
-      });
+      let payload: any;
+
+      if (newForm.education === "secondary") {
+        if (!newForm.end_year) {
+          toast.error("Year of completion is required");
+          return;
+        }
+        payload = {
+          education: "secondary",
+          school_name: newForm.school_name,
+          board: newForm.board || "",
+          cgpa: newForm.cgpa || "10",
+          cgpa2: newForm.cgpa2 || "0",
+          year_of_completion: newForm.end_year.split('-')[0],
+        };
+      } else if (newForm.education === "senior secondary") {
+        if (!newForm.end_year) {
+          toast.error("Year of completion is required");
+          return;
+        }
+        payload = {
+          education: "senior secondary",
+          school_name: newForm.school_name,
+          board: newForm.board || "",
+          cgpa: newForm.cgpa || "10",
+          cgpa2: newForm.cgpa2 || "0",
+          year_of_completion: newForm.end_year.split('-')[0],
+          stream: newForm.stream || "",
+        };
+      } else if (newForm.education === "diploma") {
+        // Convert date strings to datetime format (YYYY-MM-DD -> YYYY-MM-DDTHH:mm:ss)
+        const startYear = newForm.start_year ? `${newForm.start_year}T00:00:00` : "";
+        const endYear = newForm.is_ongoing ? null : (newForm.end_year ? `${newForm.end_year}T00:00:00` : null);
+        payload = {
+          education: "diploma",
+          name: newForm.name || "Diploma",
+          degree: newForm.degree || "Diploma",
+          school_name: newForm.school_name,
+          start_year: startYear,
+          end_year: endYear,
+          stream: newForm.stream || "",
+          cgpa: newForm.cgpa || "10",
+          cgpa2: newForm.cgpa2 || "0",
+          is_ongoing: newForm.is_ongoing,
+        };
+      } else if (newForm.education === "graduation/ post graduation") {
+        // Convert date strings to datetime format (YYYY-MM-DD -> YYYY-MM-DDTHH:mm:ss)
+        const startYear = newForm.start_year ? `${newForm.start_year}T00:00:00` : "";
+        const endYear = newForm.is_ongoing ? null : (newForm.end_year ? `${newForm.end_year}T00:00:00` : null);
+        payload = {
+          education: "graduation/ post graduation",
+          name: newForm.name || "B.Tech",
+          degree: newForm.degree || "B.Tech",
+          school_name: newForm.school_name,
+          start_year: startYear,
+          end_year: endYear,
+          stream: newForm.stream || "",
+          cgpa: newForm.cgpa || "10",
+          cgpa2: newForm.cgpa2 || "0",
+          is_ongoing: newForm.is_ongoing,
+        };
+      } else if (newForm.education === "Phd") {
+        // Convert date strings to datetime format (YYYY-MM-DD -> YYYY-MM-DDTHH:mm:ss)
+        const startYear = newForm.start_year ? `${newForm.start_year}T00:00:00` : "";
+        const endYear = newForm.is_ongoing ? null : (newForm.end_year ? `${newForm.end_year}T00:00:00` : null);
+        payload = {
+          education: "Phd",
+          name: newForm.name || "PhD",
+          school_name: newForm.school_name,
+          start_year: startYear,
+          end_year: endYear,
+          stream: newForm.stream || "",
+          cgpa: newForm.cgpa || "10",
+          cgpa2: newForm.cgpa2 || "0",
+          is_ongoing: newForm.is_ongoing,
+        };
+      } else {
+        toast.error("Invalid education type");
+        return;
+      }
+
+      await createUserEducation(payload);
       toast.success("Education added");
       setAddingNew(false);
       setNewForm({
@@ -189,8 +535,8 @@ export function EducationSection() {
       });
       fetchEducation();
     } catch (error) {
-      console.error("Failed to create education:", error);
-      toast.error("Failed to add education");
+      // console.error("Failed to create education:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to add education");
     }
   };
 
@@ -207,8 +553,8 @@ export function EducationSection() {
       setEducation(education.filter((edu) => edu.id !== itemToDelete));
       toast.success("Education entry deleted");
     } catch (error) {
-      console.error("Failed to delete education:", error);
-      toast.error("Failed to delete education entry");
+      // console.error("Failed to delete education:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete education entry");
     } finally {
       setItemToDelete(null);
     }
@@ -373,7 +719,38 @@ export function EducationSection() {
       </div>
       <div className="flex items-center gap-2">
         <button
-          onClick={() => isEdit && id ? handleSaveEdit(id) : handleSaveNew()}
+          onClick={() => {
+            if (isEdit && id) {
+              // For generic form (PhD or other), use update handler
+              const currentEdu = education.find((e) => e.id === id);
+              if (currentEdu) {
+                const updateData: any = {};
+                if (form.school_name) updateData.school_name = form.school_name;
+                if (form.name) updateData.name = form.name;
+                if (form.degree) updateData.degree = form.degree;
+                if (form.stream) updateData.stream = form.stream;
+                // Convert date strings to datetime format (YYYY-MM-DD -> YYYY-MM-DDTHH:mm:ss)
+                if (form.start_year) updateData.start_year = `${form.start_year}T00:00:00`;
+                if (form.end_year || form.is_ongoing !== undefined) {
+                  updateData.end_year = form.is_ongoing ? null : (form.end_year ? `${form.end_year}T00:00:00` : null);
+                }
+                if (form.is_ongoing !== undefined) updateData.is_ongoing = form.is_ongoing;
+                if (form.cgpa) updateData.cgpa = String(form.cgpa);
+                if (form.cgpa2) updateData.cgpa2 = form.cgpa2;
+                updateUserEducation(id, updateData)
+                  .then(() => {
+                    toast.success("Education updated");
+                    setEditingId(null);
+                    fetchEducation();
+                  })
+                  .catch((error) => {
+                    toast.error(error instanceof Error ? error.message : "Failed to update education");
+                  });
+              }
+            } else {
+              handleSaveNew();
+            }
+          }}
           className="flex items-center gap-1 px-3 py-1.5 bg-gray-800 text-white text-xs rounded hover:bg-gray-900"
         >
           <Save className="h-3 w-3" />
@@ -406,7 +783,73 @@ export function EducationSection() {
               className="group relative hover:bg-gray-50 transition p-3 rounded"
             >
               {editingId === edu.id ? (
-                renderEducationForm(editForm, setEditForm, true, edu.id)
+                <>
+                  {edu.education === "secondary" && (
+                    <SecondaryEducationForm
+                      onSave={(data) => handleUpdateSecondary(edu.id, data)}
+                      onClose={handleCancelEdit}
+                      initialValues={{
+                        year_of_completion: edu.year_of_completion || "",
+                        board: edu.board || "",
+                        school_name: edu.school_name || "",
+                        cgpa: edu.cgpa,
+                        cgpa2: edu.cgpa2 || "",
+                      }}
+                    />
+                  )}
+                  {edu.education === "senior secondary" && (
+                    <SeniorSecondaryEducationForm
+                      onSave={(data) => handleUpdateSeniorSecondary(edu.id, data)}
+                      onClose={handleCancelEdit}
+                      initialValues={{
+                        year_of_completion: edu.year_of_completion || "",
+                        board: edu.board || "",
+                        stream: edu.stream || "",
+                        school_name: edu.school_name || "",
+                        cgpa: edu.cgpa,
+                        cgpa2: edu.cgpa2 || "",
+                      }}
+                    />
+                  )}
+                  {edu.education === "diploma" && (
+                    <DiplomaEducationForm
+                      onSave={(data) => handleUpdateDiploma(edu.id, data)}
+                      onClose={handleCancelEdit}
+                      initialValues={{
+                        college: edu.school_name || "",
+                        start_date: edu.start_year ? `${edu.start_year}-01-01` : "",
+                        end_date: edu.end_year ? `${edu.end_year}-01-01` : "",
+                        is_ongoing: edu.is_ongoing,
+                        stream: edu.stream || "",
+                        cgpa: edu.cgpa,
+                        cgpa2: edu.cgpa2 || "",
+                      }}
+                    />
+                  )}
+                  {edu.education === "graduation/ post graduation" && (
+                    <GraduationEducationForm
+                      onSave={(data) => handleUpdateGraduation(edu.id, data)}
+                      onClose={handleCancelEdit}
+                      initialValues={{
+                        college: edu.school_name || "",
+                        start_date: edu.start_year ? `${edu.start_year}-01-01` : "",
+                        end_date: edu.end_year ? `${edu.end_year}-01-01` : "",
+                        is_ongoing: edu.is_ongoing,
+                        degree: edu.degree || "",
+                        stream: edu.stream || "",
+                        cgpa: edu.cgpa,
+                        cgpa2: edu.cgpa2 || "",
+                      }}
+                    />
+                  )}
+                  {(edu.education === "Phd" || 
+                    (edu.education !== "secondary" && 
+                     edu.education !== "senior secondary" && 
+                     edu.education !== "diploma" && 
+                     edu.education !== "graduation/ post graduation")) && (
+                    renderEducationForm(editForm, setEditForm, true, edu.id)
+                  )}
+                </>
               ) : (
                 <>
                   <div className="flex items-start justify-between gap-4">
@@ -453,9 +896,67 @@ export function EducationSection() {
           );
         })}
         
-        {addingNew && renderEducationForm(newForm, setNewForm, false)}
+        {chooseTypeOpen && (
+          <div className="space-y-1 p-3 border-2 border-dashed border-gray-300 rounded">
+            <p className="text-xs font-medium text-gray-700 mb-2">Choose education level to add</p>
+            {EDUCATION_TYPE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => handleChooseType(opt.value)}
+                className="w-full text-left text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-2 py-2 px-2 rounded hover:bg-blue-50 transition"
+              >
+                <Plus className="h-4 w-4 shrink-0" />
+                {opt.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={handleCancelChooseType}
+              className="mt-2 flex items-center gap-1 px-3 py-1.5 border border-gray-300 text-gray-700 text-xs rounded hover:bg-gray-50"
+            >
+              <X className="h-3 w-3" />
+              Cancel
+            </button>
+          </div>
+        )}
 
-        {!addingNew && (
+        {addingNew && newForm.education === "secondary" && (
+          <SecondaryEducationForm
+            onSave={handleSaveSecondary}
+            onClose={handleCancelAdd}
+          />
+        )}
+
+        {addingNew && newForm.education === "senior secondary" && (
+          <SeniorSecondaryEducationForm
+            onSave={handleSaveSeniorSecondary}
+            onClose={handleCancelAdd}
+          />
+        )}
+
+        {addingNew && newForm.education === "diploma" && (
+          <DiplomaEducationForm
+            onSave={handleSaveDiploma}
+            onClose={handleCancelAdd}
+          />
+        )}
+
+        {addingNew && newForm.education === "graduation/ post graduation" && (
+          <GraduationEducationForm
+            onSave={handleSaveGraduation}
+            onClose={handleCancelAdd}
+          />
+        )}
+
+        {addingNew &&
+          newForm.education !== "secondary" &&
+          newForm.education !== "senior secondary" &&
+          newForm.education !== "diploma" &&
+          newForm.education !== "graduation/ post graduation" &&
+          renderEducationForm(newForm, setNewForm, false)}
+
+        {!addingNew && !chooseTypeOpen && (
           <button
             onClick={handleAdd}
             className="text-blue-600 hover:text-blue-700 text-xs font-medium flex items-center gap-1 mt-2"

@@ -49,11 +49,14 @@ type VideoCourseListNormalized = VideoCourseListResponse & {
 
 export const getVideoCourses = async (
   page = 1,
-  perPage = 10
+  perPage = 10,
+  searchTerm?: string
 ): Promise<VideoCourseListNormalized> => {
-  // Use backend pagination instead of slicing on the client
+  const searchParam = searchTerm?.trim()
+    ? `&search=${encodeURIComponent(searchTerm.trim())}`
+    : "";
   const raw = await api<any>(
-    `/course_category_list/?per_page=${perPage}&page=${page}`,
+    `/course_category_list/?per_page=${perPage}&page=${page}${searchParam}`,
     {
       method: "GET",
       headers: {

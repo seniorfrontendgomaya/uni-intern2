@@ -36,8 +36,8 @@ export function CareerObjectiveSection() {
         }
       }
     } catch (error) {
-      console.error("Failed to fetch career objectives:", error);
-      toast.error("Failed to load career objectives");
+      // console.error("Failed to fetch career objectives:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to load career objectives");
     } finally {
       setLoading(false);
     }
@@ -60,8 +60,8 @@ export function CareerObjectiveSection() {
       setEditingId(null);
       fetchObjectives();
     } catch (error) {
-      console.error("Failed to update career objective:", error);
-      toast.error("Failed to update career objective");
+      // console.error("Failed to update career objective:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update career objective");
     }
   };
 
@@ -87,8 +87,8 @@ export function CareerObjectiveSection() {
       setNewText("");
       fetchObjectives();
     } catch (error) {
-      console.error("Failed to create career objective:", error);
-      toast.error("Failed to add career objective");
+      // console.error("Failed to create career objective:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to add career objective");
     }
   };
 
@@ -105,8 +105,8 @@ export function CareerObjectiveSection() {
       setObjectives(objectives.filter((obj) => obj.id !== itemToDelete));
       toast.success("Career objective deleted");
     } catch (error) {
-      console.error("Failed to delete career objective:", error);
-      toast.error("Failed to delete career objective");
+      // console.error("Failed to delete career objective:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete career objective");
     } finally {
       setItemToDelete(null);
     }

@@ -2,38 +2,57 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { CourseDetailPage, type CourseDetailData } from "@/components/pages/course-detail-page";
-import { getCourseCategoryById, type CourseCategoryDetailItem } from "@/services/course.service";
+import { CourseDetailPage, type CourseDetailData, type CourseModule } from "@/components/pages/course-detail-page";
+import {
+  getCourseDetailList,
+  type CourseDetailListResponse,
+} from "@/services/course.service";
 
-/** Parse numbered/bullet text (e.g. "1.Item one\r\n2.Item two") into array of strings */
 function parseBulletText(text: string | null | undefined): string[] {
   if (!text || !text.trim()) return [];
-  const lines = text
+  return text
     .split(/\r?\n/)
     .map((line) => line.replace(/^\d+\.\s*/, "").trim())
     .filter((line) => line.length > 0);
-  return lines;
 }
 
-function transformToCourseDetail(data: CourseCategoryDetailItem | null): CourseDetailData | null {
-  if (!data) return null;
+/** Build CourseDetailData from course_detail_list response using course_sub_category */
+function transformFromCourseSubCategory(res: CourseDetailListResponse): CourseDetailData | null {
+  const sub = res.course_sub_category;
+  if (!sub?.course_category) return null;
 
-  const price = data.fee ? parseFloat(data.fee) : undefined;
-  const whatYoullLearn = parseBulletText(data.what_you_learn);
-  const requirements = parseBulletText(data.requirement);
+  const cat = sub.course_category;
+  const price = cat.fee != null ? Number(cat.fee) : undefined;
+  const whatYoullLearn = parseBulletText(cat.what_you_learn);
+  const requirements = parseBulletText(cat.requirement);
+
+  const courseContent: CourseModule[] | undefined = Array.isArray(res.data) && res.data.length > 0
+    ? [
+        {
+          id: "videos",
+          title: sub.name,
+          videoCount: res.data.length,
+          videos: res.data.map((v) => ({
+            id: String(v.id),
+            title: v.name,
+            duration: v.duration ? `${v.duration} min` : undefined,
+          })),
+        },
+      ]
+    : undefined;
 
   return {
-    id: String(data.id),
-    title: data.title || data.name,
-    description: data.description || "No description available.",
-    author: data.owner_name,
+    id: String(cat.id),
+    title: cat.title || cat.name,
+    description: cat.description || "No description available.",
+    author: cat.owner_name,
     price,
-    updatedDate: data.updated_at,
-    image: data.image,
+    updatedDate: cat.updated_at,
+    image: cat.image ?? null,
     whatYoullLearn: whatYoullLearn.length > 0 ? whatYoullLearn : undefined,
     requirements: requirements.length > 0 ? requirements : undefined,
-    descriptionDetail: data.detail || data.description || undefined,
-    courseContent: undefined,
+    descriptionDetail: cat.detail || cat.description || undefined,
+    courseContent,
   };
 }
 
@@ -50,17 +69,22 @@ export default function StudentCourseDetailPage() {
       return;
     }
 
+    const subCategoryId = Number(courseId);
+    if (!Number.isFinite(subCategoryId)) {
+      router.replace("/student/courses");
+      return;
+    }
+
     const fetchCourse = async () => {
       try {
-        const data = await getCourseCategoryById(courseId);
-        if (!data) {
+        const res = await getCourseDetailList(subCategoryId);
+        const transformed = transformFromCourseSubCategory(res);
+        if (!transformed) {
           router.replace("/student/courses");
           return;
         }
-        const transformed = transformToCourseDetail(data);
         setCourse(transformed);
       } catch (error) {
-        console.error("Failed to load course:", error);
         router.replace("/student/courses");
       } finally {
         setLoading(false);

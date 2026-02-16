@@ -36,7 +36,7 @@ export function ExtraCurricularSection() {
         }
       }
     } catch (error) {
-      console.error("Failed to fetch extra curricular activities:", error);
+      // console.error("Failed to fetch extra curricular activities:", error);
       toast.error("Failed to load extra curricular activities");
     } finally {
       setLoading(false);
@@ -60,8 +60,8 @@ export function ExtraCurricularSection() {
       setEditingId(null);
       fetchActivities();
     } catch (error) {
-      console.error("Failed to update activity:", error);
-      toast.error("Failed to update activity");
+      // console.error("Failed to update activity:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update activity");
     }
   };
 
@@ -87,8 +87,8 @@ export function ExtraCurricularSection() {
       setNewText("");
       fetchActivities();
     } catch (error) {
-      console.error("Failed to create activity:", error);
-      toast.error("Failed to add activity");
+      // console.error("Failed to create activity:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to add activity");
     }
   };
 
@@ -105,8 +105,8 @@ export function ExtraCurricularSection() {
       setActivities(activities.filter((activity) => activity.id !== itemToDelete));
       toast.success("Activity deleted");
     } catch (error) {
-      console.error("Failed to delete activity:", error);
-      toast.error("Failed to delete activity");
+      // console.error("Failed to delete activity:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete activity");
     } finally {
       setItemToDelete(null);
     }

@@ -272,9 +272,17 @@ export function CrudTable({
                                         acc[field.name] = null;
                                         return acc;
                                       }
-                                      acc[field.name] = String(
-                                        row[field.name] ?? ""
-                                      );
+                                      // Check for _value suffix first (for fields that are React elements in display)
+                                      const valueField = `${field.name}_value`;
+                                      const rawValue = row[valueField] !== undefined 
+                                        ? row[valueField] 
+                                        : row[field.name];
+                                      // If it's a React element (object with props), try to extract text or use empty string
+                                      if (typeof rawValue === "object" && rawValue !== null && "props" in rawValue) {
+                                        acc[field.name] = "";
+                                      } else {
+                                        acc[field.name] = String(rawValue ?? "");
+                                      }
                                       return acc;
                                     },
                                     {}

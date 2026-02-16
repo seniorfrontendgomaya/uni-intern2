@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Search, MapPin, Building2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
 import { fetchAllMegamenuData, type JobTypeFilter } from "@/services/internship-megamenu.service";
-import { fetchGetCompany, type GetCompanyItem } from "@/services/student-internship.service";
 
 export type PaymentType = "Paid" | "Both" | "Unpaid";
 
@@ -69,42 +69,8 @@ export function InternshipMegaMenu({
   const [categories, setCategories] = useState<string[]>([]);
   const [placements, setPlacements] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchResults, setSearchResults] = useState<GetCompanyItem[] | null>(null);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchSubmitted, setSearchSubmitted] = useState("");
-
+  const router = useRouter();
   const paramKey = getSearchParamKey(activeSection);
-
-  const runSearch = useCallback(() => {
-    const q = search.trim();
-    if (!q) {
-      setSearchSubmitted("");
-      setSearchResults(null);
-      return;
-    }
-    setSearchLoading(true);
-    setSearchSubmitted(q);
-    const query: Record<string, string> = { job_type: activePaid, [paramKey]: q };
-    fetchGetCompany(query)
-      .then((res) => {
-        setSearchResults(res.data ?? []);
-      })
-      .catch(() => {
-        setSearchResults([]);
-      })
-      .finally(() => {
-        setSearchLoading(false);
-      });
-  }, [search, activePaid, paramKey]);
-
-  const clearSearchResults = useCallback(() => {
-    setSearchSubmitted("");
-    setSearchResults(null);
-  }, []);
-
-  useEffect(() => {
-    clearSearchResults();
-  }, [activePaid, activeSection, clearSearchResults]);
 
   useEffect(() => {
     let cancelled = false;
@@ -164,13 +130,21 @@ export function InternshipMegaMenu({
     [placements, basePath, activePaid]
   );
 
-  const searchLower = search.trim().toLowerCase();
-  const filterBySearch = <T extends { label: string }>(list: T[]) =>
-    searchLower ? list.filter((item) => item.label.toLowerCase().includes(searchLower)) : list;
-  const filteredLocations = filterBySearch(locationLinks);
-  const filteredProfiles = filterBySearch(profileLinks);
-  const filteredCategories = filterBySearch(categoryLinks);
-  const filteredPlacement = filterBySearch(placementLinks);
+  // Navigate to listing page on search input change (debounced) so main page calls API.
+  // Dependencies exclude onClose to avoid re-running when parent re-renders (onClose is a new ref each time).
+  const DEBOUNCE_MS = 400;
+  useEffect(() => {
+    const q = search.trim();
+    if (!q) return;
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!token) return;
+    const t = setTimeout(() => {
+      const query: Record<string, string> = { job_type: activePaid, [paramKey]: q };
+      const href = buildInternshipHref(basePath, query);
+      router.push(href);
+    }, DEBOUNCE_MS);
+    return () => clearTimeout(t);
+  }, [search, activePaid, paramKey, basePath, router]);
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -184,11 +158,7 @@ export function InternshipMegaMenu({
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    runSearch();
   };
-
-  const showSearchResults = searchSubmitted.length > 0;
-  const resultCount = searchResults?.length ?? 0;
 
   if (!isOpen) return null;
 
@@ -239,8 +209,8 @@ export function InternshipMegaMenu({
 
         {/* Right column: search form + results or static links */}
         <div className="flex-1 min-w-0 p-4 flex flex-col">
-          <form onSubmit={handleSearchSubmit} className="mb-3 flex gap-2">
-            <div className="relative flex-1">
+          <form onSubmit={handleSearchSubmit} className="mb-3">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
@@ -258,68 +228,16 @@ export function InternshipMegaMenu({
                 className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
               />
             </div>
-            <button
-              type="submit"
-              disabled={searchLoading}
-              className="shrink-0 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50"
-            >
-              {searchLoading ? "..." : "Search"}
-            </button>
           </form>
 
-          {searchLoading ? (
-            <p className="px-3 py-2 text-sm text-gray-500">Searching...</p>
-          ) : showSearchResults ? (
-            <div className="flex flex-col gap-1 flex-1 min-h-0 overflow-auto">
-              {searchSubmitted && (
-                <button
-                  type="button"
-                  onClick={clearSearchResults}
-                  className="text-left px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-800"
-                >
-                  ← Clear search
-                </button>
-              )}
-              {resultCount === 0 ? (
-                <p className="px-3 py-2 text-sm text-gray-500">No internships found for &quot;{searchSubmitted}&quot;</p>
-              ) : (
-                <nav className="flex flex-col gap-0.5">
-                  {searchResults?.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={`${basePath.replace(/\/$/, "")}/${item.id}`}
-                      onClick={handleLinkClick}
-                      className="rounded-md px-3 py-2.5 text-sm text-gray-800 hover:bg-gray-100 border border-gray-100"
-                    >
-                      <div className="font-medium text-gray-900">
-                        {item.comapany?.name ?? "Company"}
-                      </div>
-                      {item.location?.length > 0 && (
-                        <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-                          <MapPin className="h-3 w-3 shrink-0" />
-                          {item.location.map((loc) => loc.name).join(", ")}
-                        </div>
-                      )}
-                      {item.category?.length > 0 && (
-                        <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5 flex-wrap">
-                          <Building2 className="h-3 w-3 shrink-0" />
-                          {item.category.map((c) => c.name).join(", ")}
-                        </div>
-                      )}
-                    </Link>
-                  ))}
-                </nav>
-              )}
-            </div>
-          ) : (
-            <>
+          <>
               {activeSection === "locations" && (
                 <nav className="flex flex-col gap-0.5 flex-1">
                   {loading ? (
                     <p className="px-3 py-2 text-sm text-gray-500">Loading...</p>
                   ) : (
                     <>
-                      {filteredLocations.map((item) => (
+                      {locationLinks.map((item) => (
                         <Link
                           key={item.label}
                           href={item.href}
@@ -353,7 +271,7 @@ export function InternshipMegaMenu({
                   {loading ? (
                     <p className="px-3 py-2 text-sm text-gray-500">Loading...</p>
                   ) : (
-                    filteredProfiles.map((item) => (
+                    profileLinks.map((item) => (
                       <Link
                         key={item.label}
                         href={item.href}
@@ -372,7 +290,7 @@ export function InternshipMegaMenu({
                   {loading ? (
                     <p className="px-3 py-2 text-sm text-gray-500">Loading...</p>
                   ) : (
-                    filteredCategories.map((item) => (
+                    categoryLinks.map((item) => (
                       <Link
                         key={item.label}
                         href={item.href}
@@ -391,7 +309,7 @@ export function InternshipMegaMenu({
                   {loading ? (
                     <p className="px-3 py-2 text-sm text-gray-500">Loading...</p>
                   ) : (
-                    filteredPlacement.map((item) => (
+                    placementLinks.map((item) => (
                       <Link
                         key={item.label}
                         href={item.href}
@@ -404,8 +322,7 @@ export function InternshipMegaMenu({
                   )}
                 </nav>
               )}
-            </>
-          )}
+          </>
         </div>
       </div>
     </div>

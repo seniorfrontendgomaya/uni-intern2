@@ -17,10 +17,11 @@ import type {
   VideoCourseMutationResponse,
 } from "@/types/video-course";
 
-export function useVideoCoursesPaginated(perPage = 10) {
+export function useVideoCoursesPaginated(perPage = 10, searchTerm = "") {
   const fetchPage = useCallback(
-    (page: number, limit: number) => getVideoCourses(page, limit),
-    []
+    (page: number, limit: number) =>
+      getVideoCourses(page, limit, searchTerm || undefined),
+    [searchTerm]
   );
 
   return usePaginated<VideoCourse>(fetchPage, perPage);

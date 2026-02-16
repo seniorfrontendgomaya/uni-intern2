@@ -7,6 +7,7 @@ import { getAllSkills } from "@/services/skill.service";
 import type { Skill } from "@/types/resume-builder";
 import type { ISkill } from "@/types/skill";
 import { toast } from "react-hot-toast";
+import { NotFoundError } from "@/errors/http.errors";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 
 export function SkillsSection() {
@@ -62,8 +63,8 @@ export function SkillsSection() {
         }
       }
     } catch (error) {
-      console.error("Failed to fetch skills:", error);
-      toast.error("Failed to load skills");
+      // console.error("Failed to fetch skills:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to load skills");
     } finally {
       setLoading(false);
     }
@@ -75,9 +76,17 @@ export function SkillsSection() {
       const response = await getAllSkills(search);
       if (response.data) {
         setAvailableSkills(response.data);
+      } else {
+        setAvailableSkills([]);
       }
     } catch (error) {
-      console.error("Failed to fetch available skills:", error);
+      // 404 "No Skill found!" is expected when there are no skills; treat as empty list
+      if (error instanceof NotFoundError) {
+        setAvailableSkills([]);
+      } else {
+        // console.error("Failed to fetch available skills:", error);
+        setAvailableSkills([]);
+      }
     } finally {
       setIsSearching(false);
     }
@@ -101,14 +110,16 @@ export function SkillsSection() {
   };
 
   const handleSaveNew = async () => {
-    if (!newForm.skill.trim()) {
-      toast.error("Please select a skill");
+    // Prefer current input (typed text) over a previous dropdown selection so we submit what the user sees
+    const valueToSave = searchTerm.trim() || newForm.skill.trim();
+    if (!valueToSave) {
+      toast.error("Please enter or select a skill");
       return;
     }
 
     try {
       await createUserSkill({
-        skill: newForm.skill,
+        skill: valueToSave,
         description: "",
       });
       toast.success("Skill added");
@@ -117,8 +128,8 @@ export function SkillsSection() {
       setSearchTerm("");
       fetchSkills();
     } catch (error) {
-      console.error("Failed to create skill:", error);
-      toast.error("Failed to add skill");
+      // console.error("Failed to create skill:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to add skill");
     }
   };
 
@@ -135,8 +146,8 @@ export function SkillsSection() {
       setSkills(skills.filter((skill) => skill.id !== itemToDelete));
       toast.success("Skill deleted");
     } catch (error) {
-      console.error("Failed to delete skill:", error);
-      toast.error("Failed to delete skill");
+      // console.error("Failed to delete skill:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete skill");
     } finally {
       setItemToDelete(null);
     }
@@ -188,9 +199,13 @@ export function SkillsSection() {
                     type="text"
                     value={searchTerm || newForm.skill}
                     onChange={(e) => {
-                      setSearchTerm(e.target.value);
+                      const value = e.target.value;
+                      setSearchTerm(value);
                       setIsDropdownOpen(true);
-                      if (!e.target.value) {
+                      if (!value) {
+                        setNewForm({ skill: "" });
+                      } else if (value !== newForm.skill) {
+                        // User is typing something different from last selection; clear stale selection
                         setNewForm({ skill: "" });
                       }
                     }}
@@ -219,7 +234,7 @@ export function SkillsSection() {
                       </div>
                     ) : availableSkills.length === 0 ? (
                       <div className="px-4 py-2 text-sm text-gray-500">
-                        No skills found
+                        No skills found. Save the entered value to create a new skill.
                       </div>
                     ) : (
                       availableSkills.map((skill) => (
@@ -238,20 +253,27 @@ export function SkillsSection() {
                   </div>
                 )}
               </div>
-              {newForm.skill && !searchTerm && (
+              {(searchTerm.trim() || newForm.skill) && (
                 <div className="mt-1 text-xs text-gray-600">
-                  Selected: <span className="font-medium">{newForm.skill}</span>
+                  {newForm.skill && !searchTerm ? (
+                    <>Selected: <span className="font-medium">{newForm.skill}</span></>
+                  ) : (
+                    <>Add as new skill: <span className="font-medium">{(searchTerm || newForm.skill).trim()}</span></>
+                  )}
                 </div>
               )}
 
               <div className="flex items-center gap-2 pt-1">
                 <button
+                  type="button"
                   onClick={handleSaveNew}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-gray-800 text-white text-xs rounded hover:bg-gray-900"
+                  disabled={!(searchTerm.trim() || newForm.skill.trim())}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-gray-800 text-white text-xs rounded hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Save
+                  {searchTerm.trim() && !newForm.skill ? "Add skill" : "Save"}
                 </button>
                 <button
+                  type="button"
                   onClick={handleCancelAdd}
                   className="flex items-center gap-1 px-3 py-1.5 border border-gray-300 text-gray-700 text-xs rounded hover:bg-gray-50"
                 >

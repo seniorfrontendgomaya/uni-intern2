@@ -54,6 +54,12 @@ const columns = [
     cellClassName: "px-4 py-2",
   },
   {
+    key: "is_recomended_label",
+    label: "Is Recommended",
+    headerClassName: "px-4 py-2",
+    cellClassName: "px-4 py-2",
+  },
+  {
     key: "actions",
     label: "Actions",
     headerClassName: "w-24 px-4 py-2 text-center",
@@ -93,6 +99,11 @@ const fields: Field[] = [
     label: "Placement Guarantee",
     type: "checkbox",
   },
+  {
+    name: "is_recomended",
+    label: "Is Recommended",
+    type: "checkbox",
+  },
 ];
 
 export function CoursesPage() {
@@ -114,13 +125,16 @@ export function CoursesPage() {
   } = useCoursesPaginated(10, searchTerm);
 
   const rows = items.map((item, index) => {
-    const value = item.placement_gurantee;
-    const normalized =
-      value === true ||
-      value === "true" ||
-      value === "True" ||
-      value === "YES" ||
-      value === "Yes";
+    const placementValue = item.placement_gurantee;
+    const placementNormalized =
+      placementValue === true ||
+      placementValue === "true" ||
+      placementValue === "True" ||
+      placementValue === "YES" ||
+      placementValue === "Yes";
+
+    const isRecommendedValue = item.is_recomended;
+    const isRecommendedNormalized = Boolean(isRecommendedValue);
 
     return {
       id: item.id,
@@ -141,8 +155,10 @@ export function CoursesPage() {
       description: item.description ?? "-",
       duration: item.duration ? String(item.duration) : "-",
       fees: item.fees ? String(item.fees) : "-",
-      placement_label: normalized ? "Yes" : "No",
-      placement_gurantee: normalized,
+      placement_label: placementNormalized ? "Yes" : "No",
+      placement_gurantee: placementNormalized,
+      is_recomended_label: isRecommendedNormalized ? "Yes" : "No",
+      is_recomended: isRecommendedNormalized,
     };
   });
 
@@ -193,6 +209,7 @@ export function CoursesPage() {
             formData.append("fees", String(feesNumber));
           }
           formData.append("placement_gurantee", String(Boolean(values.placement_gurantee)));
+          formData.append("is_recomended", String(Boolean(values.is_recomended)));
           formData.append("image", imageFile);
 
           const result = await createCourse(formData);
@@ -219,6 +236,7 @@ export function CoursesPage() {
               ? String(feesNumber)
               : "",
           placement_gurantee: Boolean(values.placement_gurantee),
+          is_recomended: Boolean(values.is_recomended),
         };
 
         const result = await createCourse(payload);
@@ -265,6 +283,9 @@ export function CoursesPage() {
           }
           if (patchData.placement_gurantee !== undefined) {
             formData.append("placement_gurantee", String(Boolean(patchData.placement_gurantee)));
+          }
+          if (patchData.is_recomended !== undefined) {
+            formData.append("is_recomended", String(Boolean(patchData.is_recomended)));
           }
           formData.append("image", imageFile);
 
@@ -313,6 +334,9 @@ export function CoursesPage() {
         }
         if (patchData.placement_gurantee !== undefined) {
           patch.placement_gurantee = Boolean(patchData.placement_gurantee);
+        }
+        if (patchData.is_recomended !== undefined) {
+          patch.is_recomended = Boolean(patchData.is_recomended);
         }
 
         const result = await updateCourse({

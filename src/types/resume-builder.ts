@@ -6,9 +6,9 @@ export interface ResumeUserProfile {
   first_name: string;
   last_name: string;
   mobile: string;
-  location: string;
+  location: { id: number; name: string }[];
   image: string;
-  language: string[];
+  language: { id: number; name: string }[];
   country_code: string;
   gender: string;
 }

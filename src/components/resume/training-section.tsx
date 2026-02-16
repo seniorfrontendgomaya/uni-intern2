@@ -55,8 +55,8 @@ export function TrainingSection() {
         }
       }
     } catch (error) {
-      console.error("Failed to fetch trainings:", error);
-      toast.error("Failed to load trainings");
+      // console.error("Failed to fetch trainings:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to load trainings");
     } finally {
       setLoading(false);
     }
@@ -109,8 +109,8 @@ export function TrainingSection() {
       setEditingId(null);
       fetchTrainings();
     } catch (error) {
-      console.error("Failed to update training:", error);
-      toast.error("Failed to update training");
+      // console.error("Failed to update training:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update training");
     }
   };
 
@@ -163,8 +163,8 @@ export function TrainingSection() {
       });
       fetchTrainings();
     } catch (error) {
-      console.error("Failed to create training:", error);
-      toast.error("Failed to add training");
+      // console.error("Failed to create training:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to add training");
     }
   };
 
@@ -181,8 +181,8 @@ export function TrainingSection() {
       setTrainings(trainings.filter((training) => training.id !== itemToDelete));
       toast.success("Training deleted");
     } catch (error) {
-      console.error("Failed to delete training:", error);
-      toast.error("Failed to delete training");
+      // console.error("Failed to delete training:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete training");
     } finally {
       setItemToDelete(null);
     }

@@ -8,15 +8,6 @@ import {
   type TopCourseItem,
 } from "@/services/course.service";
 
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 export interface CoursesMegaMenuProps {
   /** Base path for courses (e.g. "/courses" or "/student/courses") */
   basePath?: string;
@@ -25,9 +16,9 @@ export interface CoursesMegaMenuProps {
   className?: string;
 }
 
-function buildCourseHref(basePath: string, slug: string, type: "certification" | "placement") {
+function buildCourseHref(basePath: string, categoryId: number) {
   const path = basePath.replace(/\/$/, "");
-  return `${path}?type=${type}&course=${encodeURIComponent(slug)}`;
+  return `${path}?category_id=${categoryId}`;
 }
 
 export function CoursesMegaMenu({
@@ -56,7 +47,7 @@ export function CoursesMegaMenu({
           setPlacementCourses(placement);
         }
       } catch (error) {
-        console.error("Failed to load courses:", error);
+        // console.error("Failed to load courses:", error);
         // Keep empty arrays on error
       } finally {
         if (!cancelled) setLoading(false);
@@ -95,19 +86,16 @@ export function CoursesMegaMenu({
             </div>
           ) : certificationCourses.length > 0 ? (
             <nav className="flex flex-col gap-0.5 mb-4">
-              {certificationCourses.map((course) => {
-                const slug = slugify(course.name);
-                return (
-                  <Link
-                    key={course.id}
-                    href={buildCourseHref(basePath, slug, "certification")}
-                    onClick={onClose}
-                    className="rounded-md px-2 py-1.5 text-sm text-gray-900 hover:bg-gray-100"
-                  >
-                    {course.name}
-                  </Link>
-                );
-              })}
+              {certificationCourses.map((course) => (
+                <Link
+                  key={course.id}
+                  href={buildCourseHref(basePath, course.id)}
+                  onClick={onClose}
+                  className="rounded-md px-2 py-1.5 text-sm text-gray-900 hover:bg-gray-100"
+                >
+                  {course.name}
+                </Link>
+              ))}
             </nav>
           ) : (
             <p className="text-sm text-gray-500">No courses available</p>
@@ -130,19 +118,16 @@ export function CoursesMegaMenu({
             </div>
           ) : placementCourses.length > 0 ? (
             <nav className="flex flex-col gap-0.5">
-              {placementCourses.map((course) => {
-                const slug = slugify(course.name);
-                return (
-                  <Link
-                    key={course.id}
-                    href={buildCourseHref(basePath, slug, "placement")}
-                    onClick={onClose}
-                    className="rounded-md px-2 py-1.5 text-sm text-gray-900 hover:bg-gray-100"
-                  >
-                    {course.name}
-                  </Link>
-                );
-              })}
+              {placementCourses.map((course) => (
+                <Link
+                  key={course.id}
+                  href={buildCourseHref(basePath, course.id)}
+                  onClick={onClose}
+                  className="rounded-md px-2 py-1.5 text-sm text-gray-900 hover:bg-gray-100"
+                >
+                  {course.name}
+                </Link>
+              ))}
             </nav>
           ) : (
             <p className="text-sm text-gray-500">No courses available</p>

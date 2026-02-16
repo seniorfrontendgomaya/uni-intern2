@@ -51,8 +51,8 @@ export function ProjectsSection() {
         }
       }
     } catch (error) {
-      console.error("Failed to fetch projects:", error);
-      toast.error("Failed to load projects");
+      // console.error("Failed to fetch projects:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to load projects");
     } finally {
       setLoading(false);
     }
@@ -99,8 +99,8 @@ export function ProjectsSection() {
       setEditingId(null);
       fetchProjects();
     } catch (error) {
-      console.error("Failed to update project:", error);
-      toast.error("Failed to update project");
+      // console.error("Failed to update project:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update project");
     }
   };
 
@@ -147,8 +147,8 @@ export function ProjectsSection() {
       });
       fetchProjects();
     } catch (error) {
-      console.error("Failed to create project:", error);
-      toast.error("Failed to add project");
+      // console.error("Failed to create project:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to add project");
     }
   };
 
@@ -165,8 +165,8 @@ export function ProjectsSection() {
       setProjects(projects.filter((project) => project.id !== itemToDelete));
       toast.success("Project deleted");
     } catch (error) {
-      console.error("Failed to delete project:", error);
-      toast.error("Failed to delete project");
+      // console.error("Failed to delete project:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete project");
     } finally {
       setItemToDelete(null);
     }
