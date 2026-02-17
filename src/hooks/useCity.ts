@@ -3,14 +3,13 @@
 import { usePaginated } from "./usePaginated";
 import {
   CityCreatePayload,
-  CityMutationResponse,
   CityUpdatePayload,
   createCity,
   deleteCity,
   getCities,
   updateCity,
 } from "@/services/city.service";
-import type { City } from "@/types/city";
+import type { City, CityMutationResponse } from "@/types/city";
 import { useAsyncAction } from "./useAsync";
 import { useCallback } from "react";
 

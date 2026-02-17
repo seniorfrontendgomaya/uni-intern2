@@ -9,10 +9,18 @@ import {
   useDeleteCourse,
 } from "@/hooks/useCourse";
 
+const formatInr = (value: unknown): string | null => {
+  const raw = value == null ? "" : String(value).trim();
+  if (!raw) return null;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return null;
+  return new Intl.NumberFormat("en-IN").format(n);
+};
+
 const columns = [
   {
     key: "sr",
-    label: "Sr",
+    label: "S NO",
     headerClassName: "w-20 px-4 py-2 text-center",
     cellClassName: "w-16 px-4 py-2 text-center",
   },
@@ -37,15 +45,15 @@ const columns = [
   },
   {
     key: "duration",
-    label: "Duration",
+    label: "Duration (months)",
     headerClassName: "px-4 py-2",
     cellClassName: "px-4 py-2",
   },
   {
     key: "fees",
-    label: "Fees",
+    label: "Fees (₹)",
     headerClassName: "px-4 py-2",
-    cellClassName: "px-4 py-2",
+    cellClassName: "px-4 py-2 whitespace-nowrap",
   },
   {
     key: "placement_label",
@@ -89,7 +97,7 @@ const fields: Field[] = [
   },
   {
     name: "fees",
-    label: "Fees",
+    label: "Fees (₹ / rupees)",
     type: "number",
     placeholder: "e.g. 25000",
     min: 0,
@@ -153,8 +161,14 @@ export function CoursesPage() {
       image_url: item.image, // Store URL for preview in update modal
       name: item.name,
       description: item.description ?? "-",
-      duration: item.duration ? String(item.duration) : "-",
-      fees: item.fees ? String(item.fees) : "-",
+      duration:
+        item.duration != null && String(item.duration).trim() !== ""
+          ? `${item.duration} months`
+          : "-",
+      fees: (() => {
+        const formatted = formatInr(item.fees);
+        return formatted ? `₹ ${formatted}` : "-";
+      })(),
       placement_label: placementNormalized ? "Yes" : "No",
       placement_gurantee: placementNormalized,
       is_recomended_label: isRecommendedNormalized ? "Yes" : "No",

@@ -31,14 +31,13 @@ type Props = {
   };
 };
 
-export function DiplomaEducationForm({ onSave, onClose, initialValues }: Props) {
+export function PhdEducationForm({ onSave, onClose, initialValues }: Props) {
   const [college, setCollege] = useState(initialValues?.college || "");
   const [startDate, setStartDate] = useState(initialValues?.start_date || "");
   const [endDate, setEndDate] = useState(initialValues?.end_date || "");
   const [isOngoing, setIsOngoing] = useState(initialValues?.is_ongoing || false);
   const [stream, setStream] = useState(initialValues?.stream || "");
-  // Determine score type from cgpa (100 = percentage, 10 = cgpa)
-  const initialScoreType = initialValues?.cgpa 
+  const initialScoreType = initialValues?.cgpa
     ? (Number(initialValues.cgpa) === 100 ? "percentage" : "cgpa")
     : "percentage";
   const [scoreType, setScoreType] = useState<typeof SCORE_TYPES[number]["value"]>(initialScoreType);
@@ -84,7 +83,7 @@ export function DiplomaEducationForm({ onSave, onClose, initialValues }: Props) 
   return (
     <div className="p-3 border-2 border-dashed border-gray-300 rounded max-w-md">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-bold text-gray-900">Diploma details</h3>
+        <h3 className="text-base font-bold text-gray-900">PhD details</h3>
         <button
           type="button"
           onClick={onClose}

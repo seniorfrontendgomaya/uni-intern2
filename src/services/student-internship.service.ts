@@ -166,6 +166,13 @@ export async function fetchDetailCompany(id: number): Promise<DetailCompanyRespo
   return (await res.json()) as DetailCompanyResponse;
 }
 
+/** Course item shown on detail when placement_gurantee_course is true (only placement_gurantee courses). */
+export interface InternshipDetailCourse {
+  id: number;
+  name: string;
+  description?: string;
+}
+
 /** Display shape for company/internship detail (modal or detail page). */
 export interface InternshipDetailDisplay {
   id: number;
@@ -189,19 +196,28 @@ export interface InternshipDetailDisplay {
   salaryRange?: string;
   active?: boolean;
   number_of_opening?: number;
+  /** When placement_gurantee_course is true, only courses with placement_gurantee true. */
+  course?: InternshipDetailCourse[];
 }
 
 function formatSalaryRange(start: number | null, end: number | null): string {
-  if (start == null && end == null) return "";
+  const unpaid = (start == null || start === 0) && (end == null || end === 0);
+  if (unpaid) return "Unpaid internship";
   if (start != null && end != null) return `₹${(start / 1000).toFixed(0)}K - ₹${(end / 1000).toFixed(0)}K/month`;
   if (start != null) return `₹${(start / 1000).toFixed(0)}K+/month`;
   return end != null ? `Up to ₹${(end / 1000).toFixed(0)}K/month` : "";
 }
 
-/** Map detail_company API response to display shape. */
+/** Map detail_company API response to display shape. When placement_gurantee_course is true, only courses with placement_gurantee true are included. */
 export function mapDetailToDisplay(detail: DetailCompanyData): InternshipDetailDisplay {
   const company = detail.comapany;
   const title = detail.designation?.map((d) => d.name).join(", ") ?? "";
+  const courseList =
+    detail.placement_gurantee_course && Array.isArray(detail.course)
+      ? detail.course
+          .filter((c) => c.placement_gurantee === true)
+          .map((c) => ({ id: c.id, name: c.name, description: c.description }))
+      : undefined;
   return {
     id: detail.id,
     companyName: company?.name ?? "",
@@ -224,5 +240,6 @@ export function mapDetailToDisplay(detail: DetailCompanyData): InternshipDetailD
     salaryRange: formatSalaryRange(detail.start_amount, detail.end_amount) || undefined,
     active: detail.active,
     number_of_opening: detail.number_of_opening,
+    course: courseList?.length ? courseList : undefined,
   };
 }

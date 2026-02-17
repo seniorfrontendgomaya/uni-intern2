@@ -85,7 +85,7 @@ export function CompanyClient({
               <table className="w-full min-w-[600px] text-left text-sm">
                 <thead className="bg-brand text-xs uppercase text-white">
                   <tr className="h-12">
-                    <th className="w-20 px-2 py-2 text-center text-xs sm:px-4 sm:text-xs">Sr No</th>
+                    <th className="w-20 px-2 py-2 text-center text-xs sm:px-4 sm:text-xs">S NO</th>
                     <th className="px-2 py-2 text-xs sm:px-4 sm:text-xs">Name</th>
                     <th className="px-2 py-2 text-xs sm:px-4 sm:text-xs">Description</th>
                     <th className="w-24 px-2 py-2 text-center text-xs sm:px-4 sm:text-xs">Actions</th>
@@ -272,8 +272,8 @@ export function CompanyClient({
                 if (modalMode === "create") {
                   setSaving(true);
                   const result = await createJobType({
-                    name,
-                    description,
+                    name: name.trim(),
+                    description: description.trim(),
                   });
                   setSaving(false);
 
@@ -296,9 +296,9 @@ export function CompanyClient({
                 const result = await updateJobType({
                   jobTypeId: activeJobTypeId,
                   patchData: {
-                    ...(name !== initialName ? { name } : {}),
+                    ...(name !== initialName ? { name: name.trim() } : {}),
                     ...(description !== initialDescription
-                      ? { description }
+                      ? { description: description.trim() }
                       : {}),
                   },
                 });

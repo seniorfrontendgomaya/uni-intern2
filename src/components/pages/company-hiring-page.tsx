@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Pencil, Trash2, Eye } from "lucide-react";
 import toast from "react-hot-toast";
 import { DataTableShell } from "@/components/ui/data-table-shell";
 import { Modal } from "@/components/ui/modal";
@@ -9,6 +10,11 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { extractFieldErrors } from "@/lib/validation-errors";
 import { getAllCities } from "@/services/city.service";
 import { getAllCategories } from "@/services/category.service";
+import { getAllJobTypes } from "@/services/jobtype.service";
+import { getAllDesignations } from "@/services/designation.service";
+import { getAllSkills } from "@/services/skill.service";
+import { getAllCourses } from "@/services/course.service";
+import { getAllPerks } from "@/services/perk.service";
 import {
   useCompanyHiringPaginated,
   useCreateCompanyHiring,
@@ -18,14 +24,15 @@ import {
 import type { CompanyHiring } from "@/types/company-hiring";
 
 const columns = [
-  { key: "sr", label: "Sr No", headerClassName: "w-20 px-4 py-2 text-center" },
-  { key: "description", label: "Description", headerClassName: "px-4 py-2" },
+  { key: "sr", label: "S NO", headerClassName: "w-20 px-4 py-2 text-center" },
+  { key: "company", label: "Company", headerClassName: "px-4 py-2" },
+  { key: "designation", label: "Designation", headerClassName: "px-4 py-2" },
   { key: "location", label: "Location", headerClassName: "px-4 py-2" },
   { key: "category", label: "Category", headerClassName: "px-4 py-2" },
   { key: "amount", label: "Amount Range", headerClassName: "px-4 py-2" },
   { key: "openings", label: "Openings", headerClassName: "px-4 py-2" },
   { key: "active", label: "Active", headerClassName: "px-4 py-2" },
-  { key: "actions", label: "Actions", headerClassName: "w-24 px-4 py-2" },
+  { key: "actions", label: "Actions", headerClassName: "w-28 px-4 py-2" },
 ];
 
 const cx = (...classes: Array<string | false | null | undefined>) =>
@@ -39,10 +46,22 @@ type OptionItem = {
 
 type HiringFormValues = {
   description: string;
+  about: string;
+  apply: string;
+  key_responsibility: string;
+  apply_start_date: string;
+  apply_end_date: string;
   location: OptionItem[];
   category: OptionItem[];
+  job_type: OptionItem[];
+  designation: OptionItem[];
+  skills: OptionItem[];
+  course: OptionItem[];
+  perk: OptionItem[];
   start_amount: string;
   end_amount: string;
+  start_anual_salary: string;
+  end_anual_salary: string;
   start_day: string;
   active: boolean;
   placement_gurantee_course: boolean;
@@ -52,10 +71,22 @@ type HiringFormValues = {
 
 const emptyFormValues = (): HiringFormValues => ({
   description: "",
+  about: "",
+  apply: "",
+  key_responsibility: "",
+  apply_start_date: "",
+  apply_end_date: "",
   location: [],
   category: [],
+  job_type: [],
+  designation: [],
+  skills: [],
+  course: [],
+  perk: [],
   start_amount: "",
   end_amount: "",
+  start_anual_salary: "",
+  end_anual_salary: "",
   start_day: "",
   active: true,
   placement_gurantee_course: false,
@@ -83,12 +114,28 @@ const toNonNegativeNumberInput = (raw: string) => {
   return raw;
 };
 
+const toIds = (items: OptionItem[]) => items.map((item) => Number(item.id));
+
 const toCreatePayload = (values: HiringFormValues) => ({
   description: values.description.trim() || null,
-  location: values.location.map((item) => Number(item.id)),
-  category: values.category.map((item) => Number(item.id)),
+  about: values.about.trim() || null,
+  apply: values.apply.trim() || null,
+  key_responsibility: values.key_responsibility.trim() || null,
+  apply_start_date: values.apply_start_date || null,
+  apply_end_date: values.apply_end_date || null,
+  location: toIds(values.location),
+  category: toIds(values.category),
+  job_type: toIds(values.job_type),
+  designation: toIds(values.designation),
+  skills: toIds(values.skills),
+  course: toIds(values.course),
+  perk: toIds(values.perk),
   start_amount: values.start_amount ? Number(values.start_amount) : null,
   end_amount: values.end_amount ? Number(values.end_amount) : null,
+  start_anual_salary: values.start_anual_salary
+    ? Number(values.start_anual_salary)
+    : null,
+  end_anual_salary: values.end_anual_salary ? Number(values.end_anual_salary) : null,
   start_day: values.start_day || null,
   active: values.active,
   placement_gurantee_course: values.placement_gurantee_course,
@@ -100,10 +147,24 @@ const toCreatePayload = (values: HiringFormValues) => ({
 
 const toUpdatePayload = (values: HiringFormValues) => ({
   description: values.description.trim() || null,
-  location: values.location.map((item) => Number(item.id)),
-  category: values.category.map((item) => Number(item.id)),
+  about: values.about.trim() || null,
+  apply: values.apply.trim() || null,
+  key_responsibility: values.key_responsibility.trim() || null,
+  apply_start_date: values.apply_start_date || null,
+  apply_end_date: values.apply_end_date || null,
+  location: toIds(values.location),
+  category: toIds(values.category),
+  job_type: toIds(values.job_type),
+  designation: toIds(values.designation),
+  skills: toIds(values.skills),
+  course: toIds(values.course),
+  perk: toIds(values.perk),
   start_amount: values.start_amount ? Number(values.start_amount) : null,
   end_amount: values.end_amount ? Number(values.end_amount) : null,
+  start_anual_salary: values.start_anual_salary
+    ? Number(values.start_anual_salary)
+    : null,
+  end_anual_salary: values.end_anual_salary ? Number(values.end_anual_salary) : null,
   start_day: values.start_day || null,
   active: values.active,
   placement_gurantee_course: values.placement_gurantee_course,
@@ -133,12 +194,8 @@ const SearchTagInput = ({
   const requestId = useRef(0);
 
   useEffect(() => {
+    if (!open) return;
     const query = inputValue.trim();
-    if (!query) {
-      setOptions([]);
-      setOpen(false);
-      return;
-    }
 
     const id = ++requestId.current;
     setLoading(true);
@@ -155,12 +212,12 @@ const SearchTagInput = ({
           setOpen(false);
         })
         .finally(() => {
-          if (requestId.current !== id) setLoading(false);
+          if (requestId.current === id) setLoading(false);
         });
     }, 300);
 
     return () => window.clearTimeout(timer);
-  }, [fetchOptions, inputValue]);
+  }, [fetchOptions, inputValue, open]);
 
   const addOption = (option: OptionItem) => {
     const nextName = option.name.trim();
@@ -209,7 +266,7 @@ const SearchTagInput = ({
             value={inputValue}
             onChange={(event) => setInputValue(event.target.value)}
             onFocus={() => {
-              if (options.length > 0) setOpen(true);
+              setOpen(true);
             }}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
@@ -309,6 +366,41 @@ export function CompanyHiringPage() {
       getAllCategories(query).then((result) => result.data || []),
     []
   );
+  const jobTypeFetcher = useCallback(
+    (query: string) =>
+      getAllJobTypes(query).then((res) =>
+        (res.data || []).map((item) => ({ id: item.id, name: item.name }))
+      ),
+    []
+  );
+  const designationFetcher = useCallback(
+    (query: string) =>
+      getAllDesignations(query).then((res) =>
+        (res.data || []).map((item) => ({ id: item.id, name: item.name }))
+      ),
+    []
+  );
+  const skillFetcher = useCallback(
+    (query: string) =>
+      getAllSkills(query).then((res) =>
+        (res.data || []).map((item) => ({ id: item.id, name: item.name }))
+      ),
+    []
+  );
+  const courseFetcher = useCallback(
+    (query: string) =>
+      getAllCourses(query, formValues.placement_gurantee_course).then((res) =>
+        (res.data || []).map((item) => ({ id: item.id, name: item.name }))
+      ),
+    [formValues.placement_gurantee_course]
+  );
+  const perkFetcher = useCallback(
+    (query: string) =>
+      getAllPerks(query).then((res) =>
+        (res.data || []).map((item) => ({ id: item.id, name: item.name }))
+      ),
+    []
+  );
 
   const rows = useMemo(
     () =>
@@ -316,7 +408,11 @@ export function CompanyHiringPage() {
         id: item.id,
         raw: item,
         sr: String((page - 1) * perPage + index + 1),
-        description: item.description ?? "-",
+        company: item.comapany?.name ?? "-",
+        designation:
+          item.designation && item.designation.length > 0
+            ? item.designation.map((d) => d.name).join(", ")
+            : "-",
         location:
           item.location && item.location.length > 0
             ? item.location.map((loc) => loc.name).join(", ")
@@ -337,9 +433,9 @@ export function CompanyHiringPage() {
     totalPages <= 3
       ? Array.from({ length: totalPages }, (_, i) => i + 1)
       : (() => {
-          const start = Math.max(1, Math.min(page - 1, totalPages - 2));
-          return [start, start + 1, start + 2];
-        })();
+        const start = Math.max(1, Math.min(page - 1, totalPages - 2));
+        return [start, start + 1, start + 2];
+      })();
 
   const openCreateModal = () => {
     const nextValues = emptyFormValues();
@@ -355,10 +451,35 @@ export function CompanyHiringPage() {
   const openUpdateModal = (hiring: CompanyHiring) => {
     const nextValues: HiringFormValues = {
       description: String(hiring.description ?? ""),
+      about: String((hiring as unknown as { about?: string | null }).about ?? ""),
+      apply: String((hiring as unknown as { apply?: string | null }).apply ?? ""),
+      key_responsibility: String(
+        (hiring as unknown as { key_responsibility?: string | null })
+          .key_responsibility ?? ""
+      ),
+      apply_start_date: toDateInputValue(
+        (hiring as unknown as { apply_start_date?: string | null }).apply_start_date
+      ),
+      apply_end_date: toDateInputValue(
+        (hiring as unknown as { apply_end_date?: string | null }).apply_end_date
+      ),
       location: listToOptions(hiring.location),
       category: listToOptions(hiring.category),
+      job_type: listToOptions(hiring.job_type),
+      designation: listToOptions(hiring.designation),
+      skills: listToOptions(hiring.skills),
+      course: listToOptions(hiring.course),
+      perk: listToOptions(hiring.perk),
       start_amount: String(hiring.start_amount ?? ""),
       end_amount: String(hiring.end_amount ?? ""),
+      start_anual_salary: String(
+        (hiring as unknown as { start_anual_salary?: number | null }).start_anual_salary ??
+          ""
+      ),
+      end_anual_salary: String(
+        (hiring as unknown as { end_anual_salary?: number | null }).end_anual_salary ??
+          ""
+      ),
       start_day: toDateInputValue(hiring.start_day),
       active: Boolean(hiring.active),
       placement_gurantee_course: Boolean(hiring.placement_gurantee_course),
@@ -436,10 +557,22 @@ export function CompanyHiringPage() {
 
     const knownKeys = new Set<string>([
       "description",
+      "about",
+      "apply",
+      "key_responsibility",
+      "apply_start_date",
+      "apply_end_date",
       "location",
       "category",
+      "job_type",
+      "designation",
+      "skills",
+      "course",
+      "perk",
       "start_amount",
       "end_amount",
+      "start_anual_salary",
+      "end_anual_salary",
       "start_day",
       "active",
       "placement_gurantee_course",
@@ -521,8 +654,11 @@ export function CompanyHiringPage() {
                         <td className="px-2 py-2 text-center text-xs sm:px-4 sm:text-sm">
                           {row.sr}
                         </td>
-                        <td className="px-2 py-2 text-xs text-muted-foreground wrap-break-word whitespace-normal max-w-[360px] sm:px-4 sm:text-sm">
-                          {row.description}
+                        <td className="px-2 py-2 text-xs font-medium text-foreground wrap-break-word whitespace-normal max-w-[240px] sm:px-4 sm:text-sm">
+                          {row.company}
+                        </td>
+                        <td className="px-2 py-2 text-xs wrap-break-word whitespace-normal max-w-[240px] sm:px-4 sm:text-sm">
+                          {row.designation}
                         </td>
                         <td className="px-2 py-2 text-xs wrap-break-word whitespace-normal max-w-[240px] sm:px-4 sm:text-sm">
                           {row.location}
@@ -541,6 +677,17 @@ export function CompanyHiringPage() {
                         </td>
                         <td className="px-2 py-2 sm:px-4">
                           <div className="flex items-center justify-center gap-1 sm:gap-2">
+                            <Link
+                              href={`/company/hiring/${row.id}`}
+                              className={cx(
+                                "inline-flex h-7 w-7 items-center justify-center rounded-xl border text-muted-foreground transition sm:h-8 sm:w-8",
+                                "hover:border-brand/40 hover:bg-brand/10 hover:text-brand"
+                              )}
+                              aria-label="View"
+                              title="View"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                            </Link>
                             <button
                               type="button"
                               className={cx(
@@ -704,6 +851,20 @@ export function CompanyHiringPage() {
             </div>
           ) : null}
 
+          <SearchTagInput
+            label="Designation"
+            value={formValues.designation}
+            placeholder="Search designation..."
+            fetchOptions={designationFetcher}
+            onChange={(next) =>
+              setFormValues((prev) => {
+                clearFieldError("designation");
+                return { ...prev, designation: next };
+              })
+            }
+          />
+          {renderFieldErrors("designation")}
+
           <div>
             <label className="text-sm font-medium text-foreground">
               Description
@@ -719,6 +880,53 @@ export function CompanyHiringPage() {
               }
             />
             {renderFieldErrors("description")}
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-foreground">About</label>
+            <textarea
+              className="mt-2 min-h-[96px] w-full resize-none rounded-lg border bg-background px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+              value={formValues.about}
+              onChange={(event) =>
+                setFormValues((prev) => {
+                  clearFieldError("about");
+                  return { ...prev, about: event.target.value };
+                })
+              }
+            />
+            {renderFieldErrors("about")}
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-foreground">How to apply</label>
+            <textarea
+              className="mt-2 min-h-[96px] w-full resize-none rounded-lg border bg-background px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+              value={formValues.apply}
+              onChange={(event) =>
+                setFormValues((prev) => {
+                  clearFieldError("apply");
+                  return { ...prev, apply: event.target.value };
+                })
+              }
+            />
+            {renderFieldErrors("apply")}
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-foreground">
+              Key responsibility
+            </label>
+            <textarea
+              className="mt-2 min-h-[96px] w-full resize-none rounded-lg border bg-background px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+              value={formValues.key_responsibility}
+              onChange={(event) =>
+                setFormValues((prev) => {
+                  clearFieldError("key_responsibility");
+                  return { ...prev, key_responsibility: event.target.value };
+                })
+              }
+            />
+            {renderFieldErrors("key_responsibility")}
           </div>
 
           <SearchTagInput
@@ -749,10 +957,89 @@ export function CompanyHiringPage() {
           />
           {renderFieldErrors("category")}
 
+          <SearchTagInput
+            label="Job Type"
+            value={formValues.job_type}
+            placeholder="Search job type..."
+            fetchOptions={jobTypeFetcher}
+            onChange={(next) =>
+              setFormValues((prev) => {
+                clearFieldError("job_type");
+                return { ...prev, job_type: next };
+              })
+            }
+          />
+          {renderFieldErrors("job_type")}
+
+
+          <SearchTagInput
+            label="Skills"
+            value={formValues.skills}
+            placeholder="Search skills..."
+            fetchOptions={skillFetcher}
+            onChange={(next) =>
+              setFormValues((prev) => {
+                clearFieldError("skills");
+                return { ...prev, skills: next };
+              })
+            }
+          />
+          {renderFieldErrors("skills")}
+
+
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              className="h-4 w-4"
+              checked={formValues.placement_gurantee_course}
+              onChange={(event) =>
+                setFormValues((prev) => {
+                  clearFieldError("placement_gurantee_course");
+                  return {
+                    ...prev,
+                    placement_gurantee_course: event.target.checked,
+                  };
+                })
+              }
+            />
+            <label className="text-sm font-medium text-foreground">
+              Placement Guarantee Course (If selected, the below course will be guaranteed for placement)
+            </label>
+          </div>
+          {renderFieldErrors("placement_gurantee_course")}
+
+          <SearchTagInput
+            label="Course"
+            value={formValues.course}
+            placeholder="Search course..."
+            fetchOptions={courseFetcher}
+            onChange={(next) =>
+              setFormValues((prev) => {
+                clearFieldError("course");
+                return { ...prev, course: next };
+              })
+            }
+          />
+          {renderFieldErrors("course")}
+
+          <SearchTagInput
+            label="Perk"
+            value={formValues.perk}
+            placeholder="Search perk..."
+            fetchOptions={perkFetcher}
+            onChange={(next) =>
+              setFormValues((prev) => {
+                clearFieldError("perk");
+                return { ...prev, perk: next };
+              })
+            }
+          />
+          {renderFieldErrors("perk")}
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="text-sm font-medium text-foreground">
-                Start Amount
+                Start Amount  (₹)
               </label>
               <input
                 type="number"
@@ -773,7 +1060,7 @@ export function CompanyHiringPage() {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground">
-                End Amount
+                End Amount (₹)
               </label>
               <input
                 type="number"
@@ -834,6 +1121,105 @@ export function CompanyHiringPage() {
             </div>
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="text-sm font-medium text-foreground">
+                Apply Start Date
+              </label>
+              <input
+                type="date"
+                className="mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+                min={new Date().toISOString().slice(0, 10)}
+                value={formValues.apply_start_date}
+                onChange={(event) =>
+                  setFormValues((prev) => {
+                    clearFieldError("apply_start_date");
+                    const nextStart = event.target.value;
+                    const nextEnd =
+                      prev.apply_end_date &&
+                      nextStart &&
+                      prev.apply_end_date < nextStart
+                        ? ""
+                        : prev.apply_end_date;
+                    if (nextEnd !== prev.apply_end_date) {
+                      clearFieldError("apply_end_date");
+                    }
+                    return {
+                      ...prev,
+                      apply_start_date: nextStart,
+                      apply_end_date: nextEnd,
+                    };
+                  })
+                }
+              />
+              {renderFieldErrors("apply_start_date")}
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">
+                Apply End Date
+              </label>
+              <input
+                type="date"
+                className="mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+                min={
+                  formValues.apply_start_date
+                    ? formValues.apply_start_date
+                    : new Date().toISOString().slice(0, 10)
+                }
+                value={formValues.apply_end_date}
+                onChange={(event) =>
+                  setFormValues((prev) => {
+                    clearFieldError("apply_end_date");
+                    return { ...prev, apply_end_date: event.target.value };
+                  })
+                }
+              />
+              {renderFieldErrors("apply_end_date")}
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">
+                Start Annual Salary (₹)
+              </label>
+              <input
+                type="number"
+                className="mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+                min={0}
+                value={formValues.start_anual_salary}
+                onChange={(event) =>
+                  setFormValues((prev) => {
+                    clearFieldError("start_anual_salary");
+                    return {
+                      ...prev,
+                      start_anual_salary: toNonNegativeNumberInput(event.target.value),
+                    };
+                  })
+                }
+              />
+              {renderFieldErrors("start_anual_salary")}
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">
+                End Annual Salary (₹)
+              </label>
+              <input
+                type="number"
+                className="mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+                min={0}
+                value={formValues.end_anual_salary}
+                onChange={(event) =>
+                  setFormValues((prev) => {
+                    clearFieldError("end_anual_salary");
+                    return {
+                      ...prev,
+                      end_anual_salary: toNonNegativeNumberInput(event.target.value),
+                    };
+                  })
+                }
+              />
+              {renderFieldErrors("end_anual_salary")}
+            </div>
+          </div>
+
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
@@ -852,26 +1238,6 @@ export function CompanyHiringPage() {
           </div>
           {renderFieldErrors("active")}
 
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              className="h-4 w-4"
-              checked={formValues.placement_gurantee_course}
-              onChange={(event) =>
-                setFormValues((prev) => {
-                  clearFieldError("placement_gurantee_course");
-                  return {
-                    ...prev,
-                    placement_gurantee_course: event.target.checked,
-                  };
-                })
-              }
-            />
-            <label className="text-sm font-medium text-foreground">
-              Placement Guarantee Course
-            </label>
-          </div>
-          {renderFieldErrors("placement_gurantee_course")}
 
           <div className="flex items-center gap-3">
             <input

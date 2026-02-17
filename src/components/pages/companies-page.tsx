@@ -17,7 +17,7 @@ import type { CompanyListItem } from "@/types/company-list";
 import { extractFieldErrors } from "@/lib/validation-errors";
 
 const columns = [
-  { key: "sr", label: "Sr No", headerClassName: "w-20 px-4 py-2 text-center" },
+  { key: "sr", label: "S NO", headerClassName: "w-20 px-4 py-2 text-center" },
   { key: "image", label: "Image", headerClassName: "w-16 px-2 py-2" },
   { key: "name", label: "Name", headerClassName: "px-4 py-2" },
   { key: "description", label: "Description", headerClassName: "px-4 py-2" },

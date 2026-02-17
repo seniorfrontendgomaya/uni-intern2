@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -46,11 +46,6 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
 
-  const pageTitle = useMemo(() => {
-    const match = navItems.find((item) => item.href === pathname);
-    return match?.label ?? "Superadmin Dashboard";
-  }, [pathname]);
-
   const [auth, setAuth] = useState<{ token: string | null; role: string | null } | null>(
     null
   );
@@ -59,7 +54,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
     setAuth({ token, role });
-    if (!token) router.replace("/login");
+    if (!token) router.replace("/");
   }, [router]);
 
   const token = auth?.token ?? null;
@@ -152,7 +147,6 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
                 <p className="text-xs uppercase text-muted-foreground">
                   Superadmin panel
                 </p>
-                {/* <h1 className="text-lg font-semibold">{pageTitle}</h1> */}
               </div>
               <button
                 type="button"

@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { api, apiBaseUrlNoSlash } from "@/lib/api";
 import { ICourse } from "@/types/course";
 
 export type CourseListResponse = {
@@ -32,13 +32,22 @@ export type CourseMutationResponse = {
   data?: ICourse | null;
 } & Partial<ICourse>;
 
-export const getCourses = (page = 1, perPage = 10, searchTerm?: string) => {
+export const getCourses = (
+  page = 1,
+  perPage = 10,
+  searchTerm?: string,
+  placementGuarantee?: boolean
+) => {
   const searchParam = searchTerm
     ? `&search=${encodeURIComponent(searchTerm)}`
     : "";
+  const placementParam =
+    placementGuarantee === true
+      ? "&placement_gurantee=true"
+      : "&placement_gurantee=false";
 
   return api<CourseListResponse>(
-    `/list_course/?per_page=${perPage}&page=${page}${searchParam}`,
+    `/list_course/?per_page=${perPage}&page=${page}${placementParam}${searchParam}`,
     {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -47,8 +56,8 @@ export const getCourses = (page = 1, perPage = 10, searchTerm?: string) => {
   );
 };
 
-export const getAllCourses = (searchTerm?: string) =>
-  getCourses(1, -1, searchTerm);
+export const getAllCourses = (searchTerm?: string, placementGuarantee?: boolean) =>
+  getCourses(1, -1, searchTerm, placementGuarantee);
 
 /** Get single course by ID */
 export const getCourseById = async (courseId: string): Promise<ICourse | null> => {
@@ -112,11 +121,10 @@ export interface TopCoursesResponse {
   data: TopCourseItem[];
 }
 
-const BASE = process.env.NEXT_PUBLIC_API_URL || "https://inter.malspy.com";
 
 /** Get top certification courses (public, no auth) */
 export async function getTopCertificationCourses(): Promise<TopCourseItem[]> {
-  const res = await fetch(`${BASE}/top_certification_course/`, {
+  const res = await fetch(`${apiBaseUrlNoSlash}/top_certification_course/`, {
     cache: "no-store",
   });
   if (!res.ok) {
@@ -128,7 +136,7 @@ export async function getTopCertificationCourses(): Promise<TopCourseItem[]> {
 
 /** Get top placement guarantee courses (public, no auth) */
 export async function getTopPlacementGuaranteeCourses(): Promise<TopCourseItem[]> {
-  const res = await fetch(`${BASE}/top_placement_gaurentee_courses/`, {
+  const res = await fetch(`${apiBaseUrlNoSlash}/top_placement_gaurentee_courses/`, {
     cache: "no-store",
   });
   if (!res.ok) {
@@ -166,7 +174,7 @@ export interface CourseCategoryListResponse {
 /** Get course category list */
 export async function getCourseCategoryList(): Promise<CourseCategoryListResponse> {
   const token = localStorage.getItem("token");
-  const res = await fetch(`${BASE}/course_category_list/`, {
+  const res = await fetch(`${apiBaseUrlNoSlash}/course_category_list/`, {
     method: "GET",
     headers: {
       Authorization: token ? `Bearer ${token}` : "",
@@ -240,7 +248,7 @@ export async function getCourseSubCategoryList(
 ): Promise<CourseSubCategoryListResponse> {
   const token = localStorage.getItem("token");
   const res = await fetch(
-    `${BASE}/course_sub_category_list/?category_id=${encodeURIComponent(categoryId)}`,
+    `${apiBaseUrlNoSlash}/course_sub_category_list/?category_id=${encodeURIComponent(categoryId)}`,
     {
       method: "GET",
       headers: {
@@ -262,7 +270,7 @@ export async function getCourseSubCategoryList(
 /** Get course sub-category list without filter (for default /courses and /student/courses) */
 export async function getCourseSubCategoryListAll(): Promise<CourseSubCategoryListResponse> {
   const token = localStorage.getItem("token");
-  const res = await fetch(`${BASE}/course_sub_category_list/`, {
+  const res = await fetch(`${apiBaseUrlNoSlash}/course_sub_category_list/`, {
     method: "GET",
     headers: {
       Authorization: token ? `Bearer ${token}` : "",
@@ -329,7 +337,7 @@ export async function getCourseDetailList(
 ): Promise<CourseDetailListResponse> {
   const token = localStorage.getItem("token");
   const res = await fetch(
-    `${BASE}/course_detail_list/?sub_category_id=${encodeURIComponent(subCategoryId)}`,
+    `${apiBaseUrlNoSlash}/user_course_detail_list/?sub_category_id=${encodeURIComponent(subCategoryId)}`,
     {
       method: "GET",
       headers: {
@@ -345,7 +353,7 @@ export async function getCourseDetailList(
   }
 
   const json = (await res.json()) as CourseDetailListResponse;
-  console.log("course_detail_list response:", json);
+  // console.log("course_detail_list response:", json);
   return json;
 }
 
@@ -354,7 +362,7 @@ export async function getCourseCategoryById(
   id: string
 ): Promise<CourseCategoryDetailItem | null> {
   const token = localStorage.getItem("token");
-  const res = await fetch(`${BASE}/course_category_list/${encodeURIComponent(id)}/`, {
+  const res = await fetch(`${apiBaseUrlNoSlash}/course_category_list/${encodeURIComponent(id)}/`, {
     method: "GET",
     headers: {
       Authorization: token ? `Bearer ${token}` : "",

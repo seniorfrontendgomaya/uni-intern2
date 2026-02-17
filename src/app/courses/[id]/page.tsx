@@ -5,10 +5,19 @@ import { useParams, useRouter } from "next/navigation";
 import { LandingHeader } from "@/components/ui/landing-header";
 import { LandingFooter } from "@/components/ui/landing-footer";
 import { CourseDetailPage, type CourseDetailData, type CourseModule } from "@/components/pages/course-detail-page";
+import { apiBaseUrl } from "@/lib/api";
 import {
   getCourseDetailList,
   type CourseDetailListResponse,
 } from "@/services/course.service";
+
+function toAbsoluteMediaUrl(url: string | null | undefined): string | null {
+  if (!url || !url.trim()) return null;
+  const s = url.trim();
+  if (s.startsWith("http://") || s.startsWith("https://")) return s;
+  const base = apiBaseUrl.replace(/\/$/, "");
+  return s.startsWith("/") ? `${base}${s}` : `${base}/${s}`;
+}
 
 function parseBulletText(text: string | null | undefined): string[] {
   if (!text || !text.trim()) return [];
@@ -38,6 +47,7 @@ function transformFromCourseSubCategory(res: CourseDetailListResponse): CourseDe
             id: String(v.id),
             title: v.name,
             duration: v.duration ? `${v.duration} min` : undefined,
+            url: toAbsoluteMediaUrl(v.video),
           })),
         },
       ]
@@ -50,7 +60,7 @@ function transformFromCourseSubCategory(res: CourseDetailListResponse): CourseDe
     author: cat.owner_name,
     price,
     updatedDate: cat.updated_at,
-    image: cat.image ?? null,
+    image: toAbsoluteMediaUrl(cat.image) ?? null,
     whatYoullLearn: whatYoullLearn.length > 0 ? whatYoullLearn : undefined,
     requirements: requirements.length > 0 ? requirements : undefined,
     descriptionDetail: cat.detail || cat.description || undefined,

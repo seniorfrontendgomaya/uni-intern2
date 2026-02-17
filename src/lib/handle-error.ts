@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { BaseError } from '@/errors/BaseError';
 import {
   UnauthorizedError,
+  ForbiddenError,
   ValidationError,
 } from '@/errors/http.errors';
 
@@ -24,10 +25,10 @@ export function handleError(error: unknown) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
-        const shouldRedirect = window.location.pathname !== '/login';
+        const shouldRedirect = window.location.pathname !== '/';
         if (shouldRedirect) {
           window.setTimeout(() => {
-            window.location.assign('/login');
+            window.location.assign('/');
           }, 1500);
         }
       }
@@ -39,10 +40,19 @@ export function handleError(error: unknown) {
     return;
   }
 
-//   if (error instanceof ForbiddenError) {
-//     toast.error('You do not have permission');
-//     return;
-//   }
+  if (error instanceof ForbiddenError) {
+    toast.error(error.message);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      if (window.location.pathname !== '/') {
+        window.setTimeout(() => {
+          window.location.assign('/');
+        }, 1500);
+      }
+    }
+    return;
+  }
 
   // Validation
   if (error instanceof ValidationError) {

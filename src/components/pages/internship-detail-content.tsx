@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { MapPin, Calendar, DollarSign, Users, Briefcase, Building2 } from "lucide-react";
+import { MapPin, Calendar, DollarSign, Users, Briefcase, Building2, BookOpen } from "lucide-react";
 import type { InternshipDetailDisplay } from "@/services/student-internship.service";
 
 interface InternshipDetailContentProps {
@@ -48,10 +48,16 @@ export function InternshipDetailContent({ detail }: InternshipDetailContentProps
           </div>
         )}
         {detail.salaryRange && (
-          <div className="flex items-center gap-1.5">
-            <DollarSign className="h-4 w-4 text-gray-500 shrink-0" />
-            <span>{detail.salaryRange}</span>
-          </div>
+          detail.salaryRange === "Unpaid internship" ? (
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-medium">
+              Unpaid internship
+            </span>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <DollarSign className="h-4 w-4 text-gray-500 shrink-0" />
+              <span>{detail.salaryRange}</span>
+            </div>
+          )
         )}
       </div>
 
@@ -118,6 +124,23 @@ export function InternshipDetailContent({ detail }: InternshipDetailContentProps
               >
                 <Briefcase className="h-4 w-4 text-blue-600" />
                 {name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {detail.course && detail.course.length > 0 && (
+        <div>
+          <h2 className="text-base font-bold text-gray-900 mb-2">Courses</h2>
+          <div className="flex flex-wrap gap-2">
+            {detail.course.map((c) => (
+              <span
+                key={c.id}
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-violet-50 text-sm text-violet-800"
+              >
+                <BookOpen className="h-4 w-4 text-violet-600" />
+                {c.name}
               </span>
             ))}
           </div>

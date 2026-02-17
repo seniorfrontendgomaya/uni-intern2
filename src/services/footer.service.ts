@@ -117,7 +117,6 @@ export async function getFooterPlacementCourses(): Promise<FooterLink[]> {
 type FooterData = {
   locations: FooterLink[];
   skills: FooterLink[];
-  placementCourses: FooterLink[];
 };
 
 let footerDataCache: Promise<FooterData> | null = null;
@@ -126,12 +125,11 @@ let footerDataCache: Promise<FooterData> | null = null;
 export async function getFooterData(): Promise<FooterData> {
   if (footerDataCache) return footerDataCache;
   footerDataCache = (async () => {
-    const [locations, skills, placementCourses] = await Promise.all([
+    const [locations, skills] = await Promise.all([
       getFooterLocations(),
       getFooterSkills(),
-      getFooterPlacementCourses(),
     ]);
-    return { locations, skills, placementCourses };
+    return { locations, skills };
   })();
   return footerDataCache;
 }

@@ -1,15 +1,38 @@
 "use client";
 
 import { useResumeListPaginated } from "@/hooks/useResume";
-import { Download, Eye, Mail, Phone, UserRound } from "lucide-react";
+import { Clock, Download, Eye, Mail, Phone } from "lucide-react";
 
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("") || "U";
+/** Download file via our API proxy to avoid CORS with external media server. */
+async function downloadResume(url: string, fileName: string) {
+  const proxyUrl = `/api/download-resume?url=${encodeURIComponent(url)}`;
+  const res = await fetch(proxyUrl, { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to fetch");
+  const blob = await res.blob();
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = blobUrl;
+  a.download = fileName || "resume.pdf";
+  a.rel = "noopener noreferrer";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(blobUrl);
+}
+
+const getInitials = (name: string | null | undefined) => {
+  if (name == null || typeof name !== "string") return "U";
+  const trimmed = name.trim();
+  if (!trimmed) return "U";
+  return (
+    trimmed
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "U"
+  );
+};
 
 export function ResumeListPage() {
   const {
@@ -103,41 +126,48 @@ export function ResumeListPage() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">
-                        {item.user_name}
+                        {item.user_name ?? "—"}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        {item.description}
-                      </p>
+                      {(item.description != null && item.description !== "") ? (
+                        <p className="text-xs text-muted-foreground">
+                          {item.description}
+                        </p>
+                      ) : null}
                       {role === "UNIVERSITY" ? (
                         <p className="text-xs text-muted-foreground">
                           <span className="font-medium text-[16px] text-foreground">
-                            {item.company_name}
+                            {item.company_name ?? "—"}
                           </span>
                         </p>
                       ) : null}
                       <div className="mt-2 flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:gap-4">
                         <span className="inline-flex items-center gap-2">
                           <Mail className="h-3.5 w-3.5" />
-                          {item.user_email}
+                          {item.user_email ?? "—"}
                         </span>
                         <span className="inline-flex items-center gap-2">
                           <Phone className="h-3.5 w-3.5" />
-                          {item.user_mobile}
+                          {item.user_mobile ?? "—"}
                         </span>
+                        {item.created_at ? (
+                          <span className="inline-flex items-center gap-2">
+                            <Clock className="h-3.5 w-3.5" />
+                            {new Date(item.created_at).toLocaleString(undefined, {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            })}
+                          </span>
+                        ) : null}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        item.is_available
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {item.is_available ? "Available" : "Unavailable"}
-                    </span>
+                    {item.is_available ? (
+                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                        Immediately available
+                      </span>
+                    ) : null}
                     <a
                       href={resumeUrl}
                       target="_blank"
@@ -147,14 +177,23 @@ export function ResumeListPage() {
                       <Eye className="h-4 w-4" />
                       View Resume
                     </a>
-                    <a
-                      href={resumeUrl}
-                      download
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (resumeUrl === "#") return;
+                        try {
+                          const name = (item.user_name ?? `resume-${item.id}`).replace(/[^a-zA-Z0-9-_]/g, "_");
+                          const ext = resumeUrl.toLowerCase().includes(".jpg") || resumeUrl.toLowerCase().includes(".jpeg") || resumeUrl.toLowerCase().includes(".png") ? "jpg" : "pdf";
+                          await downloadResume(resumeUrl, `${name}.${ext}`);
+                        } catch {
+                          window.open(resumeUrl, "_blank", "noopener,noreferrer");
+                        }
+                      }}
                       className={`inline-flex items-center gap-2 rounded-xl border ${accentBorder} px-4 py-2 text-xs font-semibold ${accentText} transition ${accentMutedHover}`}
                     >
                       <Download className="h-4 w-4" />
                       Download
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>

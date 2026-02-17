@@ -35,6 +35,16 @@ export class NotFoundError extends BaseError {
   }
 }
 
+export class ForbiddenError extends BaseError {
+  constructor(meta?: unknown) {
+    super(
+      (meta as { message?: string })?.message || "Access denied.",
+      "FORBIDDEN",
+      403
+    );
+  }
+}
+
 export class ServerError extends BaseError {
   constructor() {
     super("Internal server error.", "SERVER_ERROR", 500);

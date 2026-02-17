@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  getTopCertificationCourses,
-  getTopPlacementGuaranteeCourses,
-  type TopCourseItem,
-} from "@/services/course.service";
+import { fetchCourseMegamenuData } from "@/services/course-megamenu.service";
+import type { TopCourseItem } from "@/services/course.service";
+
+const OPEN_LOGIN_MODAL_EVENT = "open-login-modal";
 
 export interface CoursesMegaMenuProps {
   /** Base path for courses (e.g. "/courses" or "/student/courses") */
@@ -35,26 +34,25 @@ export function CoursesMegaMenu({
     if (!isOpen) return;
     let cancelled = false;
 
-    const fetchCourses = async () => {
+    const load = async () => {
       setLoading(true);
       try {
-        const [certs, placement] = await Promise.all([
-          getTopCertificationCourses(),
-          getTopPlacementGuaranteeCourses(),
-        ]);
+        const data = await fetchCourseMegamenuData();
         if (!cancelled) {
-          setCertificationCourses(certs);
-          setPlacementCourses(placement);
+          setCertificationCourses(data.certification);
+          setPlacementCourses(data.placement);
         }
-      } catch (error) {
-        // console.error("Failed to load courses:", error);
-        // Keep empty arrays on error
+      } catch {
+        if (!cancelled) {
+          setCertificationCourses([]);
+          setPlacementCourses([]);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
     };
 
-    fetchCourses();
+    load();
     return () => {
       cancelled = true;
     };
@@ -63,6 +61,16 @@ export function CoursesMegaMenu({
   if (!isOpen) return null;
 
   const viewMoreHref = `${basePath.replace(/\/$/, "")}?view=all`;
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!token) {
+      e.preventDefault();
+      window.dispatchEvent(new Event(OPEN_LOGIN_MODAL_EVENT));
+      return;
+    }
+    onClose?.();
+  };
 
   return (
     <div
@@ -90,7 +98,7 @@ export function CoursesMegaMenu({
                 <Link
                   key={course.id}
                   href={buildCourseHref(basePath, course.id)}
-                  onClick={onClose}
+                  onClick={handleLinkClick}
                   className="rounded-md px-2 py-1.5 text-sm text-gray-900 hover:bg-gray-100"
                 >
                   {course.name}
@@ -122,7 +130,7 @@ export function CoursesMegaMenu({
                 <Link
                   key={course.id}
                   href={buildCourseHref(basePath, course.id)}
-                  onClick={onClose}
+                  onClick={handleLinkClick}
                   className="rounded-md px-2 py-1.5 text-sm text-gray-900 hover:bg-gray-100"
                 >
                   {course.name}

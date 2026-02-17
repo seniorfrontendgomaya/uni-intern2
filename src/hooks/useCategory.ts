@@ -2,6 +2,7 @@ import { useAsyncAction } from "./useAsync";
 import {
   CategoryCreatePayload,
   CategoryListResponse,
+  CategoryMutationResponse,
   CategoryUpdatePayload,
   createCategory,
   deleteCategory,
@@ -13,7 +14,7 @@ import { usePaginated } from "./usePaginated";
 import { useCallback } from "react";
 
 export function useCategory() {
-  const { run, loading } = useAsyncAction<ICategory>();
+  const { run, loading } = useAsyncAction<CategoryMutationResponse>();
 
   const create = (payload: CategoryCreatePayload) =>
     run(() => createCategory(payload));
@@ -22,7 +23,7 @@ export function useCategory() {
     data: create,
     loading,
   };
-}   
+}
 
 export function useGetCategories() {
   const { run, loading } = useAsyncAction<CategoryListResponse>();
@@ -53,7 +54,7 @@ export function useCategoriesPaginatedWithSearch(
 }
 
 export function useUpdateCategory() {
-  const { run, loading } = useAsyncAction<ICategory>();
+  const { run, loading } = useAsyncAction<CategoryMutationResponse>();
 
   const update = (payload: CategoryUpdatePayload) =>
     run(() => updateCategory(payload));
@@ -65,7 +66,7 @@ export function useUpdateCategory() {
 }
 
 export function useDeleteCategory() {
-  const { run, loading } = useAsyncAction<void>();
+  const { run, loading } = useAsyncAction<CategoryMutationResponse>();
 
   const destroy = (id: string) => run(() => deleteCategory(id));
 

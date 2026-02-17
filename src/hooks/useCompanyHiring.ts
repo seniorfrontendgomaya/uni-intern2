@@ -7,6 +7,7 @@ import {
   deleteCompanyHiring,
   updateCompanyHiring,
   createCompanyHiring,
+  type CompanyHiringPayload,
 } from "@/services/company-hiring.service";
 import type { CompanyHiring } from "@/types/company-hiring";
 import { useAsyncAction } from "./useAsync";
@@ -43,21 +44,8 @@ export function useUpdateCompanyHiring() {
     data: CompanyHiring | null;
   }>();
 
-  const update = (
-    id: number,
-    payload: {
-      description?: string | null;
-      location?: number[];
-      category?: number[];
-      start_amount?: number | null;
-      end_amount?: number | null;
-      start_day?: string | null;
-      active?: boolean;
-      placement_gurantee_course?: boolean;
-      number_of_opening?: number | null;
-      is_fast_response?: boolean;
-    }
-  ) => run(() => updateCompanyHiring(id, payload));
+  const update = (id: number, payload: CompanyHiringPayload) =>
+    run(() => updateCompanyHiring(id, payload));
 
   return { update, loading };
 }
@@ -69,18 +57,8 @@ export function useCreateCompanyHiring() {
     data: CompanyHiring | null;
   }>();
 
-  const create = (payload: {
-    description?: string | null;
-    location?: number[];
-    category?: number[];
-    start_amount?: number | null;
-    end_amount?: number | null;
-    start_day?: string | null;
-    active?: boolean;
-    placement_gurantee_course?: boolean;
-    number_of_opening?: number | null;
-    is_fast_response?: boolean;
-  }) => run(() => createCompanyHiring(payload));
+  const create = (payload: CompanyHiringPayload) =>
+    run(() => createCompanyHiring(payload));
 
   return { create, loading };
 }

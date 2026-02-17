@@ -1,10 +1,9 @@
+import { apiBaseUrlNoSlash } from "@/lib/api";
 import type {
   RecommendedCourseApiResponse,
   RecommendedCourseItem,
 } from "@/types/recommended-course";
 import type { CourseCard } from "@/types/course-card";
-
-const BASE = "https://inter.malspy.com";
 
 export interface RecommendedCourseApiItem {
   id: number;
@@ -17,7 +16,8 @@ export interface RecommendedCourseApiItem {
   image: string | null;
 }
 
-export interface RecommendedCourseApiResponse {
+/** API response when listing courses (id, name, fees, etc.) - used by landing course cards */
+export interface RecommendedCourseListApiResponse {
   statusCode: number;
   hasNextPage: boolean;
   next: string | null;
@@ -62,7 +62,7 @@ function mapEntryToItem(entry: { name?: string; course?: { name?: string }[]; st
 }
 
 async function fetchRecommended(params: string): Promise<RecommendedCourseItem[]> {
-  const url = `${BASE}/recommended_course_api/?${params}`;
+  const url = `${apiBaseUrlNoSlash}/recommended_course_api/?${params}`;
   const res = await fetch(url, { next: { revalidate: 60 } });
   if (!res.ok) return [];
   const json = (await res.json()) as RecommendedCourseApiResponse;
@@ -88,11 +88,11 @@ export function getPlacementGuaranteeCourses() {
 /** Get recommended courses as CourseCard[] for landing page */
 export async function getRecommendedCoursesForLanding(): Promise<CourseCard[]> {
   try {
-    const url = `${BASE}/recommended_course_api/?is_recomended=True`;
+    const url = `${apiBaseUrlNoSlash}/recommended_course_api/?is_recomended=True`;
     const res = await fetch(url, { next: { revalidate: 60 } });
     if (!res.ok) return [];
-    const json = (await res.json()) as RecommendedCourseApiResponse;
-    const data = json.data ?? [];
+const json = (await res.json()) as RecommendedCourseListApiResponse;
+  const data = json.data ?? [];
     
     return data.map((course): CourseCard => ({
       id: String(course.id),
@@ -115,11 +115,11 @@ export async function getRecommendedCoursesForLanding(): Promise<CourseCard[]> {
 /** Get certification courses as CourseCard[] for landing page */
 export async function getCertificationCoursesForLanding(): Promise<CourseCard[]> {
   try {
-    const url = `${BASE}/recommended_course_api/`;
+    const url = `${apiBaseUrlNoSlash}/recommended_course_api/`;
     const res = await fetch(url, { next: { revalidate: 60 } });
     if (!res.ok) return [];
-    const json = (await res.json()) as RecommendedCourseApiResponse;
-    const data = json.data ?? [];
+const json = (await res.json()) as RecommendedCourseListApiResponse;
+  const data = json.data ?? [];
     
     return data.map((course): CourseCard => ({
       id: String(course.id),
@@ -142,7 +142,7 @@ export async function getCertificationCoursesForLanding(): Promise<CourseCard[]>
 /** Get placement guarantee courses as CourseCard[] for landing page */
 export async function getPlacementCoursesForLanding(): Promise<CourseCard[]> {
   try {
-    const url = `${BASE}/recommended_course_api/?is_placement_course=true`;
+    const url = `${apiBaseUrlNoSlash}/recommended_course_api/?is_placement_course=true`;
     const res = await fetch(url, { next: { revalidate: 60 } });
     if (!res.ok) return [];
     const json = (await res.json()) as PlacementCourseApiResponse;

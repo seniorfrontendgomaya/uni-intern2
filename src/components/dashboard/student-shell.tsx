@@ -10,8 +10,9 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      router.replace("/login");
+    const role = localStorage.getItem("role");
+    if (!token || role !== "STUDENT") {
+      router.replace("/");
       return;
     }
     setAuthChecked(true);

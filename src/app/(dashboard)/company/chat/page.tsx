@@ -7,6 +7,7 @@ import { useChatApi } from "@/hooks/useChatApi";
 import { useChatWebSocket } from "@/hooks/useChatWebSocket";
 import { uploadAttachment } from "@/services/chat.service";
 import type { ChatContact, ChatMessage } from "@/types/chat";
+import { toast } from "react-hot-toast";
 
 export default function CompanyChatPage() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function CompanyChatPage() {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
     if (!token) {
-      router.replace("/login");
+      router.replace("/");
       return;
     }
     if (role !== "COMPANY") {
@@ -43,7 +44,7 @@ export default function CompanyChatPage() {
   }, [contacts, loadMessagesForContact]);
 
   const onSelectContact = useCallback(
-    (contact: { id: string; roomName?: string }) => {
+    (contact: ChatContact) => {
       loadMessagesForContact(contact);
     },
     [loadMessagesForContact]
@@ -93,7 +94,8 @@ export default function CompanyChatPage() {
           }
         }
       } catch (e) {
-        ("Failed to send message:", e);
+        // console.error("Failed to send message:", e);
+        toast.error("Failed to send message");
       }
     },
     [contacts, wsSend, wsConnected, sendMessage]

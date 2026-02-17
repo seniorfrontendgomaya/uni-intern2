@@ -139,10 +139,12 @@ function FilterSearchDropdown({
 }
 
 function formatSalary(start: number | null, end: number | null): string {
+  const unpaid = (start == null || start === 0) && (end == null || end === 0);
+  if (unpaid) return "Unpaid internship";
   if (start != null && end != null) return `₹${start.toLocaleString("en-IN")} - ₹${end.toLocaleString("en-IN")}`;
   if (start != null) return `₹${start.toLocaleString("en-IN")}`;
   if (end != null) return `₹${end.toLocaleString("en-IN")}`;
-  return "";
+  return "Unpaid internship";
 }
 
 function formatStartDay(iso: string | null): string {
@@ -450,19 +452,34 @@ export function StudentInternshipPageContent() {
                           </div>
                         )}
                       </div>
-                      {/* Right: Quick response, salary, Be An Early Applicant (in front of skill pills) */}
+                      {/* Right: placement badge top, then fast response, salary, Be An Early Applicant */}
                       <div className="shrink-0 flex flex-col items-end gap-2">
+                        {item.placement_gurantee_course && (
+                          <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                            Placement guarantee course
+                          </span>
+                        )}
                         {item.is_fast_response && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-600 text-white text-xs font-medium">
-                            Quick response
+                            Fast response
                           </span>
                         )}
-                        {(item.start_amount != null || item.end_amount != null) && (
-                          <span className="flex items-center gap-1 text-sm text-gray-600 font-medium">
-                            <IndianRupee className="h-4 w-4 text-gray-500 shrink-0" />
-                            {formatSalary(item.start_amount, item.end_amount)}/month
-                          </span>
-                        )}
+                        {(() => {
+                          const s = formatSalary(item.start_amount, item.end_amount);
+                          if (s === "Unpaid internship") {
+                            return (
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-medium">
+                                Unpaid internship
+                              </span>
+                            );
+                          }
+                          return (
+                            <span className="flex items-center gap-1 text-sm text-gray-600 font-medium">
+                              <IndianRupee className="h-4 w-4 text-gray-500 shrink-0" />
+                              {`${s}/month`}
+                            </span>
+                          );
+                        })()}
                         {item.is_fast_response && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-50 text-orange-700 text-xs font-medium rounded-md border border-orange-100">
                             <Zap className="h-3 w-3" />

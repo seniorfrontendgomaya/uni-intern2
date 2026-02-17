@@ -19,8 +19,6 @@ export function useLogin() {
     return res;
   };
 
-  console.log("login data", data);
-
   return {
     data,
     login: loginUser,

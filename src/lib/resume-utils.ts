@@ -47,8 +47,26 @@ export function formatEducationType(type: string): string {
 }
 
 /**
- * Format score for display (cgpa2 / cgpa)
+ * Format education score for display: percentage (e.g. "85%") when out of 100, CGPA (e.g. "8.5 CGPA") when out of 10.
  */
-export function formatScore(cgpa2: string, cgpa: number): string {
-  return `${cgpa2} / ${cgpa}`;
+export function formatScore(scoreValue: string, scoreOutOf: number): string {
+  const value = String(scoreValue ?? "").trim();
+  if (!value) return "";
+  if (Number(scoreOutOf) === 100) {
+    return `${value}%`;
+  }
+  return `${value} CGPA`;
+}
+
+/** Valid non-negative 4-digit year (0000–9999). Use for Year of completion. */
+export function isValidYearOfCompletion(value: string): boolean {
+  const v = String(value ?? "").trim();
+  if (v.length !== 4) return false;
+  const n = parseInt(v, 10);
+  return !Number.isNaN(n) && n >= 0 && n <= 9999;
+}
+
+/** Restrict input to at most 4 digits only. Use in onChange for year fields. */
+export function restrictToFourDigits(value: string): string {
+  return value.replace(/\D/g, "").slice(0, 4);
 }

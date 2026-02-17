@@ -3,6 +3,7 @@ import type {
   CompanyHiring,
   CompanyHiringListResponse,
   CompanyHiringMutationResponse,
+  CompanyHiringDetailResponse,
 } from "@/types/company-hiring";
 
 export const getCompanyHiringList = async (
@@ -33,6 +34,14 @@ export const getCompanyHiringList = async (
   };
 };
 
+/** Fetch single hiring detail (for view premium card) */
+export const getCompanyHiringDetail = (id: number) =>
+  api<CompanyHiringDetailResponse>(`/detail_company_hiring_list/${id}/`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
 export const deleteCompanyHiring = (id: number) =>
   api<CompanyHiringMutationResponse>(`/company_hiring_api/${id}/`, {
     method: "DELETE",
@@ -41,22 +50,33 @@ export const deleteCompanyHiring = (id: number) =>
     },
   });
 
-export const updateCompanyHiring = (
-  id: number,
-  payload: {
-    description?: string | null;
-    location?: number[];
-    category?: number[];
-    start_amount?: number | null;
-    end_amount?: number | null;
-    start_day?: string | null;
-    active?: boolean;
-    placement_gurantee_course?: boolean;
-    number_of_opening?: number | null;
-    is_fast_response?: boolean;
-  }
-) =>
-  api<CompanyHiringMutationResponse>(`/company_hiring_api/${id}/`, {
+export type CompanyHiringPayload = {
+  description?: string | null;
+  about?: string | null;
+  apply?: string | null;
+  key_responsibility?: string | null;
+  apply_start_date?: string | null;
+  apply_end_date?: string | null;
+  location?: number[];
+  category?: number[];
+  job_type?: number[];
+  designation?: number[];
+  skills?: number[];
+  course?: number[];
+  perk?: number[];
+  start_amount?: number | null;
+  end_amount?: number | null;
+  start_anual_salary?: number | null;
+  end_anual_salary?: number | null;
+  start_day?: string | null;
+  active?: boolean;
+  placement_gurantee_course?: boolean;
+  number_of_opening?: number | null;
+  is_fast_response?: boolean;
+};
+
+export const updateCompanyHiring = (id: number, payload: CompanyHiringPayload) =>
+  api<CompanyHiringMutationResponse>(`/update_company_hiring_list/${id}/`, {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -65,19 +85,8 @@ export const updateCompanyHiring = (
     body: JSON.stringify(payload),
   });
 
-export const createCompanyHiring = (payload: {
-  description?: string | null;
-  location?: number[];
-  category?: number[];
-  start_amount?: number | null;
-  end_amount?: number | null;
-  start_day?: string | null;
-  active?: boolean;
-  placement_gurantee_course?: boolean;
-  number_of_opening?: number | null;
-  is_fast_response?: boolean;
-}) =>
-  api<CompanyHiringMutationResponse>(`/company_hiring_api/`, {
+export const createCompanyHiring = (payload: CompanyHiringPayload) =>
+  api<CompanyHiringMutationResponse>(`create_company_hiring_list/`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,

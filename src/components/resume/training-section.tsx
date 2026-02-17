@@ -249,7 +249,12 @@ export function TrainingSection() {
           <input
             type="date"
             value={form.start_date}
-            onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+            onChange={(e) => {
+              const nextStart = e.target.value;
+              const nextEnd =
+                form.end_date && nextStart && form.end_date < nextStart ? "" : form.end_date;
+              setForm({ ...form, start_date: nextStart, end_date: nextEnd });
+            }}
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400"
           />
         </div>
@@ -262,6 +267,7 @@ export function TrainingSection() {
             value={form.end_date}
             onChange={(e) => setForm({ ...form, end_date: e.target.value })}
             disabled={form.is_ongoing}
+            min={form.start_date || undefined}
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:bg-gray-100"
           />
         </div>

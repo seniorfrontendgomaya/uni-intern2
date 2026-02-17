@@ -32,20 +32,21 @@ export function LandingHeader() {
   const [open, setOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [role, setRole] = useState<string | null>(null);
+  const [hasToken, setHasToken] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const loadRole = () => {
-      const storedRole = localStorage.getItem("role");
-      setRole(storedRole);
+    const loadAuth = () => {
+      setRole(localStorage.getItem("role"));
+      setHasToken(!!localStorage.getItem("token"));
     };
 
-    loadRole();
-    window.addEventListener("uniintern:auth-changed", loadRole);
+    loadAuth();
+    window.addEventListener("uniintern:auth-changed", loadAuth);
 
     return () => {
-      window.removeEventListener("uniintern:auth-changed", loadRole);
+      window.removeEventListener("uniintern:auth-changed", loadAuth);
     };
   }, []);
 
@@ -130,16 +131,34 @@ export function LandingHeader() {
       {open ? (
         <div className="border-t bg-background/95 px-4 pb-3 pt-2 shadow-sm sm:px-6 md:hidden">
           <nav className="flex flex-col gap-1 text-sm font-medium text-muted-foreground">
-            {(isStudent ? studentNavItems : publicNavItems).map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-xl px-3 py-2 transition hover:bg-muted hover:text-foreground"
-                onClick={() => setOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {(isStudent ? studentNavItems : publicNavItems).map((item) => {
+              const isProtected = (item.label === "Internship" || item.label === "Courses") && !hasToken;
+              if (isProtected) {
+                return (
+                  <button
+                    key={item.href}
+                    type="button"
+                    className="rounded-xl px-3 py-2 text-left transition hover:bg-muted hover:text-foreground"
+                    onClick={() => {
+                      setOpen(false);
+                      setIsLoginModalOpen(true);
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                );
+              }
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-xl px-3 py-2 transition hover:bg-muted hover:text-foreground"
+                  onClick={() => setOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
       ) : null}

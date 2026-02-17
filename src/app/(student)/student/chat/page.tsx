@@ -36,7 +36,7 @@ export default function StudentChatPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) router.replace("/login");
+    if (!token) router.replace("/");
   }, [router]);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function StudentChatPage() {
   }, [contacts, loadMessagesForContact]);
 
   const onSelectContact = useCallback(
-    (contact: { id: string; roomName?: string }) => {
+    (contact: ChatContact) => {
       loadMessagesForContact(contact);
     },
     [loadMessagesForContact]

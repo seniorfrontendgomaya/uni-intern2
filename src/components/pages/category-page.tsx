@@ -1,6 +1,6 @@
 "use client";
 
-import { CrudTable } from "@/components/ui/crud-table";
+import { CrudTable, type Field } from "@/components/ui/crud-table";
 import {
   useCategoriesPaginatedWithSearch,
   useCategory,
@@ -38,7 +38,7 @@ const columns = [
   },
 ];
 
-const fields = [
+const fields: Field[] = [
   { name: "name", label: "Name", placeholder: "Enter category name" },
   {
     name: "description",
@@ -90,13 +90,13 @@ export function CategoryPage() {
       }}
       onCreate={async (values) => {
         const result = await createCategory({
-          name: values.name ?? "",
-          description: values.description ?? "",
+          name: typeof values.name === "string" ? values.name : "",
+          description: typeof values.description === "string" ? values.description : "",
         });
         if (result.ok) refresh();
         return {
           ok: result.ok,
-          message: result.data?.message,
+          message: (result.data as { message?: string } | undefined)?.message,
           fieldErrors: result.ok ? undefined : extractFieldErrors(result.error) ?? undefined,
         };
       }}
@@ -108,14 +108,14 @@ export function CategoryPage() {
         if (result.ok) refresh();
         return {
           ok: result.ok,
-          message: result.data?.message,
+          message: (result.data as { message?: string } | undefined)?.message,
           fieldErrors: result.ok ? undefined : extractFieldErrors(result.error) ?? undefined,
         };
       }}
       onDelete={async (id) => {
         const result = await deleteCategory(id);
         if (result.ok) refresh();
-        return { ok: result.ok, message: result.data?.message };
+        return { ok: result.ok, message: (result as { data?: { message?: string } })?.data?.message };
       }}
       pagination={{
         page,

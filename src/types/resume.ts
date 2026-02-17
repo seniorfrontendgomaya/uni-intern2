@@ -10,6 +10,7 @@ export type ResumeListItem = {
   description: string | null;
   resume: string | null;
   resume_url: string | null;
+  created_at?: string | null;
 };
 
 export type ResumeListResponse = {

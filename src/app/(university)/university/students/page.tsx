@@ -76,9 +76,10 @@ export default function UniversityStudentsPage() {
 
   const handleUpdateClick = (student: UniversityStudent) => {
     setStudentToUpdate(student);
+    const mobileRaw = String(student.mobile ?? "").replace(/\D/g, "").slice(0, 10);
     setFormValues({
       email: student.email || "",
-      mobile: student.mobile || "",
+      mobile: mobileRaw,
     });
     setUpdateModalOpen(true);
   };
@@ -87,9 +88,21 @@ export default function UniversityStudentsPage() {
     e.preventDefault();
     if (!studentToUpdate) return;
 
+    const emailTrimmed = formValues.email.trim();
+    const mobileTrimmed = formValues.mobile.trim();
+
+    if (mobileTrimmed.length > 0 && mobileTrimmed.length !== 10) {
+      toast.error("Mobile must be exactly 10 digits (not less, not more)");
+      return;
+    }
+    if (mobileTrimmed && !/^\d{10}$/.test(mobileTrimmed)) {
+      toast.error("Mobile must be exactly 10 digits (numbers only)");
+      return;
+    }
+
     const payload = {
-      email: formValues.email.trim() || null,
-      mobile: formValues.mobile.trim() || null,
+      email: emailTrimmed ? emailTrimmed.toLowerCase() : null,
+      mobile: mobileTrimmed || null,
     };
 
     const result = await updateStudent(studentToUpdate.id, payload);
@@ -137,7 +150,7 @@ export default function UniversityStudentsPage() {
         <table className="w-full text-left text-sm">
           <thead className={UNIVERSITY_THEME.tableHeader}>
             <tr className="h-12">
-              <th className="w-20 px-4 py-2 text-center">Sr No</th>
+              <th className="w-20 px-4 py-2 text-center">S NO</th>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Email</th>
               <th className="px-4 py-2">Phone Number</th>
@@ -402,6 +415,7 @@ export default function UniversityStudentsPage() {
             </label>
             <input
               type="email"
+              required
               className={`mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition ${UNIVERSITY_THEME.inputFocus}`}
               value={formValues.email}
               onChange={(e) =>
@@ -412,15 +426,20 @@ export default function UniversityStudentsPage() {
 
           <div>
             <label className="text-sm font-medium text-foreground">
-              Mobile
+              Mobile (exactly 10 digits)
             </label>
             <input
               type="text"
+              inputMode="numeric"
+              maxLength={10}
+              pattern="[0-9]*"
+              placeholder="e.g. 9876543210"
               className={`mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition ${UNIVERSITY_THEME.inputFocus}`}
               value={formValues.mobile}
-              onChange={(e) =>
-                setFormValues((prev) => ({ ...prev, mobile: e.target.value }))
-              }
+              onChange={(e) => {
+                const next = e.target.value.replace(/\D/g, "").slice(0, 10);
+                setFormValues((prev) => ({ ...prev, mobile: next }));
+              }}
             />
           </div>
         </form>

@@ -1,11 +1,20 @@
 import { getApiUrl } from "@/lib/api";
 
+/** API typo: backend returns "comapany" instead of "company" */
+export interface PublicInternshipCompany {
+  id: number;
+  name: string;
+  image: string;
+}
+
 export interface PublicInternshipItem {
   id: number;
-  user_type: string;
-  name: string;
-  image: string | null;
-  email: string;
+  user_type?: string;
+  name?: string;
+  image?: string | null;
+  /** When present (e.g. from intership/), use for company name and image. */
+  comapany?: PublicInternshipCompany;
+  email?: string;
   description: string | null;
   mobile: string | null;
   location: Array<{ id: number; name: string; description: string }>;

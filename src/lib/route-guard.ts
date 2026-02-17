@@ -12,7 +12,9 @@ const normalizePath = (value: string) => {
 export function defaultRouteForRole(role: string | null): string {
   if (role === "SUPERADMIN") return "/superadmin/city";
   if (role === "UNIVERSITY") return "/university";
-  return "/company";
+  if (role === "STUDENT") return "/student";
+  if (role === "COMPANY") return "/company";
+  return "/";
 }
 
 export function isAllowedPathname(

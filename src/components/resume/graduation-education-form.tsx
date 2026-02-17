@@ -118,7 +118,11 @@ export function GraduationEducationForm({ onSave, onClose, initialValues }: Prop
               <input
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setStartDate(next);
+                  if (endDate && next && endDate < next) setEndDate("");
+                }}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 pr-9"
               />
               <Calendar className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -132,6 +136,7 @@ export function GraduationEducationForm({ onSave, onClose, initialValues }: Prop
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 disabled={isOngoing}
+                min={startDate || undefined}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 pr-9"
               />
               <Calendar className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />

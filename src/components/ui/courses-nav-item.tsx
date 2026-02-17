@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { CoursesMegaMenu } from "./courses-mega-menu";
 
+const OPEN_LOGIN_MODAL_EVENT = "open-login-modal";
+
 export interface CoursesNavItemProps {
   label?: string;
   basePath: string;
@@ -43,7 +45,15 @@ export function CoursesNavItem({
         <Link
           href={basePath}
           className={className}
-          onClick={() => setOpen(false)}
+          onClick={(e) => {
+            const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+            if (!token) {
+              e.preventDefault();
+              window.dispatchEvent(new Event(OPEN_LOGIN_MODAL_EVENT));
+              return;
+            }
+            setOpen(false);
+          }}
         >
           {label}
         </Link>

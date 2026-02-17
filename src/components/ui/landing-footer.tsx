@@ -12,22 +12,29 @@ const QUICK_LINKS: FooterLink[] = [
   { label: "Contact us", href: "/contact-us" },
 ];
 
+const COMPANY_NAME = "Uni-Intern";
+const COMPANY_DESCRIPTION =
+  "Connecting students with internships and companies with talent. Find your next opportunity or hire the best candidates.";
+
 export interface FooterClientProps {
   locations: FooterLink[];
   skills: FooterLink[];
-  placementCourses: FooterLink[];
 }
 
 /** Presentational footer: no API calls, only renders the data it receives. */
-export function FooterClient({
-  locations,
-  skills,
-  placementCourses,
-}: FooterClientProps) {
+export function FooterClient({ locations, skills }: FooterClientProps) {
   return (
     <footer className="mt-16 bg-[#050816] text-slate-200">
       <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
+          <div className="sm:col-span-2 md:col-span-1">
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+              {COMPANY_NAME}
+            </p>
+            <p className="mt-3 text-sm text-slate-400 leading-relaxed">
+              {COMPANY_DESCRIPTION}
+            </p>
+          </div>
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">
               Internships by location
@@ -51,23 +58,6 @@ export function FooterClient({
             </p>
             <ul className="mt-3 space-y-2">
               {skills.map((link) => (
-                <li key={link.href + link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-slate-400 transition hover:text-slate-100"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">
-              Placement Guarantee Courses
-            </p>
-            <ul className="mt-3 space-y-2">
-              {placementCourses.map((link) => (
                 <li key={link.href + link.label}>
                   <Link
                     href={link.href}
@@ -119,7 +109,7 @@ export function FooterClientMount() {
         if (!cancelled) setData(d);
       })
       .catch(() => {
-        if (!cancelled) setData({ locations: [], skills: [], placementCourses: [] });
+        if (!cancelled) setData({ locations: [], skills: [] });
       });
     return () => {
       cancelled = true;
@@ -131,7 +121,11 @@ export function FooterClientMount() {
       <footer className="mt-16 bg-[#050816] text-slate-200">
         <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
-            {["Internships by location", "Internships by skills", "Placement Guarantee Courses", "Quick links"].map((title) => (
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">{COMPANY_NAME}</p>
+              <p className="mt-3 text-sm text-slate-500">Loading…</p>
+            </div>
+            {["Internships by location", "Internships by skills", "Quick links"].map((title) => (
               <div key={title}>
                 <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">{title}</p>
                 <ul className="mt-3 space-y-2 text-sm text-slate-500">Loading…</ul>
@@ -181,15 +175,6 @@ const sections: FooterSection[] = [
     ],
   },
   {
-    title: "Placement Guarantee Courses",
-    links: [
-      { label: "Full‑stack development", href: "#" },
-      { label: "Data science & ML", href: "#" },
-      { label: "Cloud & DevOps", href: "#" },
-      { label: "UI/UX design", href: "#" },
-    ],
-  },
-  {
     title: "Quick links",
     links: [
       { label: "Hire interns for your company", href: "#" },
@@ -206,6 +191,14 @@ export function LandingFooter() {
     <footer className="mt-16 bg-[#050816] text-slate-200">
       <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
+          <div className="sm:col-span-2 md:col-span-1">
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+              {COMPANY_NAME}
+            </p>
+            <p className="mt-3 text-sm text-slate-400 leading-relaxed">
+              {COMPANY_DESCRIPTION}
+            </p>
+          </div>
           {sections.map((section) => (
             <div key={section.title}>
               <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">

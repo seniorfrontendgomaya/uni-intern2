@@ -1,4 +1,4 @@
-import { api } from '@/lib/api';
+import { api, apiBaseUrl } from "@/lib/api";
 import { BaseError } from '@/errors/BaseError';
 import { ValidationError, UnauthorizedError } from '@/errors/http.errors';
 import { InvalidCredentialsError } from '@/errors/domain.errors';
@@ -24,9 +24,7 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 export async function superLogin(
   payload: LoginPayload
 ): Promise<LoginResponse> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_URL || "https://inter.malspy.com/";
-  const response = await fetch(`${baseUrl}super_login/`, {
+  const response = await fetch(`${apiBaseUrl}super_login/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

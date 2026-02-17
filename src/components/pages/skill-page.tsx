@@ -1,6 +1,6 @@
 "use client";
 
-import { CrudTable } from "@/components/ui/crud-table";
+import { CrudTable, type Field } from "@/components/ui/crud-table";
 import {
   useDeleteSkill,
   useSkill,
@@ -37,7 +37,7 @@ const columns = [
   },
 ];
 
-const fields = [
+const fields: Field[] = [
   { name: "name", label: "Name", placeholder: "Enter skill name" },
   {
     name: "description",
@@ -89,11 +89,11 @@ export function SkillPage() {
       }}
       onCreate={async (values) => {
         const result = await createSkill({
-          name: values.name ?? "",
-          description: values.description ?? "",
+          name: typeof values.name === "string" ? values.name : "",
+          description: typeof values.description === "string" ? values.description : "",
         });
         if (result.ok) refresh();
-        return { ok: result.ok, message: result.data?.message };
+        return { ok: result.ok, message: (result.data as { message?: string } | undefined)?.message };
       }}
       onUpdate={async (id, patchData) => {
         const result = await updateSkill({

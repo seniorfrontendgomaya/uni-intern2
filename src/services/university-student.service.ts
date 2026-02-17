@@ -4,7 +4,8 @@ import type {
   UniversityStudentListResponse,
 } from "@/types/university-student";
 
-type UniversityStudentListNormalized = UniversityStudentListResponse & {
+type UniversityStudentListNormalized = Omit<UniversityStudentListResponse, "statusCode"> & {
+  statusCode: number;
   hasNextPage: boolean;
   next: string | null;
   previous: string | null;

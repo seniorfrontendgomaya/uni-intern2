@@ -1,14 +1,28 @@
+import { DEFAULT_API_BASE_URL } from "@/config/api-domain";
 import {
   NetworkError,
   UnauthorizedError,
   ValidationError,
   NotFoundError,
+  ForbiddenError,
   ServerError,
 } from "@/errors/http.errors";
 
 /** Single source for backend base URL. Use this everywhere instead of defining URLs explicitly. */
-export const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://inter.malspy.com/";
+export const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 const baseUrl = apiBaseUrl;
+
+/** Base URL without trailing slash (for building paths like \`${apiBaseUrlNoSlash}/path\`). */
+export const apiBaseUrlNoSlash = apiBaseUrl.replace(/\/$/, "");
+
+/** WebSocket base URL (wss://host). Set NEXT_PUBLIC_WS_URL to override; otherwise derived from apiBaseUrl. */
+export function getWsBase(): string {
+  if (typeof process !== "undefined" && process.env.NEXT_PUBLIC_WS_URL) {
+    return process.env.NEXT_PUBLIC_WS_URL.replace(/\/$/, "");
+  }
+  const base = apiBaseUrl.replace(/\/$/, "");
+  return base.replace(/^https:/, "wss:").replace(/^http:/, "ws:");
+}
 
 /** Build full API URL from path and optional query. Path should start with / (e.g. "/top_locations/"). */
 export function getApiUrl(path: string, query?: Record<string, string>): string {
@@ -50,6 +64,8 @@ export async function api<T>(
           throw new UnauthorizedError(await safeJson(res));
         case 404:
           throw new NotFoundError(await safeJson(res));
+        case 403:
+          throw new ForbiddenError(await safeJson(res));
         default:
           if (res.status >= 500) throw new ServerError();
       }

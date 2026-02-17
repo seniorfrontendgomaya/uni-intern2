@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { X, ChevronDown } from "lucide-react";
+import { isValidYearOfCompletion, restrictToFourDigits } from "@/lib/resume-utils";
+import { toast } from "react-hot-toast";
 
 const SCORE_TYPES = [
   { value: "percentage", label: "Percentage", outOf: 100 },
@@ -30,7 +32,9 @@ type Props = {
 };
 
 export function SeniorSecondaryEducationForm({ onSave, onClose, initialValues }: Props) {
-  const [yearOfCompletion, setYearOfCompletion] = useState(initialValues?.year_of_completion || "");
+  const [yearOfCompletion, setYearOfCompletion] = useState(
+    initialValues?.year_of_completion != null ? String(initialValues.year_of_completion) : ""
+  );
   const [board, setBoard] = useState(initialValues?.board || "");
   const [stream, setStream] = useState(initialValues?.stream || "");
   const [schoolName, setSchoolName] = useState(initialValues?.school_name || "");
@@ -60,10 +64,15 @@ export function SeniorSecondaryEducationForm({ onSave, onClose, initialValues }:
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!schoolName?.trim()) return;
+    const yearTrimmed = String(yearOfCompletion ?? "").trim();
+    if (yearTrimmed && !isValidYearOfCompletion(yearTrimmed)) {
+      toast.error("Year of completion must be a 4-digit number (e.g. 2022)");
+      return;
+    }
     setSaving(true);
     try {
       await onSave({
-        year_of_completion: yearOfCompletion.trim(),
+        year_of_completion: yearTrimmed,
         board: board.trim(),
         stream: stream.trim(),
         school_name: schoolName.trim(),
@@ -96,11 +105,15 @@ export function SeniorSecondaryEducationForm({ onSave, onClose, initialValues }:
           <label className="block text-sm font-medium text-gray-700 mb-1">Year of completion</label>
           <input
             type="text"
+            inputMode="numeric"
+            maxLength={4}
             value={yearOfCompletion}
-            onChange={(e) => setYearOfCompletion(e.target.value)}
+            onChange={(e) => setYearOfCompletion(restrictToFourDigits(e.target.value))}
             placeholder="Eg. 2022"
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-describedby="year-hint-sr"
           />
+          <p id="year-hint-sr" className="mt-0.5 text-xs text-gray-500">4-digit year (e.g. 2022)</p>
         </div>
 
         <div>

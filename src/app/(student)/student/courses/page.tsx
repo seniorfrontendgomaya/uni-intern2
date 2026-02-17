@@ -65,7 +65,7 @@ function StudentCoursesContent() {
 
   if (loading) {
     return (
-      <>
+      <div className="px-4 sm:px-0">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Courses</h1>
         <p className="text-gray-600 mb-8">
           Explore certification and placement guarantee courses.
@@ -85,13 +85,13 @@ function StudentCoursesContent() {
             </div>
           ))}
         </div>
-      </>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <>
+      <div className="px-4 sm:px-0">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Courses</h1>
         <p className="text-gray-600 mb-8">
           Explore certification and placement guarantee courses.
@@ -99,12 +99,12 @@ function StudentCoursesContent() {
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
           <p className="text-red-800">{error}</p>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="px-4 sm:px-0">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Courses</h1>
       <p className="text-gray-600 mb-8">
         {categoryIdParam && categoryName
@@ -118,13 +118,13 @@ function StudentCoursesContent() {
       ) : (
         <CoursesListingContent courses={courses} basePath="/student/courses" />
       )}
-    </>
+    </div>
   );
 }
 
 function CoursesPageFallback() {
   return (
-    <>
+    <div className="px-4 sm:px-0">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Courses</h1>
       <p className="text-gray-600 mb-8">
         Explore certification and placement guarantee courses.
@@ -144,7 +144,7 @@ function CoursesPageFallback() {
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 }
 

@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { api, apiBaseUrl } from "@/lib/api";
 import type {
   ResumeUserProfileResponse,
   CareerObjectiveResponse,
@@ -339,8 +339,7 @@ export const getLanguages = (search?: string) => {
 // Resume Download
 export const downloadResume = async () => {
   const token = localStorage.getItem("token");
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://inter.malspy.com/";
-  const response = await fetch(`${baseUrl}download/`, {
+  const response = await fetch(`${apiBaseUrl}download/`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

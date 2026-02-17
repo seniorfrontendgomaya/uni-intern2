@@ -85,7 +85,15 @@ export function CompanyProfileFormModal({
   }, [open, initialValues]);
 
   const handleSubmit = async () => {
-    await onSubmit(formValues);
+    const trimmed: CompanyProfileFormValues = {
+      ...formValues,
+      name: formValues.name.trim(),
+      email: formValues.email.trim(),
+      mobile: formValues.mobile.trim(),
+      description: formValues.description.trim(),
+      password: formValues.password.trim(),
+    };
+    await onSubmit(trimmed);
   };
 
   return (
@@ -128,10 +136,12 @@ export function CompanyProfileFormModal({
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">Email</label>
+          <label className="text-sm font-medium text-foreground">Email (Cannot be changed)</label>
           <input
             type="email"
-            className="mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+            disabled={isUpdate}
+
+            className="mt-2 h-10 w-full rounded-lg border bg-gray-100 px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
             value={formValues.email}
             onChange={(e) =>
               setFormValues((prev) => ({ ...prev, email: e.target.value }))
@@ -139,10 +149,11 @@ export function CompanyProfileFormModal({
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">Mobile</label>
+          <label className="text-sm font-medium text-foreground">Mobile (Cannot be changed)</label>
           <input
             type="text"
-            className="mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+            disabled={isUpdate}
+            className="mt-2 h-10 w-full rounded-lg border bg-gray-100 px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
             value={formValues.mobile}
             onChange={(e) =>
               setFormValues((prev) => ({ ...prev, mobile: e.target.value }))

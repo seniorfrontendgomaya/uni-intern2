@@ -16,6 +16,7 @@ import { SecondaryEducationForm } from "@/components/resume/secondary-education-
 import { SeniorSecondaryEducationForm } from "@/components/resume/senior-secondary-education-form";
 import { DiplomaEducationForm } from "@/components/resume/diploma-education-form";
 import { GraduationEducationForm } from "@/components/resume/graduation-education-form";
+import { PhdEducationForm } from "@/components/resume/phd-education-form";
 
 export function EducationSection() {
   const [education, setEducation] = useState<Education[]>([]);
@@ -52,6 +53,33 @@ export function EducationSection() {
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
   const [chooseTypeOpen, setChooseTypeOpen] = useState(false);
 
+  /** Normalize API date/year to YYYY-MM-DD for date inputs (handles "2020-01-01T00:00:00" or 2020) */
+  const toDateInputValue = (value: string | number | null | undefined): string => {
+    if (value == null || value === "") return "";
+    const s = String(value).trim();
+    if (!s) return "";
+    if (s.length >= 10 && /^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+    const year = s.slice(0, 4);
+    if (/^\d{4}$/.test(year)) return `${year}-01-01`;
+    return s.slice(0, 10) || "";
+  };
+
+  /** Build patch with only keys whose values have changed (normalize for comparison) */
+  const onlyChanged = <T extends Record<string, unknown>>(
+    initial: T,
+    current: T
+  ): Partial<T> => {
+    const patch: Partial<T> = {};
+    for (const key of Object.keys(current) as (keyof T)[]) {
+      const a = initial[key];
+      const b = current[key];
+      const normA = a == null ? "" : String(a).trim();
+      const normB = b == null ? "" : String(b).trim();
+      if (normA !== normB) (patch as Record<string, unknown>)[key as string] = b;
+    }
+    return patch;
+  };
+
   const EDUCATION_TYPE_OPTIONS: { value: Education["education"]; label: string }[] = [
     { value: "secondary", label: "Add secondary (X)" },
     { value: "senior secondary", label: "Add senior secondary (XII)" },
@@ -83,12 +111,10 @@ export function EducationSection() {
 
   const handleEdit = (edu: Education) => {
     setEditingId(edu.id);
-    // Convert year strings to date format for date picker (YYYY -> YYYY-01-01)
-    const startYear = edu.start_year ? `${edu.start_year}-01-01` : "";
-    // For secondary/senior secondary, use year_of_completion; otherwise use end_year
+    const startYear = toDateInputValue(edu.start_year);
     const endYearValue = (edu.education === "secondary" || edu.education === "senior secondary")
-      ? (edu.year_of_completion ? `${edu.year_of_completion}-01-01` : "")
-      : (edu.end_year ? `${edu.end_year}-01-01` : "");
+      ? toDateInputValue(edu.year_of_completion)
+      : (edu.is_ongoing ? "" : toDateInputValue(edu.end_year));
     setEditForm({
       school_name: edu.school_name || "",
       name: edu.name || "",
@@ -129,14 +155,29 @@ export function EducationSection() {
     score_value: string;
     score_out_of: number;
   }) => {
+    const edu = education.find((e) => e.id === id);
+    if (!edu) return;
+    const current = {
+      school_name: data.school_name,
+      board: data.board,
+      cgpa: String(data.score_out_of ?? ""),
+      cgpa2: data.score_value || "0",
+      year_of_completion: data.year_of_completion,
+    };
+    const initial = {
+      school_name: edu.school_name ?? "",
+      board: edu.board ?? "",
+      cgpa: String(edu.cgpa ?? ""),
+      cgpa2: String(edu.cgpa2 ?? ""),
+      year_of_completion: edu.year_of_completion != null ? String(edu.year_of_completion) : "",
+    };
+    const updateData = onlyChanged(initial, current) as Record<string, string | number>;
+    if (Object.keys(updateData).length === 0) {
+      toast.success("No changes to save");
+      setEditingId(null);
+      return;
+    }
     try {
-      const updateData: any = {
-        school_name: data.school_name,
-        board: data.board,
-        cgpa: String(data.score_out_of),
-        cgpa2: data.score_value || "0",
-        year_of_completion: data.year_of_completion,
-      };
       await updateUserEducation(id, updateData);
       toast.success("Education updated");
       setEditingId(null);
@@ -155,15 +196,31 @@ export function EducationSection() {
     score_value: string;
     score_out_of: number;
   }) => {
+    const edu = education.find((e) => e.id === id);
+    if (!edu) return;
+    const current = {
+      school_name: data.school_name,
+      board: data.board,
+      stream: data.stream,
+      cgpa: String(data.score_out_of ?? ""),
+      cgpa2: data.score_value || "0",
+      year_of_completion: data.year_of_completion,
+    };
+    const initial = {
+      school_name: edu.school_name ?? "",
+      board: edu.board ?? "",
+      stream: edu.stream ?? "",
+      cgpa: String(edu.cgpa ?? ""),
+      cgpa2: String(edu.cgpa2 ?? ""),
+      year_of_completion: edu.year_of_completion != null ? String(edu.year_of_completion) : "",
+    };
+    const updateData = onlyChanged(initial, current) as Record<string, string | number>;
+    if (Object.keys(updateData).length === 0) {
+      toast.success("No changes to save");
+      setEditingId(null);
+      return;
+    }
     try {
-      const updateData: any = {
-        school_name: data.school_name,
-        board: data.board,
-        stream: data.stream,
-        cgpa: String(data.score_out_of),
-        cgpa2: data.score_value || "0",
-        year_of_completion: data.year_of_completion,
-      };
       await updateUserEducation(id, updateData);
       toast.success("Education updated");
       setEditingId(null);
@@ -183,19 +240,35 @@ export function EducationSection() {
     score_value: string;
     score_out_of: number;
   }) => {
+    const edu = education.find((e) => e.id === id);
+    if (!edu) return;
+    const startYear = data.start_date ? `${data.start_date}T00:00:00` : "";
+    const endYear = data.is_ongoing ? null : (data.end_date ? `${data.end_date}T00:00:00` : null);
+    const current = {
+      school_name: data.college,
+      stream: data.stream || "",
+      cgpa: String(data.score_out_of ?? ""),
+      cgpa2: data.score_value || "0",
+      start_year: startYear,
+      end_year: endYear,
+      is_ongoing: data.is_ongoing,
+    };
+    const initial = {
+      school_name: edu.school_name ?? "",
+      stream: edu.stream ?? "",
+      cgpa: String(edu.cgpa ?? ""),
+      cgpa2: String(edu.cgpa2 ?? ""),
+      start_year: edu.start_year ? `${String(edu.start_year).slice(0, 10)}T00:00:00` : "",
+      end_year: edu.is_ongoing ? null : (edu.end_year != null ? `${String(edu.end_year).slice(0, 10)}T00:00:00` : null),
+      is_ongoing: edu.is_ongoing ?? false,
+    };
+    const updateData = onlyChanged(initial, current as Record<string, unknown>) as Record<string, string | number | null | boolean>;
+    if (Object.keys(updateData).length === 0) {
+      toast.success("No changes to save");
+      setEditingId(null);
+      return;
+    }
     try {
-      // Convert date strings to datetime format (YYYY-MM-DD -> YYYY-MM-DDTHH:mm:ss)
-      const startYear = data.start_date ? `${data.start_date}T00:00:00` : "";
-      const endYear = data.is_ongoing ? null : (data.end_date ? `${data.end_date}T00:00:00` : null);
-      const updateData: any = {
-        school_name: data.college,
-        stream: data.stream || "",
-        cgpa: String(data.score_out_of),
-        cgpa2: data.score_value || "0",
-        start_year: startYear,
-        end_year: endYear,
-        is_ongoing: data.is_ongoing,
-      };
       await updateUserEducation(id, updateData);
       toast.success("Education updated");
       setEditingId(null);
@@ -216,21 +289,87 @@ export function EducationSection() {
     score_value: string;
     score_out_of: number;
   }) => {
+    const edu = education.find((e) => e.id === id);
+    if (!edu) return;
+    const startYear = data.start_date ? `${data.start_date}T00:00:00` : "";
+    const endYear = data.is_ongoing ? null : (data.end_date ? `${data.end_date}T00:00:00` : null);
+    const current = {
+      name: data.degree || "B.Tech",
+      degree: data.degree || "B.Tech",
+      school_name: data.college,
+      start_year: startYear,
+      end_year: endYear,
+      stream: data.stream || "",
+      cgpa: String(data.score_out_of ?? ""),
+      cgpa2: data.score_value || "0",
+      is_ongoing: data.is_ongoing,
+    };
+    const initial = {
+      name: edu.name ?? "B.Tech",
+      degree: edu.degree ?? "B.Tech",
+      school_name: edu.school_name ?? "",
+      start_year: edu.start_year ? `${String(edu.start_year).slice(0, 10)}T00:00:00` : "",
+      end_year: edu.is_ongoing ? null : (edu.end_year != null ? `${String(edu.end_year).slice(0, 10)}T00:00:00` : null),
+      stream: edu.stream ?? "",
+      cgpa: String(edu.cgpa ?? ""),
+      cgpa2: String(edu.cgpa2 ?? ""),
+      is_ongoing: edu.is_ongoing ?? false,
+    };
+    const updateData = onlyChanged(initial, current as Record<string, unknown>) as Record<string, string | number | null | boolean>;
+    if (Object.keys(updateData).length === 0) {
+      toast.success("No changes to save");
+      setEditingId(null);
+      return;
+    }
     try {
-      // Convert date strings to datetime format (YYYY-MM-DD -> YYYY-MM-DDTHH:mm:ss)
-      const startYear = data.start_date ? `${data.start_date}T00:00:00` : "";
-      const endYear = data.is_ongoing ? null : (data.end_date ? `${data.end_date}T00:00:00` : null);
-      const updateData: any = {
-        name: data.degree || "B.Tech",
-        degree: data.degree || "B.Tech",
-        school_name: data.college,
-        start_year: startYear,
-        end_year: endYear,
-        stream: data.stream || "",
-        cgpa: String(data.score_out_of),
-        cgpa2: data.score_value || "0",
-        is_ongoing: data.is_ongoing,
-      };
+      await updateUserEducation(id, updateData);
+      toast.success("Education updated");
+      setEditingId(null);
+      fetchEducation();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update education");
+    }
+  };
+
+  const handleUpdatePhd = async (id: number, data: {
+    college: string;
+    start_date: string;
+    end_date: string;
+    is_ongoing: boolean;
+    stream: string;
+    score_type: string;
+    score_value: string;
+    score_out_of: number;
+  }) => {
+    const edu = education.find((e) => e.id === id);
+    if (!edu) return;
+    const startYear = data.start_date ? `${data.start_date}T00:00:00` : "";
+    const endYear = data.is_ongoing ? null : (data.end_date ? `${data.end_date}T00:00:00` : null);
+    const current = {
+      school_name: data.college,
+      stream: data.stream || "",
+      cgpa: String(data.score_out_of ?? ""),
+      cgpa2: data.score_value || "0",
+      start_year: startYear,
+      end_year: endYear,
+      is_ongoing: data.is_ongoing,
+    };
+    const initial = {
+      school_name: edu.school_name ?? "",
+      stream: edu.stream ?? "",
+      cgpa: String(edu.cgpa ?? ""),
+      cgpa2: String(edu.cgpa2 ?? ""),
+      start_year: edu.start_year ? `${String(edu.start_year).slice(0, 10)}T00:00:00` : "",
+      end_year: edu.is_ongoing ? null : (edu.end_year != null ? `${String(edu.end_year).slice(0, 10)}T00:00:00` : null),
+      is_ongoing: edu.is_ongoing ?? false,
+    };
+    const updateData = onlyChanged(initial, current as Record<string, unknown>) as Record<string, string | number | null | boolean>;
+    if (Object.keys(updateData).length === 0) {
+      toast.success("No changes to save");
+      setEditingId(null);
+      return;
+    }
+    try {
       await updateUserEducation(id, updateData);
       toast.success("Education updated");
       setEditingId(null);
@@ -385,6 +524,47 @@ export function EducationSection() {
       education: "graduation/ post graduation",
       name: data.degree || "B.Tech",
       degree: data.degree || "B.Tech",
+      school_name: data.college,
+      start_year: startYear,
+      end_year: endYear,
+      stream: data.stream || "",
+      cgpa: String(data.score_out_of),
+      cgpa2: data.score_value || "0",
+      is_ongoing: data.is_ongoing,
+    });
+    toast.success("Education added");
+    setAddingNew(false);
+    setNewForm({
+      school_name: "",
+      name: "",
+      degree: "",
+      stream: "",
+      start_year: "",
+      end_year: "",
+      is_ongoing: false,
+      cgpa: "",
+      cgpa2: "",
+      board: "",
+      education: "" as Education["education"],
+    });
+    fetchEducation();
+  };
+
+  const handleSavePhd = async (data: {
+    college: string;
+    start_date: string;
+    end_date: string;
+    is_ongoing: boolean;
+    stream: string;
+    score_type: string;
+    score_value: string;
+    score_out_of: number;
+  }) => {
+    const startYear = data.start_date ? `${data.start_date}T00:00:00` : "";
+    const endYear = data.is_ongoing ? null : (data.end_date ? `${data.end_date}T00:00:00` : null);
+    await createUserEducation({
+      education: "Phd",
+      name: "PhD",
       school_name: data.college,
       start_year: startYear,
       end_year: endYear,
@@ -664,7 +844,12 @@ export function EducationSection() {
           <input
             type="date"
             value={form.start_year}
-            onChange={(e) => setForm({ ...form, start_year: e.target.value })}
+            onChange={(e) => {
+              const nextStart = e.target.value;
+              const nextEnd =
+                form.end_year && nextStart && form.end_year < nextStart ? "" : form.end_year;
+              setForm({ ...form, start_year: nextStart, end_year: nextEnd });
+            }}
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400"
           />
         </div>
@@ -677,6 +862,7 @@ export function EducationSection() {
             value={form.end_year}
             onChange={(e) => setForm({ ...form, end_year: e.target.value })}
             disabled={form.is_ongoing}
+            min={form.start_year || undefined}
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:bg-gray-100"
           />
         </div>
@@ -721,22 +907,36 @@ export function EducationSection() {
         <button
           onClick={() => {
             if (isEdit && id) {
-              // For generic form (PhD or other), use update handler
               const currentEdu = education.find((e) => e.id === id);
               if (currentEdu) {
-                const updateData: any = {};
-                if (form.school_name) updateData.school_name = form.school_name;
-                if (form.name) updateData.name = form.name;
-                if (form.degree) updateData.degree = form.degree;
-                if (form.stream) updateData.stream = form.stream;
-                // Convert date strings to datetime format (YYYY-MM-DD -> YYYY-MM-DDTHH:mm:ss)
-                if (form.start_year) updateData.start_year = `${form.start_year}T00:00:00`;
-                if (form.end_year || form.is_ongoing !== undefined) {
-                  updateData.end_year = form.is_ongoing ? null : (form.end_year ? `${form.end_year}T00:00:00` : null);
+                const current = {
+                  school_name: form.school_name ?? "",
+                  name: form.name ?? "",
+                  degree: form.degree ?? "",
+                  stream: form.stream ?? "",
+                  start_year: form.start_year ? `${form.start_year}T00:00:00` : "",
+                  end_year: form.is_ongoing ? null : (form.end_year ? `${form.end_year}T00:00:00` : null),
+                  is_ongoing: form.is_ongoing,
+                  cgpa: String(form.cgpa ?? ""),
+                  cgpa2: form.cgpa2 ?? "",
+                };
+                const initial = {
+                  school_name: currentEdu.school_name ?? "",
+                  name: currentEdu.name ?? "",
+                  degree: currentEdu.degree ?? "",
+                  stream: currentEdu.stream ?? "",
+                  start_year: currentEdu.start_year ? `${String(currentEdu.start_year).slice(0, 10)}T00:00:00` : "",
+                  end_year: currentEdu.is_ongoing ? null : (currentEdu.end_year != null ? `${String(currentEdu.end_year).slice(0, 10)}T00:00:00` : null),
+                  is_ongoing: currentEdu.is_ongoing ?? false,
+                  cgpa: String(currentEdu.cgpa ?? ""),
+                  cgpa2: String(currentEdu.cgpa2 ?? ""),
+                };
+                const updateData = onlyChanged(initial, current as Record<string, unknown>) as Record<string, string | number | null | boolean>;
+                if (Object.keys(updateData).length === 0) {
+                  toast.success("No changes to save");
+                  setEditingId(null);
+                  return;
                 }
-                if (form.is_ongoing !== undefined) updateData.is_ongoing = form.is_ongoing;
-                if (form.cgpa) updateData.cgpa = String(form.cgpa);
-                if (form.cgpa2) updateData.cgpa2 = form.cgpa2;
                 updateUserEducation(id, updateData)
                   .then(() => {
                     toast.success("Education updated");
@@ -789,7 +989,9 @@ export function EducationSection() {
                       onSave={(data) => handleUpdateSecondary(edu.id, data)}
                       onClose={handleCancelEdit}
                       initialValues={{
-                        year_of_completion: edu.year_of_completion || "",
+                        year_of_completion: edu.year_of_completion != null
+                          ? (String(edu.year_of_completion).length > 4 ? String(edu.year_of_completion).slice(0, 4) : String(edu.year_of_completion))
+                          : "",
                         board: edu.board || "",
                         school_name: edu.school_name || "",
                         cgpa: edu.cgpa,
@@ -802,7 +1004,9 @@ export function EducationSection() {
                       onSave={(data) => handleUpdateSeniorSecondary(edu.id, data)}
                       onClose={handleCancelEdit}
                       initialValues={{
-                        year_of_completion: edu.year_of_completion || "",
+                        year_of_completion: edu.year_of_completion != null
+                          ? (String(edu.year_of_completion).length > 4 ? String(edu.year_of_completion).slice(0, 4) : String(edu.year_of_completion))
+                          : "",
                         board: edu.board || "",
                         stream: edu.stream || "",
                         school_name: edu.school_name || "",
@@ -817,8 +1021,8 @@ export function EducationSection() {
                       onClose={handleCancelEdit}
                       initialValues={{
                         college: edu.school_name || "",
-                        start_date: edu.start_year ? `${edu.start_year}-01-01` : "",
-                        end_date: edu.end_year ? `${edu.end_year}-01-01` : "",
+                        start_date: toDateInputValue(edu.start_year),
+                        end_date: edu.is_ongoing ? "" : toDateInputValue(edu.end_year),
                         is_ongoing: edu.is_ongoing,
                         stream: edu.stream || "",
                         cgpa: edu.cgpa,
@@ -832,8 +1036,8 @@ export function EducationSection() {
                       onClose={handleCancelEdit}
                       initialValues={{
                         college: edu.school_name || "",
-                        start_date: edu.start_year ? `${edu.start_year}-01-01` : "",
-                        end_date: edu.end_year ? `${edu.end_year}-01-01` : "",
+                        start_date: toDateInputValue(edu.start_year),
+                        end_date: edu.is_ongoing ? "" : toDateInputValue(edu.end_year),
                         is_ongoing: edu.is_ongoing,
                         degree: edu.degree || "",
                         stream: edu.stream || "",
@@ -842,11 +1046,26 @@ export function EducationSection() {
                       }}
                     />
                   )}
-                  {(edu.education === "Phd" || 
-                    (edu.education !== "secondary" && 
-                     edu.education !== "senior secondary" && 
-                     edu.education !== "diploma" && 
-                     edu.education !== "graduation/ post graduation")) && (
+                  {edu.education === "Phd" && (
+                    <PhdEducationForm
+                      onSave={(data) => handleUpdatePhd(edu.id, data)}
+                      onClose={handleCancelEdit}
+                      initialValues={{
+                        college: edu.school_name || "",
+                        start_date: toDateInputValue(edu.start_year),
+                        end_date: edu.is_ongoing ? "" : toDateInputValue(edu.end_year),
+                        is_ongoing: edu.is_ongoing,
+                        stream: edu.stream || "",
+                        cgpa: edu.cgpa,
+                        cgpa2: edu.cgpa2 || "",
+                      }}
+                    />
+                  )}
+                  {(edu.education !== "secondary" &&
+                    edu.education !== "senior secondary" &&
+                    edu.education !== "diploma" &&
+                    edu.education !== "graduation/ post graduation" &&
+                    edu.education !== "Phd") && (
                     renderEducationForm(editForm, setEditForm, true, edu.id)
                   )}
                 </>
@@ -949,11 +1168,19 @@ export function EducationSection() {
           />
         )}
 
+        {addingNew && newForm.education === "Phd" && (
+          <PhdEducationForm
+            onSave={handleSavePhd}
+            onClose={handleCancelAdd}
+          />
+        )}
+
         {addingNew &&
           newForm.education !== "secondary" &&
           newForm.education !== "senior secondary" &&
           newForm.education !== "diploma" &&
           newForm.education !== "graduation/ post graduation" &&
+          newForm.education !== "Phd" &&
           renderEducationForm(newForm, setNewForm, false)}
 
         {!addingNew && !chooseTypeOpen && (

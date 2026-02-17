@@ -1,9 +1,5 @@
+import { apiBaseUrlNoSlash, getWsBase } from "@/lib/api";
 import type { ChatContact, ChatMessage } from "@/types/chat";
-
-const BASE =
-  typeof process !== "undefined"
-    ? process.env.NEXT_PUBLIC_API_URL || "https://inter.malspy.com"
-    : "https://inter.malspy.com";
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -171,7 +167,7 @@ function messageChatToChat(
 
 /** Student: list chat partners / conversations */
 export async function getStudentContacts(): Promise<ChatContact[]> {
-  const res = await fetch(`${BASE}/get_user_company/`, {
+  const res = await fetch(`${apiBaseUrlNoSlash}/get_user_company/`, {
     headers: authHeaders(),
   });
   if (!res.ok) {
@@ -186,7 +182,7 @@ export async function getStudentContacts(): Promise<ChatContact[]> {
 
 /** Company: list users (students) to message */
 export async function getCompanyContacts(): Promise<ChatContact[]> {
-  const res = await fetch(`${BASE}/get_company_user/`, {
+  const res = await fetch(`${apiBaseUrlNoSlash}/get_company_user/`, {
     headers: authHeaders(),
   });
   if (!res.ok) {
@@ -205,7 +201,7 @@ export async function getStudentMessages(
   currentUserId: number | null
 ): Promise<ChatMessage[]> {
   const encoded = encodeURIComponent(roomName);
-  const res = await fetch(`${BASE}/get_user_message/${encoded}/`, {
+  const res = await fetch(`${apiBaseUrlNoSlash}/get_user_message/${encoded}/`, {
     headers: authHeaders(),
   });
   if (!res.ok) {
@@ -225,7 +221,7 @@ export async function getCompanyMessages(
   chatId: string,
   currentUserId: number | null
 ): Promise<ChatMessage[]> {
-  const res = await fetch(`${BASE}/get_message/${chatId}/`, {
+  const res = await fetch(`${apiBaseUrlNoSlash}/get_message/${chatId}/`, {
     headers: authHeaders(),
   });
   if (!res.ok) {
@@ -245,7 +241,7 @@ export async function uploadAttachment(file: File): Promise<string> {
   const form = new FormData();
   form.append("attachment", file);
 
-  const res = await fetch(`${BASE}/send_message/`, {
+  const res = await fetch(`${apiBaseUrlNoSlash}/send_message/`, {
     method: "POST",
     headers: authHeaders(),
     body: form,
@@ -272,7 +268,7 @@ export async function sendMessage(params: {
   if (params.subject != null) form.append("subject", params.subject);
   if (params.attachment) form.append("attachment", params.attachment);
 
-  const res = await fetch(`${BASE}/send_message/`, {
+  const res = await fetch(`${apiBaseUrlNoSlash}/send_message/`, {
     method: "POST",
     headers: authHeaders(),
     body: form,
@@ -297,15 +293,10 @@ export function getCurrentUserId(): number | null {
   }
 }
 
-const WS_BASE =
-  typeof process !== "undefined" && process.env.NEXT_PUBLIC_WS_URL
-    ? process.env.NEXT_PUBLIC_WS_URL
-    : "wss://inter.malspy.com";
-
-/** WebSocket URL for a room: wss://inter.malspy.com/ws/chat/{roomName}/?token={token} */
+/** WebSocket URL for a room: {wsBase}/ws/chat/{roomName}/?token={token} */
 export function getChatWebSocketUrl(roomName: string): string | null {
   const token = getToken();
   if (!token || typeof window === "undefined") return null;
   const encoded = encodeURIComponent(roomName);
-  return `${WS_BASE}/ws/chat/${encoded}/?token=${encodeURIComponent(token)}`;
+  return `${getWsBase()}/ws/chat/${encoded}/?token=${encodeURIComponent(token)}`;
 }

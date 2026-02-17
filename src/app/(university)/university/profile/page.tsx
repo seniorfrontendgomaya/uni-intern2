@@ -68,7 +68,7 @@ export default function UniversityProfilePage() {
         profile?.established_year != null ? String(profile.established_year) : "",
       website: profile?.website ?? "",
       email: profile?.email ?? "",
-      mobile: profile?.mobile ?? "",
+      mobile: (profile?.mobile ?? "").replace(/\D/g, "").slice(0, 10),
     };
   }, [profile]);
 
@@ -105,7 +105,8 @@ export default function UniversityProfilePage() {
     const university_location = normalizeText(form.university_location);
     const website = normalizeText(form.website);
     const email = normalizeText(form.email);
-    const mobile = normalizeText(form.mobile);
+    const mobileDigits = form.mobile.replace(/\D/g, "").slice(0, 10);
+    const mobile = mobileDigits.length === 0 ? null : (mobileDigits.length === 10 ? mobileDigits : undefined);
 
     const yearRaw = form.established_year.trim();
     const established_year = yearRaw ? Number.parseInt(yearRaw, 10) : null;
@@ -118,7 +119,7 @@ export default function UniversityProfilePage() {
       patch.university_location = university_location;
     if (website !== (current.website ?? null)) patch.website = website;
     if (email !== (current.email ?? null)) patch.email = email;
-    if (mobile !== (current.mobile ?? null)) patch.mobile = mobile;
+    if (mobile !== undefined && mobile !== (current.mobile ?? null)) patch.mobile = mobile;
     if (yearSafe !== (current.established_year ?? null))
       patch.established_year = yearSafe;
 
@@ -135,6 +136,24 @@ export default function UniversityProfilePage() {
 
   const handleSave = async () => {
     if (!profile) return;
+
+    const emailTrimmed = form.email.trim();
+    if (!emailTrimmed) {
+      toast.error("Email is required");
+      return;
+    }
+    // Basic email format check to complement HTML5 validation
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(emailTrimmed)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    const mobileDigits = form.mobile.replace(/\D/g, "");
+    if (mobileDigits.length > 0 && mobileDigits.length !== 10) {
+      toast.error("Mobile must be exactly 10 digits (not less, not more)");
+      return;
+    }
 
     const patch = buildPatch();
     const hasFieldChanges = Object.keys(patch).length > 0;
@@ -424,6 +443,8 @@ export default function UniversityProfilePage() {
                   Email
                 </span>
                 <input
+                  type="email"
+                  required
                   value={form.email}
                   onChange={(e) =>
                     setForm((s) => ({ ...s, email: e.target.value }))
@@ -438,18 +459,22 @@ export default function UniversityProfilePage() {
 
               <label className="space-y-1.5">
                 <span className="text-xs font-semibold text-muted-foreground">
-                  Mobile
+                  Mobile (exactly 10 digits)
                 </span>
                 <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={10}
                   value={form.mobile}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, mobile: e.target.value }))
-                  }
+                  onChange={(e) => {
+                    const next = e.target.value.replace(/\D/g, "").slice(0, 10);
+                    setForm((s) => ({ ...s, mobile: next }));
+                  }}
                   className={cx(
                     "h-11 w-full rounded-xl border bg-background px-3 text-sm outline-none transition",
                     UNIVERSITY_THEME.inputFocus
                   )}
-                  placeholder="+91..."
+                  placeholder="e.g. 9876543210"
                 />
               </label>
             </div>

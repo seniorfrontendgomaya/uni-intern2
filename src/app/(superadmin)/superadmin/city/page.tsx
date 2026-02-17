@@ -1,6 +1,6 @@
 "use client";
 
-import { CrudTable } from "@/components/ui/crud-table";
+import { CrudTable, type Field } from "@/components/ui/crud-table";
 import {
   useCitiesPaginated,
   useCity,
@@ -37,7 +37,7 @@ const columns = [
   },
 ];
 
-const fields = [
+const fields: Field[] = [
   { name: "name", label: "Name", placeholder: "Enter city name" },
   {
     name: "description",
@@ -89,8 +89,8 @@ export default function CityPage() {
       }}
       onCreate={async (values) => {
         const result = await createCity({
-          name: values.name ?? "",
-          description: values.description ?? "",
+          name: typeof values.name === "string" ? values.name : "",
+          description: typeof values.description === "string" ? values.description : "",
         });
         if (result.ok) refresh();
         return { ok: result.ok, message: result.data?.message };

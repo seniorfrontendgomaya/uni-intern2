@@ -26,6 +26,18 @@ export type Field = {
 type FormValue = string | boolean | File | null;
 type RowValue = React.ReactNode;
 
+/** Trim string values before sending to API; leave numbers, booleans, and File unchanged. */
+function trimFormValues(
+  values: Record<string, FormValue>
+): Record<string, FormValue> {
+  return Object.fromEntries(
+    Object.entries(values).map(([key, value]) => [
+      key,
+      typeof value === "string" ? value.trim() : value,
+    ])
+  ) as Record<string, FormValue>;
+}
+
 type CrudActionResult = {
   ok: boolean;
   message?: string;
@@ -478,7 +490,7 @@ export function CrudTable({
                   }
 
                   setSaving(true);
-                  onCreate(formValues).then((result) => {
+                  onCreate(trimFormValues(formValues)).then((result) => {
                     setSaving(false);
                     if (!result.ok) {
                       setFieldErrors(result.fieldErrors ?? {});
@@ -500,11 +512,13 @@ export function CrudTable({
                   return;
                 }
 
-                const patchData = Object.fromEntries(
-                  Object.entries(formValues).filter(
-                    ([key, value]) => value !== initialValues[key]
-                  )
-                ) as Record<string, FormValue>;
+                const patchData = trimFormValues(
+                  Object.fromEntries(
+                    Object.entries(formValues).filter(
+                      ([key, value]) => value !== initialValues[key]
+                    )
+                  ) as Record<string, FormValue>
+                );
 
                 setSaving(true);
                 onUpdate(activeRowId, patchData).then((result) => {

@@ -6,7 +6,6 @@ import {
   getStudentContacts,
   getCompanyContacts,
   getStudentMessages,
-  getCompanyMessages,
   sendMessage as sendMessageApi,
   getCurrentUserId,
 } from "@/services/chat.service";
@@ -42,9 +41,9 @@ export function useChatApi(role: ChatRole) {
     fetchContacts();
   }, [fetchContacts]);
 
-  /** Message list key: student = roomName (from last_message.room_name), company = contact.id (chatId) */
+  /** Message list key: roomName when available (student & company), else contact.id */
   function getMessageKey(contact: ChatContact): string {
-    if (role === "student" && contact.roomName) return contact.roomName;
+    if (contact.roomName) return contact.roomName;
     return contact.id;
   }
 
@@ -53,18 +52,13 @@ export function useChatApi(role: ChatRole) {
       const key = getMessageKey(contact);
       setLoadingMessages((prev) => ({ ...prev, [key]: true }));
       try {
-        if (role === "student") {
-          // Student: endpoint expects room_name (from last_message.room_name), not contact id
-          const roomName = contact.roomName;
-          if (!roomName) {
-            setMessagesByKey((prev) => ({ ...prev, [key]: [] }));
-            return;
-          }
+        const roomName = contact.roomName;
+        if (roomName) {
+          // Same endpoint for both: get_user_message/{roomName}/
           const list = await getStudentMessages(roomName, currentUserId);
           setMessagesByKey((prev) => ({ ...prev, [key]: list }));
         } else {
-          const list = await getCompanyMessages(contact.id, currentUserId);
-          setMessagesByKey((prev) => ({ ...prev, [key]: list }));
+          setMessagesByKey((prev) => ({ ...prev, [key]: [] }));
         }
       } catch (e) {
         setMessagesByKey((prev) => ({ ...prev, [key]: [] }));
@@ -72,7 +66,7 @@ export function useChatApi(role: ChatRole) {
         setLoadingMessages((prev) => ({ ...prev, [key]: false }));
       }
     },
-    [role, currentUserId]
+    [currentUserId]
   );
 
   /** Get messages for the active contact (keyed by contact id for UI, using roomName for student) */
@@ -149,20 +143,18 @@ export function useChatApi(role: ChatRole) {
   /** Refetch messages for one conversation (e.g. after WebSocket or pull-to-refresh) */
   const refreshMessages = useCallback(
     async (contact: ChatContact) => {
+      const roomName = contact.roomName;
+      if (!roomName) return;
       const key = getMessageKey(contact);
-      if (role === "student" && !contact.roomName) return;
       setLoadingMessages((prev) => ({ ...prev, [key]: true }));
       try {
-        const list =
-          role === "student"
-            ? await getStudentMessages(contact.roomName!, currentUserId)
-            : await getCompanyMessages(contact.id, currentUserId);
+        const list = await getStudentMessages(roomName, currentUserId);
         setMessagesByKey((prev) => ({ ...prev, [key]: list }));
       } finally {
         setLoadingMessages((prev) => ({ ...prev, [key]: false }));
       }
     },
-    [role, currentUserId]
+    [currentUserId]
   );
 
   /** Expose messages keyed by contact id for layout (layout uses contact.id for activeContactId) */

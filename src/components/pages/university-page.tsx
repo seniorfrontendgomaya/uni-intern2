@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Eye } from "lucide-react";
-import { CrudTable } from "@/components/ui/crud-table";
+import { CrudTable, type Field } from "@/components/ui/crud-table";
 import {
   useDeleteUniversity,
   useUniversitiesPaginated,
@@ -14,7 +14,7 @@ import {
 const columns = [
   {
     key: "sr",
-    label: "Sr No",
+    label: "S NO",
     headerClassName: "w-20 px-4 py-2 text-center",
     cellClassName: "w-16 px-4 py-2 text-center",
   },
@@ -62,7 +62,7 @@ const columns = [
   },
 ];
 
-const fields = [
+const fields: Field[] = [
   { name: "name", label: "Name", placeholder: "Enter university name" },
   {
     name: "description",

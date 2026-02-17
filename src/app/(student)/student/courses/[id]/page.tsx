@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CourseDetailPage, type CourseDetailData, type CourseModule } from "@/components/pages/course-detail-page";
+import { apiBaseUrl } from "@/lib/api";
 import {
   getCourseDetailList,
   type CourseDetailListResponse,
@@ -14,6 +15,14 @@ function parseBulletText(text: string | null | undefined): string[] {
     .split(/\r?\n/)
     .map((line) => line.replace(/^\d+\.\s*/, "").trim())
     .filter((line) => line.length > 0);
+}
+
+function toAbsoluteMediaUrl(url: string | null | undefined): string | null {
+  if (!url || !url.trim()) return null;
+  const s = url.trim();
+  if (s.startsWith("http://") || s.startsWith("https://")) return s;
+  const base = apiBaseUrl.replace(/\/$/, "");
+  return s.startsWith("/") ? `${base}${s}` : `${base}/${s}`;
 }
 
 /** Build CourseDetailData from course_detail_list response using course_sub_category */
@@ -36,6 +45,7 @@ function transformFromCourseSubCategory(res: CourseDetailListResponse): CourseDe
             id: String(v.id),
             title: v.name,
             duration: v.duration ? `${v.duration} min` : undefined,
+            url: toAbsoluteMediaUrl(v.video),
           })),
         },
       ]
@@ -48,7 +58,7 @@ function transformFromCourseSubCategory(res: CourseDetailListResponse): CourseDe
     author: cat.owner_name,
     price,
     updatedDate: cat.updated_at,
-    image: cat.image ?? null,
+    image: toAbsoluteMediaUrl(cat.image) ?? null,
     whatYoullLearn: whatYoullLearn.length > 0 ? whatYoullLearn : undefined,
     requirements: requirements.length > 0 ? requirements : undefined,
     descriptionDetail: cat.detail || cat.description || undefined,
@@ -79,13 +89,14 @@ export default function StudentCourseDetailPage() {
       try {
         const res = await getCourseDetailList(subCategoryId);
         const transformed = transformFromCourseSubCategory(res);
-        if (!transformed) {
-          router.replace("/student/courses");
-          return;
+        if (transformed) {
+          setCourse(transformed);
+        } else {
+          // API returned but no course_sub_category or no data – show empty state instead of redirecting
+          setCourse(null);
         }
-        setCourse(transformed);
       } catch (error) {
-        router.replace("/student/courses");
+        setCourse(null);
       } finally {
         setLoading(false);
       }
@@ -96,7 +107,7 @@ export default function StudentCourseDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="text-center">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-red-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading course...</p>
@@ -107,12 +118,15 @@ export default function StudentCourseDetailPage() {
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">Course not found</p>
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <p className="text-gray-600 mb-4">
+            No course content available for this course yet.
+          </p>
           <button
+            type="button"
             onClick={() => router.push("/student/courses")}
-            className="text-red-600 hover:underline"
+            className="text-brand hover:underline font-medium min-h-[44px] px-4"
           >
             Back to courses
           </button>

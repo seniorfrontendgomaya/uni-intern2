@@ -37,7 +37,7 @@ export default function StudentInternshipDetailPage() {
         if (cancelled) return;
         if (res?.data) {
           setDetail(mapDetailToDisplay(res.data));
-          const cid = getCompanyIdFromDetailData(res.data as Record<string, unknown>);
+          const cid = getCompanyIdFromDetailData(res.data);
           companyIdRef.current = cid;
           setCompanyId(cid);
         } else {
