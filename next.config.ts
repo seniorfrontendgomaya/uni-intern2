@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import withPWAInit from "@ducanh2912/next-pwa";
 import { DEFAULT_API_BASE_URL } from "./src/config/api-domain";
 
 const apiBase = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
@@ -50,4 +51,13 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withPWA = withPWAInit({
+  dest: "public",
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  workboxOptions: {
+    skipWaiting: true,
+  },
+});
+
+export default withPWA(nextConfig);

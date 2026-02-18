@@ -58,6 +58,7 @@ export default function UniversityProfilePage() {
   const [editOpen, setEditOpen] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [establishedYearError, setEstablishedYearError] = useState<string | null>(null);
 
   const initialForm = useMemo<ProfileFormState>(() => {
     return {
@@ -79,6 +80,7 @@ export default function UniversityProfilePage() {
     setForm(initialForm);
     setLogoFile(null);
     setLogoPreviewUrl(null);
+    setEstablishedYearError(null);
   }, [editOpen, initialForm]);
 
   useEffect(() => {
@@ -109,9 +111,11 @@ export default function UniversityProfilePage() {
     const mobile = mobileDigits.length === 0 ? null : (mobileDigits.length === 10 ? mobileDigits : undefined);
 
     const yearRaw = form.established_year.trim();
-    const established_year = yearRaw ? Number.parseInt(yearRaw, 10) : null;
-    const yearSafe =
-      Number.isFinite(established_year as number) ? (established_year as number) : null;
+    const parsed = yearRaw ? Number.parseInt(yearRaw, 10) : null;
+    const established_year =
+      Number.isFinite(parsed) && parsed! >= 1600 && parsed! <= 2050
+        ? (parsed as number)
+        : null;
 
     if (name !== (current.name ?? null)) patch.name = name;
     if (description !== (current.description ?? null)) patch.description = description;
@@ -120,8 +124,11 @@ export default function UniversityProfilePage() {
     if (website !== (current.website ?? null)) patch.website = website;
     if (email !== (current.email ?? null)) patch.email = email;
     if (mobile !== undefined && mobile !== (current.mobile ?? null)) patch.mobile = mobile;
-    if (yearSafe !== (current.established_year ?? null))
-      patch.established_year = yearSafe;
+    if (
+      established_year != null &&
+      established_year !== (current.established_year ?? null)
+    )
+      patch.established_year = established_year;
 
     return patch;
   };
@@ -154,6 +161,17 @@ export default function UniversityProfilePage() {
       toast.error("Mobile must be exactly 10 digits (not less, not more)");
       return;
     }
+
+    const yearRaw = form.established_year.trim();
+    if (yearRaw) {
+      const year = Number.parseInt(yearRaw, 10);
+      if (!Number.isFinite(year) || year < 1600 || year > 2050) {
+        setEstablishedYearError("Invalid year. Enter a year between 1600 and 2050.");
+        toast.error("Invalid year. Enter a year between 1600 and 2050.");
+        return;
+      }
+    }
+    setEstablishedYearError(null);
 
     const patch = buildPatch();
     const hasFieldChanges = Object.keys(patch).length > 0;
@@ -399,24 +417,31 @@ export default function UniversityProfilePage() {
 
               <label className="space-y-1.5">
                 <span className="text-xs font-semibold text-muted-foreground">
-                  Established year
+                  Established year (1600–2050)
                 </span>
                 <input
                   type="number"
                   inputMode="numeric"
+                  min={1600}
+                  max={2050}
                   value={form.established_year}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    setEstablishedYearError(null);
                     setForm((s) => ({
                       ...s,
                       established_year: e.target.value,
-                    }))
-                  }
+                    }));
+                  }}
                   className={cx(
                     "h-11 w-full rounded-xl border bg-background px-3 text-sm outline-none transition",
-                    UNIVERSITY_THEME.inputFocus
+                    establishedYearError && "border-red-500 focus:border-red-500 focus:ring-red-500/20",
+                    !establishedYearError && UNIVERSITY_THEME.inputFocus
                   )}
                   placeholder="e.g. 1998"
                 />
+                {establishedYearError && (
+                  <p className="text-xs text-red-600">{establishedYearError}</p>
+                )}
               </label>
 
               <label className="space-y-1.5">
