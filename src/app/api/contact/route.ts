@@ -55,14 +55,14 @@ export async function POST(request: NextRequest) {
     }
 
     // TEMP credentials (recommend moving to env vars in production)
-    const smtpUser = "8f2a77002@smtp-brevo.com";
-    const smtpPass = "CQydUfJOYD6zFPMW";
-    const fromAddress = "support@businessshine.co.nz";
-    const fromName = "Business Shine";
-    const businessInbox = "info@businessshine.co.nz";
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+    const fromAddress = process.env.FROM_ADDRESS;
+    const fromName = process.env.FROM_NAME;
+    const businessInbox = process.env.BUSINESS_INBOX;
 
     const transporter = nodemailer.createTransport({
-      host: "smtp-relay.brevo.com",
+      host: process.env.HOST as string,
       port: 587,
       secure: false,
       auth: { user: smtpUser, pass: smtpPass },

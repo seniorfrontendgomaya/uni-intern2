@@ -28,6 +28,16 @@ const nextConfig: NextConfig = {
         hostname: "inter.malspy.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: process.env.NEXT_PUBLIC_API_URL as string,
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: process.env.NEXT_PUBLIC_API_URL as string,
+        pathname: "/**",
+      },
     ],
   },
   async rewrites() {

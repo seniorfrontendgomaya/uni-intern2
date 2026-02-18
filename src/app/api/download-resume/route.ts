@@ -10,7 +10,7 @@ function getAllowedHost(): string {
     const u = new URL(base);
     return u.host;
   } catch {
-    return "inter.malspy.com";
+    return process.env.NEXT_PUBLIC_API_URL as string;
   }
 }
 
