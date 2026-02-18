@@ -128,6 +128,8 @@ export function ChatLayout({
             currentUserImage={currentUserImage}
             currentUserInitial={currentUserInitial}
             loading={loadingContacts}
+            dashboardHref={dashboardHref}
+            dashboardLabel={dashboardLabel}
           />
         </aside>
         {/* Right: chat room — hidden on mobile when list view */}

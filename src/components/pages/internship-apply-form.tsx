@@ -97,13 +97,8 @@ export function InternshipApplyForm({
         </div>
       </div>
 
-      {/* Form Document Container - PDF-like appearance */}
-      <div 
-        className="mx-auto max-w-4xl bg-white" 
-        style={{ 
-          boxShadow: "0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-        }}
-      >
+      {/* Form Document Container - PDF-like appearance; no shadow on mobile */}
+      <div className="mx-auto max-w-4xl bg-white shadow-none sm:shadow-lg">
         {/* Form Content */}
         <div className="px-8 pt-8 pb-6">
           {/* Header */}

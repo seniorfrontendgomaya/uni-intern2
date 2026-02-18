@@ -100,7 +100,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-white -mx-4 -mt-8 sm:-mx-6 lg:-mx-8">
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-white sm:-mt-8 sm:-mx-6 lg:-mx-8">
       {/* Hero Section - Full width, mobile friendly */}
       <section className="bg-orange-500 text-white px-4 pt-6 pb-6 sm:px-6 sm:pb-5 lg:px-8">
         <div className="mx-auto max-w-5xl">

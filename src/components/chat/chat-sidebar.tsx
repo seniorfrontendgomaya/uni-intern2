@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Search } from "lucide-react";
+import Link from "next/link";
+import { Search, ArrowLeft } from "lucide-react";
 import { ContactListItem } from "./contact-list-item";
 import type { ChatContact } from "@/types/chat";
 
@@ -16,6 +17,9 @@ export interface ChatSidebarProps {
   /** Fallback initial when no image (also used for bottom avatar) */
   currentUserInitial?: string;
   loading?: boolean;
+  /** Link for back to dashboard */
+  dashboardHref?: string;
+  dashboardLabel?: string;
 }
 
 export function ChatSidebar({
@@ -26,6 +30,8 @@ export function ChatSidebar({
   currentUserImage,
   currentUserInitial = "N",
   loading = false,
+  dashboardHref,
+  dashboardLabel = "Go to Dashboard",
 }: ChatSidebarProps) {
   const [search, setSearch] = useState("");
   const initial = (currentUserInitial || currentUserName?.trim().charAt(0) || "N").charAt(0).toUpperCase();
@@ -40,9 +46,9 @@ export function ChatSidebar({
 
   return (
     <aside className="flex min-h-0 w-full flex-1 flex-col bg-white md:border-r">
-      {/* User header: profile image circle + name */}
-      <div className="shrink-0 border-b bg-gray-50/80 px-4 py-3">
-        <div className="flex items-center gap-3">
+      {/* User header: name left, back to dashboard right (like chat room) */}
+      <div className="shrink-0 flex items-center justify-between gap-2 border-b bg-gray-50/80 px-4 py-3">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-300 ring-2 ring-white shadow-sm">
             {currentUserImage ? (
               <img
@@ -60,6 +66,15 @@ export function ChatSidebar({
             {currentUserName ?? "You"}
           </span>
         </div>
+        {dashboardHref && (
+          <Link
+            href={dashboardHref}
+            className="shrink-0 flex items-center gap-2 rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 transition"
+          >
+            <ArrowLeft className="h-4 w-4 shrink-0" />
+            <span>{dashboardLabel}</span>
+          </Link>
+        )}
       </div>
       <div className="border-b p-3">
         <div className="flex items-center gap-2 rounded-lg border bg-gray-50 px-3 py-2">

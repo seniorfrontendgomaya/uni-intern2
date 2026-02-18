@@ -127,7 +127,7 @@ export function StudentHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
+    <header className="relative sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
         {/* Brand */}
         <Link href="/" className="mr-auto font-bold text-gray-900">
@@ -176,23 +176,28 @@ export function StudentHeader() {
         </div>
       </div>
 
-      {/* Mobile nav */}
-      {open ? (
-        <div className="border-t bg-background/95 px-4 pb-3 pt-2 shadow-sm sm:px-6 md:hidden">
-          <nav className="flex flex-col gap-1 text-sm font-medium text-muted-foreground">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-xl px-3 py-2 transition hover:bg-muted hover:text-foreground"
-                onClick={() => setOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      ) : null}
+      {/* Mobile nav - overlay below header, ease open/close */}
+      <div
+        aria-hidden={!open}
+        className={`absolute left-0 right-0 top-full z-40 border-t border-border bg-background/95 px-4 pb-3 pt-2 shadow-lg backdrop-blur md:hidden transition-all duration-400 ease-in-out ${
+          open
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none -translate-y-2 opacity-0"
+        }`}
+      >
+        <nav className="flex flex-col gap-1 text-sm font-medium text-muted-foreground">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="rounded-xl px-3 py-2 transition hover:bg-muted hover:text-foreground"
+              onClick={() => setOpen(false)}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
     </header>
   );
 }

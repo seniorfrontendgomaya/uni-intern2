@@ -476,13 +476,13 @@ export function UserProfileSection() {
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="group flex items-center gap-2 mb-3">
                 <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
                   {fullName}
                 </h1>
                 <button
                   onClick={handleEdit}
-                  className="p-1 hover:bg-gray-100 rounded opacity-0 hover:opacity-100 transition"
+                  className="p-1 hover:bg-gray-100 rounded opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition"
                 >
                   <Pencil className="h-4 w-4 text-gray-500" />
                 </button>
@@ -512,7 +512,7 @@ export function UserProfileSection() {
         </div>
         <button
           onClick={handleDownload}
-          className="order-1 flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition text-sm font-medium sm:order-none"
+          className="order-1 self-start flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition text-sm font-medium sm:order-none"
         >
           <Download className="h-4 w-4" />
           Download

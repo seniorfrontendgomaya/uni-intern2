@@ -334,7 +334,7 @@ export function ProjectsSection() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                    <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
                       <button
                         onClick={() => handleEdit(project)}
                         className="p-1 hover:bg-gray-200 rounded"

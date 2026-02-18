@@ -165,7 +165,7 @@ export function AccomplishmentsSection() {
                 <p className="text-sm text-gray-700 leading-relaxed flex-1">
                   • {accomplishment.description}
                 </p>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
                   <button
                     onClick={() => handleEdit(accomplishment)}
                     className="p-1 hover:bg-gray-200 rounded"
