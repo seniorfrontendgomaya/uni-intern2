@@ -56,6 +56,7 @@ export function CompanyProfileFormModal({
   const [imagePreview, setImagePreview] = useState<string | null>(
     initialValues?.imagePreview ?? null
   );
+  const [mobileError, setMobileError] = useState<string | null>(null);
   const syncedOpenRef = useRef(false);
 
   // Only sync from initialValues when the modal first opens. Parent often passes a new initialValues
@@ -81,18 +82,27 @@ export function CompanyProfileFormModal({
           : { ...emptyFormValues }
       );
       setImagePreview(initialValues?.imagePreview ?? null);
+      setMobileError(null);
     }
   }, [open, initialValues]);
 
   const handleSubmit = async () => {
+    setMobileError(null);
     const trimmed: CompanyProfileFormValues = {
       ...formValues,
       name: formValues.name.trim(),
       email: formValues.email.trim(),
-      mobile: formValues.mobile.trim(),
+      mobile: formValues.mobile.replace(/\D/g, "").trim(),
       description: formValues.description.trim(),
       password: formValues.password.trim(),
     };
+
+    // Enforce valid 10-digit mobile number only when adding (not on update)
+    if (!isUpdate && trimmed.mobile.length !== 10) {
+      setMobileError("Mobile must be exactly 10 digits.");
+      return;
+    }
+
     await onSubmit(trimmed);
   };
 
@@ -149,16 +159,25 @@ export function CompanyProfileFormModal({
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">Mobile (Cannot be changed)</label>
+          <label className="text-sm font-medium text-foreground">
+            Mobile {isUpdate ? "(Cannot be changed)" : "(10 digits)"}
+          </label>
           <input
             type="text"
+            inputMode="numeric"
+            maxLength={10}
             disabled={isUpdate}
             className="mt-2 h-10 w-full rounded-lg border bg-gray-100 px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
             value={formValues.mobile}
-            onChange={(e) =>
-              setFormValues((prev) => ({ ...prev, mobile: e.target.value }))
-            }
+            onChange={(e) => {
+              const next = e.target.value.replace(/\D/g, "").slice(0, 10);
+              setMobileError(null);
+              setFormValues((prev) => ({ ...prev, mobile: next }));
+            }}
           />
+          {mobileError ? (
+            <p className="mt-1 text-xs text-red-600">{mobileError}</p>
+          ) : null}
         </div>
         <div>
           <label className="text-sm font-medium text-foreground">

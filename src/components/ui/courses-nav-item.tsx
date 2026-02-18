@@ -46,8 +46,11 @@ export function CoursesNavItem({
           href={basePath}
           className={className}
           onClick={(e) => {
-            const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-            if (!token) {
+            if (typeof window === "undefined") return;
+            const token = localStorage.getItem("token");
+            const role = localStorage.getItem("role");
+            const isStudent = Boolean(token && role === "STUDENT");
+            if (!isStudent) {
               e.preventDefault();
               window.dispatchEvent(new Event(OPEN_LOGIN_MODAL_EVENT));
               return;

@@ -11,25 +11,28 @@ import {
   useVideoCourse,
 } from "@/hooks/useVideoCourse";
 
+const truncate30 = (s: string | null | undefined) =>
+  s == null || s === "" ? "-" : (String(s).length > 30 ? `${String(s).slice(0, 30)}…` : String(s));
+
 const columns = [
   {
     key: "name",
     label: "Name",
-    headerClassName: "px-4 py-2",
-    cellClassName: "px-4 py-2 font-medium",
+    headerClassName: "max-w-[30ch] px-4 py-2",
+    cellClassName: "max-w-[30ch] truncate px-4 py-2 font-medium",
   },
   {
     key: "title",
     label: "Title",
-    headerClassName: "px-4 py-2",
-    cellClassName: "px-4 py-2",
+    headerClassName: "max-w-[30ch] px-4 py-2",
+    cellClassName: "max-w-[30ch] truncate px-4 py-2",
   },
   {
     key: "description",
     label: "Description",
-    headerClassName: "px-4 py-2",
+    headerClassName: "max-w-[30ch] px-4 py-2",
     cellClassName:
-      "px-4 py-2 text-muted-foreground truncate max-w-[360px]",
+      "max-w-[30ch] truncate px-4 py-2 text-muted-foreground",
   },
   {
     key: "fee",
@@ -142,11 +145,11 @@ export function VideoCategoryPage() {
     const fullDescription = item.description ?? "-";
     return {
       id: item.id,
-      name: item.name,
-      title: item.title,
+      name: truncate30(item.name),
+      title: truncate30(item.title),
       description: (
         <span className="block truncate" title={fullDescription}>
-          {fullDescription}
+          {truncate30(item.description)}
         </span>
       ),
       // Store the actual string value for form editing

@@ -12,6 +12,9 @@ import {
 } from "@/hooks/useVideoSubcategory";
 import { getVideoCourses } from "@/services/video-course.service";
 
+const truncate30 = (s: string | null | undefined) =>
+  s == null || s === "" ? "-" : (String(s).length > 30 ? `${String(s).slice(0, 30)}…` : String(s));
+
 const columns = [
   {
     key: "sr",
@@ -22,15 +25,14 @@ const columns = [
   {
     key: "name",
     label: "Name",
-    headerClassName: "px-4 py-2",
-    cellClassName: "px-4 py-2 font-medium",
+    headerClassName: "max-w-[30ch] px-4 py-2",
+    cellClassName: "max-w-[30ch] truncate px-4 py-2 font-medium",
   },
   {
     key: "description",
     label: "Description",
-    headerClassName: "px-4 py-2",
-    cellClassName:
-      "px-4 py-2 text-muted-foreground wrap-break-word whitespace-normal max-w-[360px]",
+    headerClassName: "max-w-[30ch] px-4 py-2",
+    cellClassName: "max-w-[30ch] truncate px-4 py-2 text-muted-foreground",
   },
   {
     key: "actions",
@@ -97,8 +99,8 @@ export function VideoSubcategoryPage({ categoryId }: VideoSubcategoryPageProps) 
   const rows = filteredItems.map((item, index) => ({
     id: item.id,
     sr: String((page - 1) * perPage + index + 1),
-    name: item.name,
-    description: item.description ?? "-",
+    name: truncate30(item.name),
+    description: truncate30(item.description),
   }));
 
   return (

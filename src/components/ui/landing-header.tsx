@@ -16,7 +16,6 @@ type NavItem = {
 
 const publicNavItems: NavItem[] = [
   { label: "Internship", href: "/internships" },
-  { label: "Courses", href: "/courses" },
   { label: "Contact", href: "/contact-us" },
 ];
 
@@ -57,7 +56,7 @@ export function LandingHeader() {
     return () => window.removeEventListener("open-login-modal", onOpenLoginModal);
   }, []);
 
-  const isStudent = role === "STUDENT";
+  const isStudent = Boolean(hasToken && role === "STUDENT");
 
   return (
     <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
@@ -132,7 +131,7 @@ export function LandingHeader() {
         <div className="border-t bg-background/95 px-4 pb-3 pt-2 shadow-sm sm:px-6 md:hidden">
           <nav className="flex flex-col gap-1 text-sm font-medium text-muted-foreground">
             {(isStudent ? studentNavItems : publicNavItems).map((item) => {
-              const isProtected = (item.label === "Internship" || item.label === "Courses") && !hasToken;
+              const isProtected = item.href.startsWith("/student/") && !isStudent;
               if (isProtected) {
                 return (
                   <button

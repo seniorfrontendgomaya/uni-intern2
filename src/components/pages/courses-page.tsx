@@ -39,9 +39,9 @@ const columns = [
   {
     key: "description",
     label: "Description",
-    headerClassName: "px-4 py-2",
+    headerClassName: "px-4 py-2 max-w-[200px]",
     cellClassName:
-      "px-4 py-2 text-muted-foreground wrap-break-word whitespace-normal max-w-[360px]",
+      "px-4 py-2 max-w-[200px] truncate text-muted-foreground",
   },
   {
     key: "duration",

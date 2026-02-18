@@ -116,8 +116,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           aria-hidden="true"
         />
       ) : null}
-      <div className="h-full lg:grid lg:grid-cols-[240px_1fr]">
-        <aside className="hidden h-full border-r bg-card/60 backdrop-blur lg:flex lg:flex-col lg:gap-8 lg:px-6 lg:py-8">
+      <div className="h-full lg:pl-[240px]">
+        <aside className="fixed inset-y-0 left-0 z-30 hidden h-full w-[240px] border-r bg-card/60 backdrop-blur lg:flex lg:flex-col lg:gap-8 lg:px-6 lg:py-8">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
               U

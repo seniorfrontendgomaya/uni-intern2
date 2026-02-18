@@ -7,6 +7,7 @@ import {
   CompanyUpdatePayload,
   CompanyProfilePatch,
   createCompany,
+  deleteCompany,
   getCompanies,
   getCompanyById,
   updateCompany,
@@ -68,4 +69,12 @@ export function useGetCompanyById() {
   );
 
   return { data: getById, loading };
+}
+
+export function useDeleteCompany() {
+  const { run, loading } = useAsyncAction<CompanyMutationResponse>();
+
+  const destroy = (companyId: string) => run(() => deleteCompany(companyId));
+
+  return { data: destroy, loading };
 }

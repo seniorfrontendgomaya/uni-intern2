@@ -21,7 +21,7 @@ function buildCourseHref(basePath: string, categoryId: number) {
 }
 
 export function CoursesMegaMenu({
-  basePath = "/courses",
+  basePath = "/student/courses",
   onClose,
   isOpen = true,
   className = "",

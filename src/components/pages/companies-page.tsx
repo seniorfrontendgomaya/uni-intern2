@@ -10,16 +10,19 @@ import { getCompanyById, minimalCompanyCreatePayload } from "@/services/companie
 import {
   useCompaniesPaginated,
   useCreateCompany,
+  useDeleteCompany,
   useUpdateCompany,
   useUpdateCompanyWithFormData,
 } from "@/hooks/useCompanies";
 import type { CompanyListItem } from "@/types/company-list";
 import { extractFieldErrors } from "@/lib/validation-errors";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import toast from "react-hot-toast";
 
 const columns = [
   { key: "sr", label: "S NO", headerClassName: "w-20 px-4 py-2 text-center" },
   { key: "image", label: "Image", headerClassName: "w-16 px-2 py-2" },
-  { key: "name", label: "Name", headerClassName: "px-4 py-2" },
+  { key: "name", label: "Name", headerClassName: "px-4 py-2 max-w-[30ch]" },
   { key: "description", label: "Description", headerClassName: "px-4 py-2" },
   { key: "location", label: "Location", headerClassName: "px-4 py-2" },
   { key: "active", label: "Is Active", headerClassName: "px-4 py-2" },
@@ -47,6 +50,8 @@ export function CompaniesPage() {
     useState<ProfileInitialValues | undefined>(undefined);
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [companyToDelete, setCompanyToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const {
     items,
@@ -62,6 +67,7 @@ export function CompaniesPage() {
   const { data: createCompanyMutation } = useCreateCompany();
   const { data: updateCompanyMutation } = useUpdateCompany();
   const { data: updateCompanyWithFormDataMutation } = useUpdateCompanyWithFormData();
+  const { data: deleteCompanyMutation } = useDeleteCompany();
 
   const getInitial = (name: string) => {
     const t = String(name ?? "").trim();
@@ -78,7 +84,10 @@ export function CompaniesPage() {
         raw: item,
         sr: String((page - 1) * perPage + index + 1),
         image: (item as { image?: string | null }).image ?? null,
-        name: item.name,
+        name:
+          item.name != null && item.name.length > 30
+            ? `${String(item.name).slice(0, 30)}…`
+            : (item.name ?? "-"),
         description: item.description ?? "-",
         location:
           item.location && item.location.length > 0
@@ -163,28 +172,24 @@ export function CompaniesPage() {
         setSaving(false);
         return;
       }
+      const initial = profileInitialValues;
+      const buildPatch = () => {
+        const patch: Record<string, string> = {};
+        if (initial && values.name !== (initial.name ?? "")) patch.name = values.name;
+        if (initial && values.description !== (initial.description ?? "")) patch.description = values.description;
+        if (values.password.trim()) patch.password = values.password;
+        return patch;
+      };
+      const patchData = buildPatch();
       const hasImage = values.image instanceof File;
       const result = hasImage
         ? await updateCompanyWithFormDataMutation({
             companyId: activeCompanyId,
-            data: {
-              name: values.name,
-              email: values.email,
-              mobile: values.mobile,
-              description: values.description,
-              ...(values.password.trim() && { password: values.password }),
-              image: values.image,
-            },
+            data: { ...patchData, image: values.image },
           })
         : await updateCompanyMutation({
             companyId: activeCompanyId,
-            patchData: {
-              name: values.name,
-              email: values.email,
-              mobile: values.mobile,
-              description: values.description,
-              ...(values.password.trim() && { password: values.password }),
-            },
+            patchData,
           });
       setSaving(false);
       if (!result.ok) {
@@ -269,7 +274,12 @@ export function CompaniesPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-2 py-2 text-xs font-medium wrap-break-word sm:px-4 sm:text-sm">{row.name}</td>
+                      <td
+                        className="max-w-[30ch] truncate px-2 py-2 text-xs font-medium sm:px-4 sm:text-sm"
+                        title={(row.raw as { name?: string })?.name ?? row.name}
+                      >
+                        {row.name}
+                      </td>
                       <td className="px-2 py-2 text-xs text-muted-foreground wrap-break-word whitespace-normal max-w-[360px] sm:px-4 sm:text-sm">
                         {row.description}
                       </td>
@@ -307,12 +317,20 @@ export function CompaniesPage() {
                           <button
                             type="button"
                             className={cx(
-                              "inline-flex h-7 w-7 items-center justify-center rounded-xl border text-muted-foreground sm:h-8 sm:w-8",
-                              "cursor-not-allowed opacity-60"
+                              "inline-flex h-7 w-7 items-center justify-center rounded-xl border text-muted-foreground transition sm:h-8 sm:w-8",
+                              "hover:border-red-500/40 hover:bg-red-50 hover:text-red-600"
                             )}
                             aria-label="Delete"
                             title="Delete"
-                            disabled
+                            onClick={() => {
+                              if (row.id != null) {
+                                setCompanyToDelete({
+                                  id: String(row.id),
+                                  name: String(row.name ?? "this company"),
+                                });
+                                setDeleteConfirmOpen(true);
+                              }
+                            }}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -371,6 +389,37 @@ export function CompaniesPage() {
         saving={saving}
         onSubmit={handleSubmit}
         isUpdate={modalMode === "update"}
+      />
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        title="Delete company?"
+        description={
+          companyToDelete
+            ? `Are you sure you want to delete "${companyToDelete.name}"? This action cannot be undone.`
+            : "Are you sure you want to delete this company? This action cannot be undone."
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={async () => {
+          if (!companyToDelete) {
+            setDeleteConfirmOpen(false);
+            setCompanyToDelete(null);
+            return;
+          }
+          const result = await deleteCompanyMutation(companyToDelete.id);
+          setDeleteConfirmOpen(false);
+          setCompanyToDelete(null);
+          if (result.ok) {
+            toast.success(result.data?.message ?? "Company deleted");
+            refresh();
+          } else {
+            toast.error((result.error as { message?: string })?.message ?? "Failed to delete company");
+          }
+        }}
+        onCancel={() => {
+          setDeleteConfirmOpen(false);
+          setCompanyToDelete(null);
+        }}
       />
     </>
   );

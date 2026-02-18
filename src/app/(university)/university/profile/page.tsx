@@ -133,13 +133,19 @@ export default function UniversityProfilePage() {
     return patch;
   };
 
-  const hasAnyChanges = useMemo(() => {
+  const hasFormChanges = useMemo(() => {
     if (!profile) return false;
-    const patch = buildPatch();
-    const hasPatchChanges = Object.keys(patch).length > 0;
-    return hasPatchChanges || Boolean(logoFile);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile, form, logoFile]);
+    return (
+      form.name !== initialForm.name ||
+      form.description !== initialForm.description ||
+      form.university_location !== initialForm.university_location ||
+      form.established_year !== initialForm.established_year ||
+      form.website !== initialForm.website ||
+      form.email !== initialForm.email ||
+      form.mobile !== initialForm.mobile ||
+      Boolean(logoFile)
+    );
+  }, [profile, form, initialForm, logoFile]);
 
   const handleSave = async () => {
     if (!profile) return;
@@ -167,7 +173,6 @@ export default function UniversityProfilePage() {
       const year = Number.parseInt(yearRaw, 10);
       if (!Number.isFinite(year) || year < 1600 || year > 2050) {
         setEstablishedYearError("Invalid year. Enter a year between 1600 and 2050.");
-        toast.error("Invalid year. Enter a year between 1600 and 2050.");
         return;
       }
     }
@@ -362,7 +367,7 @@ export default function UniversityProfilePage() {
               </button>
               <button
                 type="button"
-                disabled={!hasAnyChanges || saving}
+                disabled={!hasFormChanges || saving}
                 onClick={handleSave}
                 className={cx(
                   "inline-flex h-9 items-center justify-center rounded-full px-4 text-xs font-semibold shadow-sm transition disabled:opacity-60",

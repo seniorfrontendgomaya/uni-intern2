@@ -49,8 +49,12 @@ export function InternshipNavItem({
           href={basePath}
           className={className}
           onClick={(e) => {
-            const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-            if (!token) {
+            if (typeof window === "undefined") return;
+            const token = localStorage.getItem("token");
+            const role = localStorage.getItem("role");
+            const isStudent = Boolean(token && role === "STUDENT");
+            const isStudentPath = basePath.startsWith("/student/");
+            if (isStudentPath && !isStudent) {
               e.preventDefault();
               window.dispatchEvent(new Event(OPEN_LOGIN_MODAL_EVENT));
               return;

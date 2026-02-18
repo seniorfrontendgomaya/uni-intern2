@@ -135,15 +135,15 @@ export const updateCompany = ({ companyId, patchData }: CompanyUpdatePayload) =>
 
 /** Profile fields + optional image file for superadmin company update. */
 export type CompanyProfilePatch = {
-  name: string;
-  email: string;
-  mobile: string;
-  description: string;
+  name?: string;
+  email?: string;
+  mobile?: string;
+  description?: string;
   password?: string;
   image?: File | null;
 };
 
-/** PATCH update_company with FormData so image can be included. Use when image is a File. */
+/** PATCH update_company with FormData so image can be included. Only appends keys that are present (for update, send only changed fields). */
 export const updateCompanyWithFormData = ({
   companyId,
   data,
@@ -152,10 +152,10 @@ export const updateCompanyWithFormData = ({
   data: CompanyProfilePatch;
 }) => {
   const formData = new FormData();
-  formData.append("name", data.name);
-  formData.append("email", data.email);
-  formData.append("mobile", data.mobile);
-  formData.append("description", data.description);
+  if (data.name !== undefined) formData.append("name", data.name);
+  if (data.email !== undefined) formData.append("email", data.email);
+  if (data.mobile !== undefined) formData.append("mobile", data.mobile);
+  if (data.description !== undefined) formData.append("description", data.description);
   if (data.password != null && data.password !== "")
     formData.append("password", data.password);
   if (data.image instanceof File) {
@@ -178,3 +178,11 @@ export const getCompanyById = async (id: string): Promise<CompanyMutationRespons
     },
   });
 };
+
+export const deleteCompany = (companyId: string) =>
+  api<CompanyMutationResponse>(`/delete_company/${companyId}/`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });

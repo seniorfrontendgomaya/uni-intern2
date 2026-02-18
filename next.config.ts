@@ -7,6 +7,7 @@ const apiOrigin = apiBase.replace(/\/$/, "");
 const apiHostname = new URL(apiOrigin).hostname;
 
 const nextConfig: NextConfig = {
+  turbopack: {},
   images: {
     remotePatterns: [
       {

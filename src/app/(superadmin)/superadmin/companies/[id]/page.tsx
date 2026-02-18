@@ -232,28 +232,24 @@ export default function CompanyDetailPage() {
           setSaving(true);
           setFieldErrors({});
           try {
+            const initial = {
+              name: company.name ?? "",
+              description: company.description ?? "",
+            };
+            const patchData: Record<string, string> = {};
+            if (values.name !== initial.name) patchData.name = values.name;
+            if (values.description !== initial.description) patchData.description = values.description;
+            if (values.password.trim()) patchData.password = values.password;
+
             const hasImage = values.image instanceof File;
             const result = hasImage
               ? await updateCompanyWithFormDataMutation({
                   companyId,
-                  data: {
-                    name: values.name,
-                    email: values.email,
-                    mobile: values.mobile,
-                    description: values.description,
-                    ...(values.password.trim() && { password: values.password }),
-                    image: values.image,
-                  },
+                  data: { ...patchData, image: values.image },
                 })
               : await updateCompanyMutation({
                   companyId,
-                  patchData: {
-                    name: values.name,
-                    email: values.email,
-                    mobile: values.mobile,
-                    description: values.description,
-                    ...(values.password.trim() && { password: values.password }),
-                  },
+                  patchData,
                 });
             if (!result.ok) {
               applyValidationErrors(result.error);

@@ -27,8 +27,8 @@ const columns = [
   {
     key: "name",
     label: "Name",
-    headerClassName: "px-4 py-2",
-    cellClassName: "px-4 py-2 font-medium",
+    headerClassName: "max-w-[30ch] px-4 py-2",
+    cellClassName: "max-w-[30ch] truncate px-4 py-2 font-medium",
   },
   {
     key: "location",
@@ -159,7 +159,10 @@ export function UniversityPage() {
     ) : (
       "-"
     ),
-    name: item.name,
+    name:
+      item.name != null && item.name.length > 30
+        ? `${String(item.name).slice(0, 30)}…`
+        : (item.name ?? "-"),
     location: item.university_location ?? "-",
     established_year: item.established_year ?? "-",
     mobile: item.mobile ?? "-",
