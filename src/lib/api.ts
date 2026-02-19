@@ -48,7 +48,9 @@ export async function api<T>(
     } else if (!(requestHeaders as Record<string, string>)["Content-Type"] && !(requestHeaders as Record<string, string>)["content-type"]) {
       (requestHeaders as Record<string, string>)["Content-Type"] = "application/json";
     }
-    const res = await fetch(`${baseUrl}${url}`, {
+    const base = baseUrl.replace(/\/$/, "");
+    const path = url.startsWith("/") ? url : `/${url}`;
+    const res = await fetch(`${base}${path}`, {
       ...options,
       headers: requestHeaders,
     });

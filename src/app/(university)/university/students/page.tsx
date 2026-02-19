@@ -47,12 +47,16 @@ export default function UniversityStudentsPage() {
     formData.append("file", file);
 
     const res = await upload(formData);
-    if (!res.ok) return;
-
-    toast.success("Students uploaded successfully");
-    setBulkModalOpen(false);
-    setFile(null);
-    refresh();
+    if (res.ok) {
+      const data = res.data as { message?: string } | undefined;
+      toast.success(data?.message ?? "Students uploaded successfully");
+      setBulkModalOpen(false);
+      setFile(null);
+      refresh();
+    } else {
+      const err = res.error as { message?: string } | undefined;
+      toast.error(err?.message ?? "Upload failed.");
+    }
   };
 
   const handleDeleteClick = (studentId: number) => {
@@ -310,8 +314,8 @@ export default function UniversityStudentsPage() {
                 Upload Student Data
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Upload an Excel file with student email and password columns to
-                create multiple student accounts at once.
+                Upload an Excel file with columns in order: email, mobile, password
+                to create multiple student accounts at once.
               </p>
             </div>
           </div>
@@ -338,9 +342,12 @@ export default function UniversityStudentsPage() {
               />
             </label>
             <p className="text-xs text-muted-foreground">
-              File must be in Excel format (.xls or .xlsx) with columns:{" "}
+              File must be in Excel format (.xls or .xlsx) with columns in this
+              order only:{" "}
               <span className="font-mono text-foreground">email</span>,{" "}
-              <span className="font-mono text-foreground">password</span>
+              <span className="font-mono text-foreground">mobile</span>,{" "}
+              <span className="font-mono text-foreground">password</span> — no
+              other columns and do not change the order.
             </p>
           </div>
 
@@ -348,14 +355,17 @@ export default function UniversityStudentsPage() {
             <p className="mb-1 font-semibold text-foreground">Instructions:</p>
             <ol className="list-decimal list-inside space-y-1">
               <li>
-                Prepare an Excel file with two columns:{" "}
-                <span className="font-mono text-foreground">email</span> and{" "}
-                <span className="font-mono text-foreground">password</span>.
+                Use exactly three columns in this order:{" "}
+                <span className="font-mono text-foreground">email</span>,{" "}
+                <span className="font-mono text-foreground">mobile</span>,{" "}
+                <span className="font-mono text-foreground">password</span>. Do
+                not change the order or add any other columns.
               </li>
               <li>Each row represents one student account.</li>
               <li>
                 Emails must be unique and not already registered in the system.
               </li>
+              <li>Mobile must be a valid 10-digit number.</li>
               <li>Passwords should be at least 8 characters long.</li>
             </ol>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { StudentShell } from "@/components/dashboard/student-shell";
 import { useEffect, useState } from "react";
 
@@ -40,6 +40,12 @@ export default function StudentLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isChatPage = pathname === "/student/chat";
+
+  if (isChatPage) {
+    return <StudentAuthGuard>{children}</StudentAuthGuard>;
+  }
   return (
     <StudentAuthGuard>
       <StudentShell>

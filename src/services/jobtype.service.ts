@@ -36,7 +36,7 @@ export const getJobTypes = (
     : "";
 
   return api<JobTypeListResponse>(
-    `/list_job_type/?per_page=${perPage}&page=${page}${searchParam}`,
+    `list_job_type/?per_page=${perPage}&page=${page}${searchParam}`,
     {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -53,7 +53,7 @@ export const getAllJobTypes = (searchTerm?: string) =>
 
 
 export const createJobType = (payload: JobTypeCreatePayload) =>
-  api<JobTypeMutationResponse>("/create_job_type/", {
+  api<JobTypeMutationResponse>("create_job_type/", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -62,7 +62,7 @@ export const createJobType = (payload: JobTypeCreatePayload) =>
   });
 
 export const updateJobType = ({ jobTypeId, patchData }: JobTypeUpdatePayload) =>
-  api<JobTypeMutationResponse>(`/update_job_type/${jobTypeId}/`, {
+  api<JobTypeMutationResponse>(`update_job_type/${jobTypeId}/`, {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -71,7 +71,7 @@ export const updateJobType = ({ jobTypeId, patchData }: JobTypeUpdatePayload) =>
   });
 
 export const deleteJobType = (id: string) =>
-  api<JobTypeMutationResponse>(`/delete_job_type/${id}/`, {
+  api<JobTypeMutationResponse>(`delete_job_type/${id}/`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,

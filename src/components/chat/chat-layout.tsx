@@ -132,9 +132,9 @@ export function ChatLayout({
             dashboardLabel={dashboardLabel}
           />
         </aside>
-        {/* Right: chat room — hidden on mobile when list view */}
+        {/* Right: chat room — hidden on mobile when list view; min-h-0 so input stays at bottom */}
         <div
-          className={`flex flex-1 flex-col min-w-0 ${
+          className={`flex min-h-0 flex-1 flex-col min-w-0 ${
             mobilePanel === "chat" ? "flex" : "hidden md:flex"
           }`}
         >

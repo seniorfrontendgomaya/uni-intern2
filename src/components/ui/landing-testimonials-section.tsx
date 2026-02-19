@@ -62,7 +62,7 @@ export function LandingTestimonialsSection() {
               className="relative rounded-2xl border bg-card p-6 shadow-sm"
             >
               <Quote className="absolute right-4 top-4 h-8 w-8 text-primary/20" aria-hidden />
-              <div className="mb-3 flex gap-0.5" aria-label={`${t.rating} out of 5 stars`}>
+              <div className="mb-3 flex gap-0.5">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}

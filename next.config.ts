@@ -32,12 +32,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: process.env.NEXT_PUBLIC_API_URL as string,
+        hostname: process.env.NEXT_PUBLIC_IMAGE_ENDPOINT as string,
         pathname: "/**",
       },
       {
         protocol: "http",
-        hostname: process.env.NEXT_PUBLIC_API_URL as string,
+        hostname: process.env.NEXT_PUBLIC_IMAGE_ENDPOINT as string,
         pathname: "/**",
       },
     ],
