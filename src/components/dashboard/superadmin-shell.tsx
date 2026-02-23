@@ -5,12 +5,13 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Building2,
-  Folder,
+  CreditCard,
   GraduationCap,
   Menu,
   PlayCircle,
   ShieldCheck,
   University,
+  UserPlus,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ForbiddenPage } from "@/components/pages/forbidden-page";
@@ -35,6 +36,8 @@ const navItems: NavItem[] = [
   { label: "Video Courses", href: "/superadmin/video-category", icon: <PlayCircle className="h-4 w-4" /> },
   // { label: "Video Courses", href: "/superadmin/video-courses", icon: <PlayCircle className="h-4 w-4" /> },
   { label: "Resume List", href: "/superadmin/resume-list", icon: <GraduationCap className="h-4 w-4" /> },
+  { label: "Plan Type", href: "/superadmin/plan-type", icon: <CreditCard className="h-4 w-4" /> },
+  { label: "Referral", href: "/superadmin/referral", icon: <UserPlus className="h-4 w-4" /> },
 ];
 
 const cx = (...classes: Array<string | false | null | undefined>) =>

@@ -6,9 +6,11 @@ import { getFooterData } from "@/services/footer.service";
 import type { FooterLink } from "@/services/footer.service";
 
 const QUICK_LINKS: FooterLink[] = [
-  { label: "Hire interns for your company", href: "#" },
+  // { label: "Hire interns for your company", href: "#" },
   { label: "Post a job", href: "#" },
   { label: "Privacy", href: "/privacy" },
+  { label: "Refund policy", href: "/refund-policy" },
+  { label: "Refer & Earn", href: "/refer-earn" },
   { label: "Contact us", href: "/contact-us" },
 ];
 
@@ -177,9 +179,11 @@ const sections: FooterSection[] = [
   {
     title: "Quick links",
     links: [
-      { label: "Hire interns for your company", href: "#" },
+      // { label: "Hire interns for your company", href: "#" },
       { label: "Post a job", href: "#" },
       { label: "Privacy", href: "/privacy" },
+      { label: "Refund policy", href: "/refund-policy" },
+      { label: "Refer & Earn", href: "/refer-earn" },
       { label: "Contact us", href: "/contact-us" },
     ],
   },

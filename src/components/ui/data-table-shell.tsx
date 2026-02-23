@@ -58,14 +58,16 @@ export function DataTableShell({
           </div>
         </div>
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
-          <div className="relative w-full max-w-md sm:w-72">
-            <input
-              type="search"
-              placeholder={searchPlaceholder}
-              className="h-10 w-full rounded-full border bg-background px-4 text-sm text-foreground outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
-              {...inputProps}
-            />
-          </div>
+          {searchProps !== undefined ? (
+            <div className="relative w-full max-w-md sm:w-72">
+              <input
+                type="search"
+                placeholder={searchPlaceholder}
+                className="h-10 w-full rounded-full border bg-background px-4 text-sm text-foreground outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+                {...inputProps}
+              />
+            </div>
+          ) : null}
           {headerRightExtra ? (
             <div className="text-xs text-muted-foreground">
               {headerRightExtra}

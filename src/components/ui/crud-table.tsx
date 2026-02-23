@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { Pencil, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -14,13 +14,17 @@ type Column = {
   cellClassName?: string;
 };
 
+export type SearchSelectOption = { value: string | number; label: string };
+
 export type Field = {
   name: string;
   label: string;
-  type?: "text" | "number" | "textarea" | "checkbox" | "file" | "password";
+  type?: "text" | "number" | "textarea" | "checkbox" | "file" | "password" | "search_select";
   placeholder?: string;
   min?: number;
   max?: number;
+  /** For type "search_select": fetch options by search query. Call with "" for initial/default list. */
+  searchSelectFetch?: (query: string) => Promise<SearchSelectOption[]>;
 };
 
 type FormValue = string | boolean | File | null;
@@ -80,6 +84,178 @@ type CrudTableProps = {
   };
 };
 
+type SearchSelectState = {
+  options: SearchSelectOption[];
+  open: boolean;
+  query: string;
+  selectedLabel: string;
+  loading: boolean;
+};
+
+function SearchSelectField({
+  field,
+  formValues,
+  setFormValues,
+  fieldErrors,
+  setFieldErrors,
+  searchSelectState,
+  setSearchSelectState,
+  searchSelectFetchTimeout,
+}: {
+  field: Field & { searchSelectFetch: (q: string) => Promise<SearchSelectOption[]> };
+  formValues: Record<string, FormValue>;
+  setFormValues: React.Dispatch<React.SetStateAction<Record<string, FormValue>>>;
+  fieldErrors: Record<string, string[]>;
+  setFieldErrors: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
+  searchSelectState: Record<string, SearchSelectState>;
+  setSearchSelectState: React.Dispatch<React.SetStateAction<Record<string, SearchSelectState>>>;
+  searchSelectFetchTimeout: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
+}) {
+  const state = searchSelectState[field.name] ?? {
+    options: [],
+    open: false,
+    query: "",
+    selectedLabel: "",
+    loading: false,
+  };
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const defaultFieldState = (): SearchSelectState => ({
+    options: [],
+    open: false,
+    query: "",
+    selectedLabel: "",
+    loading: false,
+  });
+
+  const fetchOptions = useCallback(
+    (query: string) => {
+      setSearchSelectState((prev) => ({
+        ...prev,
+        [field.name]: { ...(prev[field.name] ?? defaultFieldState()), loading: true },
+      }));
+      field
+        .searchSelectFetch!(query)
+        .then((options) => {
+          setSearchSelectState((prev) => ({
+            ...prev,
+            [field.name]: {
+              ...(prev[field.name] ?? defaultFieldState()),
+              options,
+              loading: false,
+            },
+          }));
+        })
+        .catch(() => {
+          setSearchSelectState((prev) => ({
+            ...prev,
+            [field.name]: {
+              ...(prev[field.name] ?? defaultFieldState()),
+              options: [],
+              loading: false,
+            },
+          }));
+        });
+    },
+    [field.name, field.searchSelectFetch]
+  );
+
+  useEffect(() => {
+    if (!state.open) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setSearchSelectState((prev) => ({
+          ...prev,
+          [field.name]: { ...(prev[field.name] ?? state), open: false },
+        }));
+      }
+    };
+    window.addEventListener("mousedown", onMouseDown);
+    return () => window.removeEventListener("mousedown", onMouseDown);
+  }, [state.open, field.name]);
+
+  const displayText = state.open ? state.query : (state.selectedLabel || state.query || "");
+
+  return (
+    <div ref={containerRef} className="relative">
+      <label className="text-sm font-medium text-foreground">{field.label}</label>
+      <input
+        type="text"
+        placeholder={field.placeholder}
+        className="mt-2 h-10 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+        value={displayText}
+        onFocus={() => {
+          setSearchSelectState((prev) => ({
+            ...prev,
+            [field.name]: {
+              ...(prev[field.name] ?? state),
+              open: true,
+              query: state.selectedLabel ? "" : state.query,
+            },
+          }));
+          if ((searchSelectState[field.name] ?? state).options.length === 0 && !state.loading) {
+            fetchOptions("");
+          }
+        }}
+        onChange={(e) => {
+          const query = e.target.value;
+          setSearchSelectState((prev) => ({
+            ...prev,
+            [field.name]: {
+              ...(prev[field.name] ?? state),
+              query,
+              open: true,
+              selectedLabel: "",
+            },
+          }));
+          if (fieldErrors[field.name]) {
+            setFieldErrors((prev) => {
+              const next = { ...prev };
+              delete next[field.name];
+              return next;
+            });
+          }
+          if (searchSelectFetchTimeout.current) clearTimeout(searchSelectFetchTimeout.current);
+          searchSelectFetchTimeout.current = setTimeout(() => {
+            fetchOptions(query);
+          }, 300);
+        }}
+      />
+      {state.open && (
+        <div className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-lg border bg-card py-1 shadow-lg">
+          {state.loading ? (
+            <div className="px-4 py-3 text-sm text-muted-foreground">Loading…</div>
+          ) : state.options.length === 0 ? (
+            <div className="px-4 py-3 text-sm text-muted-foreground">No results</div>
+          ) : (
+            state.options.map((opt) => (
+              <button
+                key={String(opt.value)}
+                type="button"
+                className="w-full px-4 py-2 text-left text-sm hover:bg-muted"
+                onClick={() => {
+                  setFormValues((prev) => ({ ...prev, [field.name]: String(opt.value) }));
+                  setSearchSelectState((prev) => ({
+                    ...prev,
+                    [field.name]: {
+                      ...(prev[field.name] ?? state),
+                      selectedLabel: opt.label,
+                      query: "",
+                      open: false,
+                    },
+                  }));
+                }}
+              >
+                {opt.label}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function CrudTable({
   title,
   subtitle,
@@ -125,6 +301,9 @@ export function CrudTable({
     {}
   );
   const [imagePreviews, setImagePreviews] = useState<Record<string, string>>({});
+  const [searchSelectState, setSearchSelectState] = useState<Record<string, SearchSelectState>>({});
+  const searchSelectFetchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchSelectDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const totalRows = rows.length;
   const showCount = rows.length;
@@ -175,6 +354,7 @@ export function CrudTable({
           setFieldErrors({});
           setFormError(null);
           setImagePreviews({});
+          setSearchSelectState({});
           setModalOpen(true);
         }}
         table={
@@ -303,6 +483,7 @@ export function CrudTable({
                                 setInitialValues(nextValues);
                                 setFieldErrors({});
                                 setFormError(null);
+                                setSearchSelectState({});
                                 // Set image preview from row data if available
                                 const previews: Record<string, string> = {};
                                 fields.forEach((field) => {
@@ -655,6 +836,17 @@ export function CrudTable({
                     }}
                   />
                 </>
+              ) : field.type === "search_select" && field.searchSelectFetch ? (
+                <SearchSelectField
+                  field={field}
+                  formValues={formValues}
+                  setFormValues={setFormValues}
+                  fieldErrors={fieldErrors}
+                  setFieldErrors={setFieldErrors}
+                  searchSelectState={searchSelectState}
+                  setSearchSelectState={setSearchSelectState}
+                  searchSelectFetchTimeout={searchSelectFetchTimeout}
+                />
               ) : (
                 <>
                   <label className="text-sm font-medium text-foreground">

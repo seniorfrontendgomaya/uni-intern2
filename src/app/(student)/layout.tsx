@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { StudentShell } from "@/components/dashboard/student-shell";
+import { StudentReferralCodeProvider } from "@/contexts/student-referral-code";
 import { useEffect, useState } from "react";
 
 /** Prefetch courses path so the URL is cached when user opens megamenu or navigates. */
@@ -32,7 +33,11 @@ function StudentAuthGuard({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   if (!checked) return <div className="h-screen bg-background" />;
-  return <>{children}</>;
+  return (
+    <StudentReferralCodeProvider>
+      {children}
+    </StudentReferralCodeProvider>
+  );
 }
 
 export default function StudentLayout({

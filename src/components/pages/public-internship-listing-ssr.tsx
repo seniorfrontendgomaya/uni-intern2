@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MapPin, Calendar, Users, IndianRupee, Zap } from "lucide-react";
 import type { PublicInternshipItem } from "@/services/public-internships.service";
+import { InternshipCardClickWrapper } from "@/components/ui/internship-card-click-wrapper";
 
 function formatSalary(start: number | null, end: number | null): string {
   if (start != null && end != null) {
@@ -79,9 +80,10 @@ export function PublicInternshipListingSSR({
       ) : (
         <div className="space-y-4">
           {items.map((item, index) => (
-            <div
-              key={index}
-              className="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow"
+            <InternshipCardClickWrapper
+              key={item.id ?? index}
+              item={item}
+              className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-start gap-4">
                 {/* Logo: prefer comapany.image, fallback item.image */}
@@ -198,7 +200,7 @@ export function PublicInternshipListingSSR({
                   </div>
                 </div>
               </div>
-            </div>
+            </InternshipCardClickWrapper>
           ))}
         </div>
       )}

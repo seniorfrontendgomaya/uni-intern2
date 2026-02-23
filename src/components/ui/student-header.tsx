@@ -59,6 +59,11 @@ export function StudentProfileMenu() {
     router.push("/student/change-password");
   };
 
+  const goToReferEarn = () => {
+    setOpen(false);
+    router.push("/student/refer-earn");
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
@@ -109,6 +114,13 @@ export function StudentProfileMenu() {
             className="block w-full px-3 py-2 text-left hover:bg-muted"
           >
             Change password
+          </button>
+          <button
+            type="button"
+            onClick={goToReferEarn}
+            className="block w-full px-3 py-2 text-left hover:bg-muted"
+          >
+            Refer & Earn
           </button>
           <button
             type="button"
