@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Briefcase, Building2, GraduationCap, Menu, ShieldCheck, University } from "lucide-react";
+import { Badge, BookOpen, Briefcase, Building2, GraduationCap, Menu, ShieldCheck, University } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ForbiddenPage } from "@/components/pages/forbidden-page";
 import { defaultRouteForRole } from "@/lib/route-guard";
@@ -36,12 +36,12 @@ const navItems: NavItem[] = [
     icon: <GraduationCap className="h-4 w-4" />,
   },
   {
-    label: "Courses",
+    label: "Certification Courses",
     href: "/company/courses",
-    icon: <University className="h-4 w-4" />,
+    icon: <Badge className="h-4 w-4" />,
   },
   {
-    label: "Perk",
+    label: "Certifications/Perk",
     href: "/company/perk",
     icon: <ShieldCheck className="h-4 w-4" />,
   },
@@ -64,6 +64,11 @@ const navItems: NavItem[] = [
     label: "Chat",
     href: "/company/chat",
     icon: <University className="h-4 w-4" />,
+  },
+  {
+    label: "Course Lead",
+    href: "/company/course-lead",
+    icon: <BookOpen className="h-4 w-4" />,
   },
 ];
 

@@ -178,9 +178,9 @@ export function CoursesPage() {
 
   return (
     <CrudTable
-      title="Courses"
-      addLabel="Add course"
-      searchPlaceholder="Search courses..."
+      title="Certification Courses"
+      addLabel="Add New"
+      searchPlaceholder="Search certification courses..."
       searchProps={{
         value: searchTerm,
         onChange: (event) => {

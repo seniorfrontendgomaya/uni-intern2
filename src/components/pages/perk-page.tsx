@@ -73,9 +73,9 @@ export function PerkPage() {
 
   return (
     <CrudTable
-      title="Perk"
-      addLabel="Add perk"
-      searchPlaceholder="Search perk..."
+      title="Certification/Perk"
+      addLabel="Add New"
+      searchPlaceholder="Search certification/perk..."
       columns={columns}
       rows={rows}
       fields={fields}

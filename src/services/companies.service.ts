@@ -78,6 +78,44 @@ export const getCompanies = async (
 export const searchCompanies = (searchTerm: string, page = 1, perPage = 10) =>
   getCompanies(page, perPage, searchTerm);
 
+/** Dropdown company search: GET /dropdown_get_company_api/?search=... */
+export type DropdownCompanyItem = { id: number | string; name: string };
+export type DropdownCompanyResponse = { data?: DropdownCompanyItem[] } | DropdownCompanyItem[];
+
+export async function getDropdownCompanies(search: string): Promise<DropdownCompanyItem[]> {
+  const params = new URLSearchParams();
+  if (search.trim()) params.set("search", search.trim());
+  const query = params.toString();
+  const url = query ? `/dropdown_get_company_api/?${query}` : "/dropdown_get_company_api/";
+  const raw = await api<DropdownCompanyResponse>(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  if (Array.isArray(raw)) return raw;
+  const data = (raw as { data?: DropdownCompanyItem[] })?.data;
+  return Array.isArray(data) ? data : [];
+}
+
+/** Dropdown courses by company: GET /dropdown_get_course_api/?company=... */
+export type DropdownCourseItem = { id: number | string; name: string };
+export type DropdownCourseResponse = { data?: DropdownCourseItem[] } | DropdownCourseItem[];
+
+export async function getDropdownCourses(companyId: string | number): Promise<DropdownCourseItem[]> {
+  const params = new URLSearchParams();
+  params.set("company", String(companyId));
+  const raw = await api<DropdownCourseResponse>(`/dropdown_get_course_api/?${params.toString()}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  if (Array.isArray(raw)) return raw;
+  const data = (raw as { data?: DropdownCourseItem[] })?.data;
+  return Array.isArray(data) ? data : [];
+}
+
 /** Build minimal create payload from profile fields only (for superadmin simple create). */
 export function minimalCompanyCreatePayload(values: {
   name: string;

@@ -64,6 +64,11 @@ export function StudentProfileMenu() {
     router.push("/student/refer-earn");
   };
 
+  const goToRequestCourses = () => {
+    setOpen(false);
+    router.push("/student/request-courses");
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
@@ -121,6 +126,13 @@ export function StudentProfileMenu() {
             className="block w-full px-3 py-2 text-left hover:bg-muted"
           >
             Refer & Earn
+          </button>
+          <button
+            type="button"
+            onClick={goToRequestCourses}
+            className="block w-full px-3 py-2 text-left hover:bg-muted"
+          >
+            Request courses
           </button>
           <button
             type="button"

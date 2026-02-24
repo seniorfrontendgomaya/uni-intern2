@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  Badge,
+  BookOpen,
   Building2,
   CreditCard,
   GraduationCap,
@@ -12,6 +14,7 @@ import {
   ShieldCheck,
   University,
   UserPlus,
+  Users,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ForbiddenPage } from "@/components/pages/forbidden-page";
@@ -29,15 +32,17 @@ const navItems: NavItem[] = [
   { label: "Category", href: "/superadmin/category", icon: <University className="h-4 w-4" /> },
   { label: "Designation", href: "/superadmin/designation", icon: <ShieldCheck className="h-4 w-4" /> },
   { label: "Skill", href: "/superadmin/skill", icon: <GraduationCap className="h-4 w-4" /> },
-  { label: "Courses", href: "/superadmin/courses", icon: <University className="h-4 w-4" /> },
-  { label: "Perk", href: "/superadmin/perk", icon: <ShieldCheck className="h-4 w-4" /> },
+  { label: "Certification Courses", href: "/superadmin/courses", icon: <Badge className="h-4 w-4" /> },
+  { label: "Certifications/Perk", href: "/superadmin/perk", icon: <ShieldCheck className="h-4 w-4" /> },
   { label: "Companies", href: "/superadmin/companies", icon: <Building2 className="h-4 w-4" /> },
   { label: "Universities", href: "/superadmin/universities", icon: <University className="h-4 w-4" /> },
-  { label: "Video Courses", href: "/superadmin/video-category", icon: <PlayCircle className="h-4 w-4" /> },
+  { label: "Live/On Demand", href: "/superadmin/video-category", icon: <PlayCircle className="h-4 w-4" /> },
   // { label: "Video Courses", href: "/superadmin/video-courses", icon: <PlayCircle className="h-4 w-4" /> },
   { label: "Resume List", href: "/superadmin/resume-list", icon: <GraduationCap className="h-4 w-4" /> },
   { label: "Plan Type", href: "/superadmin/plan-type", icon: <CreditCard className="h-4 w-4" /> },
   { label: "Referral", href: "/superadmin/referral", icon: <UserPlus className="h-4 w-4" /> },
+  { label: "Course Lead", href: "/superadmin/course-lead", icon: <BookOpen className="h-4 w-4" /> },
+  { label: "Paid students", href: "/superadmin/paid-students", icon: <Users className="h-4 w-4" /> },
 ];
 
 const cx = (...classes: Array<string | false | null | undefined>) =>

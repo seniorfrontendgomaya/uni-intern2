@@ -973,9 +973,9 @@ export function CompanyHiringPage() {
 
 
           <SearchTagInput
-            label="Skills"
+            label="Certifications/Perk"
             value={formValues.skills}
-            placeholder="Search skills..."
+            placeholder="Search Certifications/Perk..."
             fetchOptions={skillFetcher}
             onChange={(next) =>
               setFormValues((prev) => {
@@ -1009,9 +1009,9 @@ export function CompanyHiringPage() {
           {renderFieldErrors("placement_gurantee_course")}
 
           <SearchTagInput
-            label="Course"
+            label="Certification Courses"
             value={formValues.course}
-            placeholder="Search course..."
+            placeholder="Search certification courses..."
             fetchOptions={courseFetcher}
             onChange={(next) =>
               setFormValues((prev) => {
@@ -1023,9 +1023,9 @@ export function CompanyHiringPage() {
           {renderFieldErrors("course")}
 
           <SearchTagInput
-            label="Perk"
+            label="Certification/Perk"
             value={formValues.perk}
-            placeholder="Search perk..."
+            placeholder="Search certification/perk..."
             fetchOptions={perkFetcher}
             onChange={(next) =>
               setFormValues((prev) => {
