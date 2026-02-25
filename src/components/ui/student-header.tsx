@@ -8,6 +8,7 @@ import { UniInternLogo } from "@/components/ui/uniintern-logo";
 import { InternshipNavItem } from "@/components/ui/internship-nav-item";
 import { CoursesNavItem } from "@/components/ui/courses-nav-item";
 import { clearStoredStudentProfile } from "@/services/student-profile.service";
+import { useUserCredit } from "@/contexts/user-credit";
 
 type NavItem = {
   label: string;
@@ -24,6 +25,7 @@ const navItems: NavItem[] = [
 
 export function StudentProfileMenu() {
   const router = useRouter();
+  const { data: userCredit } = useUserCredit();
   const [open, setOpen] = useState(false);
   const [userImage, setUserImage] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
@@ -105,14 +107,21 @@ export function StudentProfileMenu() {
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-50 mt-2 w-40 overflow-hidden rounded-md border bg-white text-sm shadow-lg">
-          <button
-            type="button"
-            onClick={goToProfile}
-            className="block w-full px-3 py-2 text-left hover:bg-muted"
-          >
-            Profile
-          </button>
+        <div className="absolute right-0 z-50 mt-2 w-52 min-w-[12rem] overflow-hidden rounded-md border bg-white text-sm shadow-lg">
+          <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
+            <button
+              type="button"
+              onClick={goToProfile}
+              className="text-left font-medium hover:underline"
+            >
+              Profile
+            </button>
+            {userCredit != null && (
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                Used Credit: {userCredit.used_credit}/{userCredit.credit}
+              </span>
+            )}
+          </div>
           <button
             type="button"
             onClick={goToChangePassword}

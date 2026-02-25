@@ -95,7 +95,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
         />
       ) : null}
       <div className="h-full lg:pl-[260px]">
-        <aside className="fixed inset-y-0 left-0 z-30 hidden h-full w-[260px] border-r bg-background lg:flex lg:flex-col lg:gap-6 lg:px-4 lg:py-6">
+        <aside className="fixed inset-y-0 left-0 z-30 hidden h-full w-[260px] overflow-y-auto border-r bg-background lg:flex lg:flex-col lg:gap-6 lg:px-4 lg:py-6">
           <div className="flex items-center gap-3 px-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               U

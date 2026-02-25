@@ -1,6 +1,5 @@
 import { api } from "@/lib/api";
 
-/** List item for paid students (superadmin) used by the UI. */
 export type PaidStudentItem = {
   id: number;
   name: string;
