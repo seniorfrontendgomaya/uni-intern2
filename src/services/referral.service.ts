@@ -30,11 +30,12 @@ export async function getReferrals(
     headers: authHeaders(),
   });
 
-  const data = Array.isArray(raw)
-    ? raw
-    : Array.isArray((raw as ReferralListResponse)?.data)
-      ? (raw as ReferralListResponse).data
-      : [];
+  let data: ReferralItem[] = [];
+  if (Array.isArray(raw)) {
+    data = raw;
+  } else if (Array.isArray((raw as ReferralListResponse)?.data)) {
+    data = (raw as ReferralListResponse).data ?? [];
+  }
   const count = Array.isArray(raw) ? data.length : (raw as ReferralListResponse)?.count ?? data.length;
   const hasNextPage = Array.isArray(raw) ? false : (raw as ReferralListResponse)?.hasNextPage ?? false;
 

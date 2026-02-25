@@ -102,7 +102,7 @@ function SearchSelectField({
   setSearchSelectState,
   searchSelectFetchTimeout,
 }: {
-  field: Field & { searchSelectFetch: (q: string) => Promise<SearchSelectOption[]> };
+  field: Field;
   formValues: Record<string, FormValue>;
   setFormValues: React.Dispatch<React.SetStateAction<Record<string, FormValue>>>;
   fieldErrors: Record<string, string[]>;
