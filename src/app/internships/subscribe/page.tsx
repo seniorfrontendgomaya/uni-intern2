@@ -101,12 +101,12 @@ export default function InternshipsSubscribePage() {
                   <IndianRupee className="h-7 w-7 text-gray-600" />
                   <span>{plan.price.toLocaleString("en-IN")}</span>
                 </div>
-                <button
-                  type="button"
-                  className="mt-4 w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand/90"
+                <Link
+                  href={`/internships/subscribe/checkout/${plan.id}?name=${encodeURIComponent(plan.name)}&price=${encodeURIComponent(String(plan.price))}`}
+                  className="mt-4 block w-full rounded-xl bg-brand px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-brand/90"
                 >
                   Pay now
-                </button>
+                </Link>
               </div>
             ))}
           </div>

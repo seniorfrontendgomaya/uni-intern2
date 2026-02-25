@@ -1,5 +1,23 @@
-import { api } from "@/lib/api";
+import { api, apiBaseUrlNoSlash } from "@/lib/api";
 import type { ReferralItem, ReferralListResponse } from "@/types/referral";
+
+export type ReferralCheckResponse = {
+  statusCode: number;
+  message: string;
+  data?: { referral_code_exist: boolean };
+};
+
+/** Check if a referral code exists. GET /user_check_api/?referral_code=XXX (public, no auth). */
+export async function checkReferralCode(referralCode: string): Promise<ReferralCheckResponse> {
+  const code = encodeURIComponent(String(referralCode).trim());
+  const res = await fetch(
+    `${apiBaseUrlNoSlash}/user_check_api/?referral_code=${code}`,
+    { method: "GET", headers: { Accept: "application/json" } }
+  );
+  const json = (await res.json()) as ReferralCheckResponse;
+  if (!res.ok) throw new Error(json?.message ?? "Failed to check referral code");
+  return json;
+}
 
 function authHeaders(): HeadersInit {
   return {

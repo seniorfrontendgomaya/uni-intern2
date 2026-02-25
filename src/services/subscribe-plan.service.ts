@@ -8,7 +8,7 @@ import type {
 
 /** Public (no auth) – e.g. for /internships/subscribe. */
 export async function fetchSubscribePlans(): Promise<SubscribePlanResponse> {
-  const res = await fetch(`${apiBaseUrlNoSlash}/subscribe_plan_api/`, {
+  const res = await fetch(`${apiBaseUrlNoSlash}/get_subscribe_plan_api/`, {
     method: "GET",
     headers: { Accept: "application/json" },
   });
@@ -56,5 +56,47 @@ export function deleteSubscribePlan(id: string) {
     headers: {
       Authorization: `Bearer ${typeof localStorage !== "undefined" ? localStorage.getItem("token") : ""}`,
     },
+  });
+}
+
+/** Payload for subscription checkout (plan + referral + user details). */
+export type SubscribeCheckoutPayload = {
+  subscription_plan_id: number;
+  referral_codes: string[];
+  email: string;
+  mobile: string;
+  password: string;
+};
+
+/** Backend response after creating subscription; includes Cashfree session for redirect. */
+export type SubscribeCheckoutResponseData = {
+  subscription_id?: number;
+  order_id?: string;
+  cashfree_order_id?: string;
+  payment_session_id?: string;
+  amount?: number;
+  base_amount?: number;
+  discount?: number;
+  referral_count?: number;
+  referral_wallet_amount?: number;
+  [key: string]: unknown;
+};
+
+export type SubscribeCheckoutResponse = {
+  statusCode?: number;
+  message?: string;
+  data?: SubscribeCheckoutResponseData;
+  /** Top-level fallbacks if backend sends session at root */
+  session_id?: string;
+  payment_session_id?: string;
+};
+
+export async function submitSubscribeCheckout(
+  payload: SubscribeCheckoutPayload
+): Promise<SubscribeCheckoutResponse> {
+  return api<SubscribeCheckoutResponse>("/create_subscription/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
   });
 }
