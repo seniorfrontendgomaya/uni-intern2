@@ -100,3 +100,17 @@ export async function submitSubscribeCheckout(
     body: JSON.stringify(payload),
   });
 }
+
+export type PaymentConfirmationResponse = {
+  statusCode: number;
+  message: string;
+  data: null;
+};
+
+export async function confirmSubscribePayment(
+  orderId: string
+): Promise<PaymentConfirmationResponse> {
+  return api<PaymentConfirmationResponse>(`/payment_confirmation_api/?order_id=${orderId}`, {
+    method: "GET",
+  });
+}

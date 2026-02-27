@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Building2, Plus, Shield, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { getAllCourses } from "@/services/course.service";
@@ -25,7 +26,7 @@ export default function RequestCoursesPage() {
   const [activeTab, setActiveTab] = useState<TabType>("company");
   const [courses, setCourses] = useState<ICourse[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
-  const [selectedCoursesSuperadmin, setSelectedCoursesSuperadmin] = useState<OptionItem[]>([]);
+  const [selectedCourseSuperadmin, setSelectedCourseSuperadmin] = useState<OptionItem | null>(null);
   const [descriptionSuperadmin, setDescriptionSuperadmin] = useState("");
   const [coursesSuperadminQuery, setCoursesSuperadminQuery] = useState("");
   const [coursesSuperadminOptions, setCoursesSuperadminOptions] = useState<OptionItem[]>([]);
@@ -41,7 +42,7 @@ export default function RequestCoursesPage() {
   const [companyOpen, setCompanyOpen] = useState(false);
   const [companyLoading, setCompanyLoading] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<OptionItem | null>(null);
-  const [selectedCoursesCompany, setSelectedCoursesCompany] = useState<OptionItem[]>([]);
+  const [selectedCourseCompany, setSelectedCourseCompany] = useState<OptionItem | null>(null);
   const [coursesCompanyQuery, setCoursesCompanyQuery] = useState("");
   const [coursesCompanyOptions, setCoursesCompanyOptions] = useState<OptionItem[]>([]);
   const [coursesCompanyOpen, setCoursesCompanyOpen] = useState(false);
@@ -122,10 +123,10 @@ export default function RequestCoursesPage() {
     };
   }, [companyOpen, companyQuery]);
 
-  // When company changes, clear selected courses and options
+  // When company changes, clear selected course and options
   useEffect(() => {
     if (!selectedCompany) {
-      setSelectedCoursesCompany([]);
+      setSelectedCourseCompany(null);
       setCoursesCompanyOptions([]);
       setCoursesCompanyQuery("");
     }
@@ -156,19 +157,19 @@ export default function RequestCoursesPage() {
   }, []);
 
   const handleSubmitSuperadmin = useCallback(async () => {
-    if (selectedCoursesSuperadmin.length === 0) {
-      toast.error("Please select at least one course");
+    if (!selectedCourseSuperadmin) {
+      toast.error("Please select a course");
       return;
     }
     setSubmitting("superadmin");
     try {
       await studentSendRequestForVideoCourse({
         is_superuser: true,
-        course_ids: selectedCoursesSuperadmin.map((c) => Number(c.id)),
+        course_ids: [Number(selectedCourseSuperadmin.id)],
         description: descriptionSuperadmin.trim(),
       });
       toast.success("Course request submitted to Superadmin.");
-      setSelectedCoursesSuperadmin([]);
+      setSelectedCourseSuperadmin(null);
       setDescriptionSuperadmin("");
       loadRequests();
       setFormOpen(false);
@@ -177,15 +178,15 @@ export default function RequestCoursesPage() {
     } finally {
       setSubmitting(null);
     }
-  }, [selectedCoursesSuperadmin, descriptionSuperadmin, loadRequests]);
+  }, [selectedCourseSuperadmin, descriptionSuperadmin, loadRequests]);
 
   const handleSubmitCompany = useCallback(async () => {
     if (!selectedCompany) {
       toast.error("Please select a company");
       return;
     }
-    if (selectedCoursesCompany.length === 0) {
-      toast.error("Please select at least one course");
+    if (!selectedCourseCompany) {
+      toast.error("Please select a course");
       return;
     }
     setSubmitting("company");
@@ -193,13 +194,13 @@ export default function RequestCoursesPage() {
       await studentSendRequestForVideoCourse({
         is_company: true,
         company: Number(selectedCompany.id),
-        course_ids: selectedCoursesCompany.map((c) => Number(c.id)),
+        course_ids: [Number(selectedCourseCompany.id)],
         description: descriptionCompany.trim(),
       });
       toast.success("Course request submitted to Company.");
       setSelectedCompany(null);
       setCompanyQuery("");
-      setSelectedCoursesCompany([]);
+      setSelectedCourseCompany(null);
       setCoursesCompanyQuery("");
       setDescriptionCompany("");
       loadRequests();
@@ -209,7 +210,7 @@ export default function RequestCoursesPage() {
     } finally {
       setSubmitting(null);
     }
-  }, [selectedCompany, selectedCoursesCompany, descriptionCompany, loadRequests]);
+  }, [selectedCompany, selectedCourseCompany, descriptionCompany, loadRequests]);
 
   return (
     <div className="w-full space-y-6 px-4 sm:px-0">
@@ -288,41 +289,34 @@ export default function RequestCoursesPage() {
             className="space-y-5"
           >
             <div ref={coursesSuperadminDropdownRef} className="relative">
-              <label className="block text-sm font-medium text-foreground">Courses</label>
-              <div className="mt-1.5 space-y-2">
-                {selectedCoursesSuperadmin.length > 0 && (
-                  <div className="flex flex-wrap gap-2 rounded-lg bg-muted/30 px-3 py-2">
-                    {selectedCoursesSuperadmin.map((item) => (
-                      <span
-                        key={String(item.id)}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-brand/15 px-3 py-1 text-xs font-medium text-foreground"
-                      >
-                        {item.name}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setSelectedCoursesSuperadmin((prev) => prev.filter((p) => String(p.id) !== String(item.id)))
-                          }
-                          className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                          aria-label={`Remove ${item.name}`}
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
+              <label className="block text-sm font-medium text-foreground">Course</label>
+              <div className="relative mt-1.5 w-full">
                 <input
                   type="text"
-                  placeholder="Search courses..."
-                  value={coursesSuperadminOpen ? coursesSuperadminQuery : ""}
+                  placeholder="Search and select a course..."
+                  value={coursesSuperadminOpen ? coursesSuperadminQuery : (selectedCourseSuperadmin?.name ?? "")}
                   onChange={(e) => {
                     setCoursesSuperadminQuery(e.target.value);
                     setCoursesSuperadminOpen(true);
+                    if (selectedCourseSuperadmin) setSelectedCourseSuperadmin(null);
                   }}
                   onFocus={() => setCoursesSuperadminOpen(true)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                 />
+                {selectedCourseSuperadmin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCourseSuperadmin(null);
+                      setCoursesSuperadminQuery("");
+                      setCoursesSuperadminOpen(false);
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label="Clear course"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
               {coursesSuperadminOpen && (
                 <div className="absolute z-10 mt-1 max-h-52 w-full overflow-auto rounded-lg border border-border bg-card py-1 shadow-lg">
@@ -331,21 +325,20 @@ export default function RequestCoursesPage() {
                   ) : coursesSuperadminOptions.length === 0 ? (
                     <div className="px-4 py-3 text-sm text-muted-foreground">No results</div>
                   ) : (
-                    coursesSuperadminOptions
-                      .filter((opt) => !selectedCoursesSuperadmin.some((s) => String(s.id) === String(opt.id)))
-                      .map((opt) => (
-                        <button
-                          key={String(opt.id)}
-                          type="button"
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-muted"
-                          onClick={() => {
-                            setSelectedCoursesSuperadmin((prev) => [...prev, opt]);
-                            setCoursesSuperadminQuery("");
-                          }}
-                        >
-                          {opt.name}
-                        </button>
-                      ))
+                    coursesSuperadminOptions.map((opt) => (
+                      <button
+                        key={String(opt.id)}
+                        type="button"
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-muted"
+                        onClick={() => {
+                          setSelectedCourseSuperadmin(opt);
+                          setCoursesSuperadminQuery("");
+                          setCoursesSuperadminOpen(false);
+                        }}
+                      >
+                        {opt.name}
+                      </button>
+                    ))
                   )}
                 </div>
               )}
@@ -441,45 +434,38 @@ export default function RequestCoursesPage() {
               )}
             </div>
 
-            {/* Courses multi-select with pills */}
+            {/* Course single select */}
             <div ref={coursesDropdownRef} className="relative">
-              <label className="block text-sm font-medium text-foreground">Courses</label>
-              <div className="mt-1.5 space-y-2">
-                {selectedCoursesCompany.length > 0 && (
-                  <div className="flex flex-wrap gap-2 rounded-lg bg-muted/30 px-3 py-2">
-                    {selectedCoursesCompany.map((item) => (
-                      <span
-                        key={String(item.id)}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-brand/15 px-3 py-1 text-xs font-medium text-foreground"
-                      >
-                        {item.name}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setSelectedCoursesCompany((prev) => prev.filter((e) => String(e.id) !== String(item.id)))
-                          }
-                          className="rounded-full p-0.5 text-muted-foreground hover:bg-brand/20 hover:text-foreground"
-                          aria-label={`Remove ${item.name}`}
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
+              <label className="block text-sm font-medium text-foreground">Course</label>
+              <div className="relative mt-1.5 w-full">
                 <input
                   type="text"
-                  placeholder={selectedCompany ? "Search and select courses..." : "Select a company first"}
-                  value={coursesCompanyQuery}
+                  placeholder={selectedCompany ? "Search and select a course..." : "Select a company first"}
+                  value={coursesCompanyOpen ? coursesCompanyQuery : (selectedCourseCompany?.name ?? coursesCompanyQuery)}
                   onChange={(e) => {
                     setCoursesCompanyQuery(e.target.value);
                     setCoursesCompanyOpen(true);
+                    if (selectedCourseCompany) setSelectedCourseCompany(null);
                   }}
                   onFocus={() => selectedCompany && setCoursesCompanyOpen(true)}
                   onBlur={() => setTimeout(() => setCoursesCompanyOpen(false), 150)}
                   disabled={!selectedCompany}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+                {selectedCourseCompany && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCourseCompany(null);
+                      setCoursesCompanyQuery("");
+                      setCoursesCompanyOpen(false);
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground disabled:pointer-events-none"
+                    aria-label="Clear course"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
               {coursesCompanyOpen && selectedCompany && (
                 <div className="absolute z-10 mt-1 max-h-52 w-full overflow-auto rounded-lg border border-border bg-card py-1 shadow-lg">
@@ -495,10 +481,9 @@ export default function RequestCoursesPage() {
                         className="w-full px-4 py-2 text-left text-sm hover:bg-muted"
                         onMouseDown={(e) => {
                           e.preventDefault();
-                          if (selectedCoursesCompany.some((c) => String(c.id) === String(opt.id))) return;
-                          setSelectedCoursesCompany((prev) => [...prev, opt]);
+                          setSelectedCourseCompany(opt);
                           setCoursesCompanyQuery("");
-                          setCoursesCompanyOpen(true);
+                          setCoursesCompanyOpen(false);
                         }}
                       >
                         {opt.name}
@@ -559,12 +544,13 @@ export default function RequestCoursesPage() {
                   <th className="max-w-[200px] px-4 py-2.5">Description</th>
                   <th className="w-24 px-4 py-2.5 text-center">Status</th>
                   <th className="px-4 py-2.5">Created</th>
+                  <th className="w-32 min-w-[7rem] px-4 py-2.5 text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {requests.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                       No requests yet. Click &quot;New request&quot; to submit one.
                     </td>
                   </tr>
@@ -626,6 +612,40 @@ export default function RequestCoursesPage() {
                               timeStyle: "short",
                             })
                           : "—"}
+                      </td>
+                      <td className="px-4 py-2.5 text-center">
+                        {(() => {
+                          const raw = row.is_active;
+                          const status =
+                            typeof raw === "string"
+                              ? raw.trim().toLowerCase()
+                              : raw === true
+                                ? "approved"
+                                : "draft";
+                          const firstCourseId =
+                            Array.isArray(row.course) && row.course.length > 0
+                              ? row.course[0].id
+                              : null;
+                          const isPaid = row.is_paid === true;
+                          if (status === "approved" && isPaid) {
+                            return (
+                              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                                Paid
+                              </span>
+                            );
+                          }
+                          if (status === "approved" && !isPaid && firstCourseId != null) {
+                            return (
+                              <Link
+                                href={`/student/request-courses/checkout/${firstCourseId}?requestId=${row.id}`}
+                                className="inline-flex items-center justify-center rounded-full bg-brand px-3 py-1.5 text-xs font-medium text-white hover:bg-brand/90"
+                              >
+                                Pay now
+                              </Link>
+                            );
+                          }
+                          return "—";
+                        })()}
                       </td>
                     </tr>
                   ))

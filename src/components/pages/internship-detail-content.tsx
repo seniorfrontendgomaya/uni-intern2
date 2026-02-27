@@ -156,6 +156,7 @@ export function InternshipDetailContent({ detail }: InternshipDetailContentProps
         </p>
       </div>
 
+      {detail.skillsRequired && detail.skillsRequired.length > 0 && (
       <div>
         <h2 className="text-base font-bold text-gray-900 mb-2">Skills required</h2>
         {detail.skillsRequired && detail.skillsRequired.length > 0 ? (
@@ -170,9 +171,10 @@ export function InternshipDetailContent({ detail }: InternshipDetailContentProps
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500">No specific skills listed.</p>
-        )}
-      </div>
+            <p className="text-sm text-gray-500">No specific skills listed.</p>
+          )}
+        </div>
+      )}
 
       <div>
         <h2 className="text-base font-bold text-gray-900 mb-2">How to apply?</h2>

@@ -81,6 +81,8 @@ export default function SubscribeCheckoutPage() {
     setSubmitting(true);
     try {
       const res = await submitSubscribeCheckout(payload);
+      const backendOrderId =
+        res?.data?.order_id ?? res?.data?.cashfree_order_id ?? "";
       const sessionId =
         res?.data?.payment_session_id ??
         res?.session_id ??
@@ -100,10 +102,15 @@ export default function SubscribeCheckoutPage() {
         return;
       }
 
-      const returnUrl =
+      const baseReturnUrl =
         typeof window !== "undefined"
           ? `${window.location.origin}/internships/subscribe/return`
           : "/internships/subscribe/return";
+
+      const returnUrl =
+        backendOrderId && backendOrderId.trim().length > 0
+          ? `${baseReturnUrl}?order_id=${encodeURIComponent(backendOrderId)}`
+          : baseReturnUrl;
 
       const result = await cashfree.checkout({
         paymentSessionId: sessionId,

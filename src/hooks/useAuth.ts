@@ -53,6 +53,7 @@ export function useLogout() {
     await run(async () => await logout());
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("other_user");
   };
   return { logout, loading };
 }

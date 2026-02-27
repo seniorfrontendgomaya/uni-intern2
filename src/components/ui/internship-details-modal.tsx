@@ -296,6 +296,7 @@ export function InternshipDetailsModal({
               </div>
 
               {/* Skills Required */}
+              {internship.skillsRequired && internship.skillsRequired.length > 0 && (
               <div>
                 <h3 className="text-base font-bold text-gray-900 mb-2">
                   Skills required
@@ -315,7 +316,7 @@ export function InternshipDetailsModal({
                   <p className="text-sm text-gray-500">No specific skills listed.</p>
                 )}
               </div>
-
+              )}
               {/* How to Apply */}
               <div>
                 <h3 className="text-base font-bold text-gray-900 mb-2">

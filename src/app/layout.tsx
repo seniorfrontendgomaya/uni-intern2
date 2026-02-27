@@ -20,6 +20,9 @@ export const metadata: Metadata = {
     capable: true,
     title: "UNIIntern",
   },
+  icons: {
+    icon: "/vercel.png",
+  },
 };
 
 export const viewport: Viewport = {

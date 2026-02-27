@@ -124,7 +124,12 @@ const buildFormData = (values: Record<string, string | boolean | File | null>) =
   return formData;
 };
 
-export function VideoCategoryPage() {
+type VideoCategoryPageProps = {
+  /** Base path for links (e.g. /superadmin or /company). Defaults to /superadmin. */
+  basePath?: string;
+};
+
+export function VideoCategoryPage({ basePath = "/superadmin" }: VideoCategoryPageProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const {
     items,
@@ -192,7 +197,7 @@ export function VideoCategoryPage() {
             <Eye className="h-3.5 w-3.5" />
           </button>
           <Link
-            href={`/superadmin/video-subcategory?categoryId=${row.id}`}
+            href={`${basePath}/video-subcategory?categoryId=${row.id}`}
             className="group relative inline-flex h-7 w-7 items-center justify-center rounded-xl border border-brand/40 text-brand transition hover:bg-brand/10 sm:h-8 sm:w-8"
             title="Subcategory"
             aria-label="Subcategory"

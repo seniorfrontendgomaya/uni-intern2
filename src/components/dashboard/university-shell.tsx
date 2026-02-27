@@ -211,6 +211,7 @@ export function UniversityShell({ children }: { children: React.ReactNode }) {
         onConfirm={() => {
           localStorage.removeItem("token");
           localStorage.removeItem("role");
+          localStorage.removeItem("other_user");
           setLogoutOpen(false);
           router.replace("/");
         }}

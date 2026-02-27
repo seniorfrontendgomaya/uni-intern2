@@ -54,9 +54,11 @@ const fields: Field[] = [
 
 type VideoSubcategoryPageProps = {
   categoryId: string;
+  /** Base path for links (e.g. /superadmin or /company). Defaults to /superadmin. */
+  basePath?: string;
 };
 
-export function VideoSubcategoryPage({ categoryId }: VideoSubcategoryPageProps) {
+export function VideoSubcategoryPage({ categoryId, basePath = "/superadmin" }: VideoSubcategoryPageProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryName, setCategoryName] = useState<string | null>(null);
   const [categoryTitle, setCategoryTitle] = useState<string | null>(null);
@@ -108,7 +110,7 @@ export function VideoSubcategoryPage({ categoryId }: VideoSubcategoryPageProps) 
       title={
         <div className="flex items-center gap-2">
           <Link
-            href="/superadmin/video-category"
+            href={`${basePath}/video-category`}
             className="inline-flex items-center gap-1 text-sm text-muted-foreground transition hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -120,7 +122,7 @@ export function VideoSubcategoryPage({ categoryId }: VideoSubcategoryPageProps) 
       }
       subtitle={
         <div className="flex items-center gap-2">
-          <Link href="/superadmin/video-category" className="hover:underline">
+          <Link href={`${basePath}/video-category`} className="hover:underline">
             Video Category
           </Link>
           <span>/</span>
@@ -137,7 +139,7 @@ export function VideoSubcategoryPage({ categoryId }: VideoSubcategoryPageProps) 
         loading={loading}
       extraActions={(row) => (
         <Link
-          href={`/superadmin/video-courses?subCategoryId=${row.id}&categoryId=${categoryId}`}
+          href={`${basePath}/video-courses?subCategoryId=${row.id}&categoryId=${categoryId}`}
           className="inline-flex h-8 items-center justify-center rounded-xl border border-brand/40 px-2 text-xs font-medium text-brand transition hover:bg-brand/10"
         >
           Courses

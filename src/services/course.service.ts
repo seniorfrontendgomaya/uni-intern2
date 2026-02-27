@@ -47,7 +47,8 @@ export const getCourses = (
       : "&placement_gurantee=false";
 
   return api<CourseListResponse>(
-    `/list_course/?per_page=${perPage}&page=${page}${placementParam}${searchParam}`,
+    `/list_course/?per_page=${perPage}&page=${page}${searchParam}`,
+    // `/list_course/?per_page=${perPage}&page=${page}${placementParam}${searchParam}`,
     {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -58,6 +59,40 @@ export const getCourses = (
 
 export const getAllCourses = (searchTerm?: string, placementGuarantee?: boolean) =>
   getCourses(1, -1, searchTerm, placementGuarantee);
+
+/** Response from GET /course_detail_api/:id/ */
+export type CourseDetailResponse = {
+  statusCode?: number;
+  message?: string | null;
+  data?: {
+    id: number;
+    name: string;
+    description?: string;
+    duration?: number;
+    fees?: number;
+    placement_gurantee?: boolean;
+    is_recomended?: boolean;
+    image?: string | null;
+  };
+};
+
+/** Get course detail by ID (course_detail_api). For approved request checkout. */
+export async function getCourseDetail(
+  courseId: string | number
+): Promise<CourseDetailResponse["data"] | null> {
+  try {
+    const id = String(courseId);
+    const res = await api<CourseDetailResponse>(`/course_detail_api/${id}/`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${typeof localStorage !== "undefined" ? localStorage.getItem("token") : ""}`,
+      },
+    });
+    return res?.data ?? null;
+  } catch {
+    return null;
+  }
+}
 
 /** Get single course by ID */
 export const getCourseById = async (courseId: string): Promise<ICourse | null> => {

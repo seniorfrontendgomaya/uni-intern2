@@ -49,6 +49,7 @@ export default function StudentChangePasswordPage() {
       });
       localStorage.removeItem("token");
       localStorage.removeItem("role");
+      localStorage.removeItem("other_user");
       clearStoredStudentProfile();
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("uniintern:auth-changed"));

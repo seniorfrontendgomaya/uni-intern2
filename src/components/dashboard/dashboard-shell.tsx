@@ -3,7 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Badge, BookOpen, Briefcase, Building2, GraduationCap, Menu, ShieldCheck, University } from "lucide-react";
+import {
+  Badge,
+  BookOpen,
+  Briefcase,
+  Building2,
+  GraduationCap,
+  Menu,
+  PlayCircle,
+  ShieldCheck,
+  University,
+  Wallet,
+} from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ForbiddenPage } from "@/components/pages/forbidden-page";
 import { defaultRouteForRole } from "@/lib/route-guard";
@@ -51,6 +62,11 @@ const navItems: NavItem[] = [
     icon: <Briefcase className="h-4 w-4" />,
   },
   {
+    label: "Live/On Demand",
+    href: "/company/video-category",
+    icon: <PlayCircle className="h-4 w-4" />,
+  },
+  {
     label: "Company",
     href: "/company",
     icon: <Building2 className="h-4 w-4" />,
@@ -61,14 +77,19 @@ const navItems: NavItem[] = [
     icon: <GraduationCap className="h-4 w-4" />,
   },
   {
-    label: "Chat",
-    href: "/company/chat",
-    icon: <University className="h-4 w-4" />,
-  },
-  {
     label: "Course Lead",
     href: "/company/course-lead",
     icon: <BookOpen className="h-4 w-4" />,
+  },
+  {
+    label: "Payments",
+    href: "/company/payments",
+    icon: <Wallet className="h-4 w-4" />,
+  },
+  {
+    label: "Chat",
+    href: "/company/chat",
+    icon: <University className="h-4 w-4" />,
   },
 ];
 
@@ -121,20 +142,18 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           aria-hidden="true"
         />
       ) : null}
-      <div className="h-full lg:pl-[240px]">
-        <aside className="fixed inset-y-0 left-0 z-30 hidden h-full w-[240px] overflow-y-auto border-r bg-card/60 backdrop-blur lg:flex lg:flex-col lg:gap-8 lg:px-6 lg:py-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+      <div className="h-full lg:pl-[260px]">
+        <aside className="fixed inset-y-0 left-0 z-30 hidden h-full w-[260px] overflow-y-auto border-r bg-background lg:flex lg:flex-col lg:gap-6 lg:px-4 lg:py-6">
+          <div className="flex items-center gap-3 px-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               U
             </div>
             <div>
               <p className="text-sm font-semibold">Uni-Intern</p>
-              <p className="text-xs text-muted-foreground">
-                Talent platform suite
-              </p>
+              <p className="text-xs text-muted-foreground">Company</p>
             </div>
           </div>
-          <nav className="flex flex-1 flex-col gap-2">
+          <nav className="flex flex-1 flex-col gap-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -142,21 +161,31 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   href={item.href}
                   className={cx(
-                    "group rounded-2xl border border-transparent px-4 py-3 transition",
-                    "hover:border-border hover:bg-accent/60",
-                    isActive && "border-border bg-accent/70"
+                    "group flex items-center gap-3 p-3 text-sm font-medium transition",
+                    "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                    isActive && "bg-rose-50 text-rose-600"
                   )}
                 >
-                  <div className="flex items-center gap-3 text-sm font-medium">
-                    <span className="text-muted-foreground group-hover:text-foreground">
-                      {item.icon}
-                    </span>
-                    <span>{item.label}</span>
-                  </div>
+                  <span
+                    className={cx(
+                      "text-muted-foreground transition",
+                      isActive ? "text-rose-500" : "group-hover:text-foreground"
+                    )}
+                  >
+                    {item.icon}
+                  </span>
+                  <span>{item.label}</span>
                 </Link>
               );
             })}
           </nav>
+          <button
+            type="button"
+            className="inline-flex h-9 items-center justify-center rounded-full border bg-card px-4 text-sm font-medium text-foreground shadow-sm transition hover:border-brand/40"
+            onClick={() => setLogoutOpen(true)}
+          >
+            Logout
+          </button>
         </aside>
 
         <div className="flex h-full min-h-0 flex-col">
@@ -172,7 +201,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               </button>
               <div className="flex flex-1 flex-col">
                 <p className="text-xs uppercase text-muted-foreground">
-                  Dashboard panel
+                  Company panel
                 </p>
               </div>
 
@@ -194,19 +223,19 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
       <aside
         className={cx(
-          "fixed inset-y-0 left-0 z-50 w-72 border-r bg-background px-6 py-8 shadow-lg transition-transform lg:hidden",
+          "fixed inset-y-0 left-0 z-50 w-72 border-r bg-background px-4 py-6 shadow-lg transition-transform lg:hidden",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
         aria-hidden={!mobileOpen}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               U
             </div>
             <div>
               <p className="text-sm font-semibold">Uni-Intern</p>
-              <p className="text-xs text-muted-foreground">Talent platform</p>
+              <p className="text-xs text-muted-foreground">Company</p>
             </div>
           </div>
           <button
@@ -217,7 +246,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             Close
           </button>
         </div>
-        <nav className="mt-8 flex flex-col gap-3">
+        <nav className="mt-6 flex flex-col gap-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -225,24 +254,28 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cx(
-                  "rounded-2xl border px-4 py-3 transition",
-                  isActive
-                    ? "border-border bg-accent/70"
-                    : "border-transparent hover:border-border hover:bg-accent/60"
+                  "group flex items-center gap-3 py-2 text-sm font-medium transition",
+                  "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                  isActive && "bg-rose-50 text-rose-600"
                 )}
                 onClick={() => setMobileOpen(false)}
               >
-                <div className="flex items-center gap-3 text-sm font-medium">
-                  <span className="text-muted-foreground">{item.icon}</span>
-                  <span>{item.label}</span>
-                </div>
+                <span
+                  className={cx(
+                    "text-muted-foreground transition",
+                    isActive ? "text-rose-500" : "group-hover:text-foreground"
+                  )}
+                >
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
               </Link>
             );
           })}
         </nav>
         <button
           type="button"
-          className="mt-6 inline-flex h-10 items-center justify-center rounded-full border bg-card px-4 text-sm font-medium text-foreground shadow-sm transition hover:border-brand/40"
+          className="mt-6 inline-flex h-9 items-center justify-center rounded-full border bg-card px-4 text-sm font-medium text-foreground shadow-sm transition hover:border-brand/40"
           onClick={() => setLogoutOpen(true)}
         >
           Logout
@@ -257,6 +290,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         onConfirm={() => {
           localStorage.removeItem("token");
           localStorage.removeItem("role");
+          localStorage.removeItem("other_user");
           setLogoutOpen(false);
           // Use Next.js client-side routing instead of full page reload
           router.replace("/");

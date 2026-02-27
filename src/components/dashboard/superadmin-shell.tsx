@@ -15,6 +15,7 @@ import {
   University,
   UserPlus,
   Users,
+  Wallet,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ForbiddenPage } from "@/components/pages/forbidden-page";
@@ -43,6 +44,7 @@ const navItems: NavItem[] = [
   { label: "Referral", href: "/superadmin/referral", icon: <UserPlus className="h-4 w-4" /> },
   { label: "Course Lead", href: "/superadmin/course-lead", icon: <BookOpen className="h-4 w-4" /> },
   { label: "Paid students", href: "/superadmin/paid-students", icon: <Users className="h-4 w-4" /> },
+  { label: "Payments", href: "/superadmin/payments", icon: <Wallet className="h-4 w-4" /> },
 ];
 
 const cx = (...classes: Array<string | false | null | undefined>) =>
@@ -242,6 +244,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
         onConfirm={() => {
           localStorage.removeItem("token");
           localStorage.removeItem("role");
+          localStorage.removeItem("other_user");
           setLogoutOpen(false);
           router.replace("/");
         }}

@@ -17,11 +17,14 @@ import { getVideoCourses } from "@/services/video-course.service";
 type VideoCoursesPageProps = {
   subCategoryId: string;
   categoryId?: string;
+  /** Base path for links (e.g. /superadmin or /company). Defaults to /superadmin. */
+  basePath?: string;
 };
 
 export function VideoCoursesPage({
   subCategoryId,
   categoryId,
+  basePath = "/superadmin",
 }: VideoCoursesPageProps) {
   const { items, loading, refresh } = useVideoCourseDetails(subCategoryId);
   const { create } = useVideoCourseDetailCreate();
@@ -53,10 +56,10 @@ export function VideoCoursesPage({
 
   const backHref = useMemo(() => {
     if (categoryId) {
-      return `/superadmin/video-subcategory?categoryId=${categoryId}`;
+      return `${basePath}/video-subcategory?categoryId=${categoryId}`;
     }
-    return "/superadmin/video-category";
-  }, [categoryId]);
+    return `${basePath}/video-category`;
+  }, [categoryId, basePath]);
 
   useEffect(() => {
     if (!categoryId) return;
@@ -224,14 +227,14 @@ export function VideoCoursesPage({
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Link
-              href="/superadmin/video-category"
+              href={`${basePath}/video-category`}
               className="hover:underline"
             >
               Video Category
             </Link>
             <span>/</span>
             <Link
-              href={`/superadmin/video-subcategory?categoryId=${categoryId ?? ""}`}
+              href={`${basePath}/video-subcategory?categoryId=${categoryId ?? ""}`}
               className="hover:underline"
             >
               {categoryName || "Category"}

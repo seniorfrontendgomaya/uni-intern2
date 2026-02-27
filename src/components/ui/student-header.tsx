@@ -71,9 +71,15 @@ export function StudentProfileMenu() {
     router.push("/student/request-courses");
   };
 
+  const goToMyOrder = () => {
+    setOpen(false);
+    router.push("/student/orders");
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("other_user");
     clearStoredStudentProfile();
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event("uniintern:auth-changed"));
@@ -142,6 +148,13 @@ export function StudentProfileMenu() {
             className="block w-full px-3 py-2 text-left hover:bg-muted"
           >
             Request courses
+          </button>
+          <button
+            type="button"
+            onClick={goToMyOrder}
+            className="block w-full px-3 py-2 text-left hover:bg-muted"
+          >
+            My order history
           </button>
           <button
             type="button"

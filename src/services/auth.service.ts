@@ -12,6 +12,7 @@ export type LoginResponse = {
   message: string;
   user_type: "COMPANY" | "STUDENT" | "UNIVERSITY" | "SUPERADMIN" | string;
   token: string;
+  other_user?: boolean;
 };
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {

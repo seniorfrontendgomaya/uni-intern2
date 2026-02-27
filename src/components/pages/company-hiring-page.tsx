@@ -973,9 +973,9 @@ export function CompanyHiringPage() {
 
 
           <SearchTagInput
-            label="Certifications/Perk"
+            label="Skills"
             value={formValues.skills}
-            placeholder="Search Certifications/Perk..."
+            placeholder="Search Skills..."
             fetchOptions={skillFetcher}
             onChange={(next) =>
               setFormValues((prev) => {

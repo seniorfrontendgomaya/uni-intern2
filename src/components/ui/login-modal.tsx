@@ -85,7 +85,15 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
         localStorage.setItem("role", role);
 
         if (role === "STUDENT") {
+          const otherUser = (result.data as any).other_user;
+          if (typeof otherUser === "boolean") {
+            localStorage.setItem("other_user", JSON.stringify(otherUser));
+          } else {
+            localStorage.removeItem("other_user");
+          }
           await fetchAndStoreStudentProfile();
+        } else {
+          localStorage.removeItem("other_user");
         }
         if (role === "COMPANY") {
           await fetchAndStoreCompanyProfile();

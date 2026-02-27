@@ -14,6 +14,7 @@ export type StudentRequestVideoCourseResponse = {
 export type StudentVideoCourseRequestItem = {
   id: number;
   student: number;
+  is_paid?: boolean;
   company_name?: string | null;
   admin_name?: string | null;
   course: Array<{ id: number; name: string }>;
