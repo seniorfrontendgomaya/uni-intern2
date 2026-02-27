@@ -22,14 +22,12 @@ export function LandingRecommendedSection() {
       });
   }, []);
 
-  if (loading) {
-    return null;
-  }
-
   return (
     <LandingCourseCarouselSection
       title="Recommended for you"
       courses={courses}
+      loading={loading}
+      skeletonCount={3}
     />
   );
 }

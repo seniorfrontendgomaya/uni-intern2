@@ -22,14 +22,12 @@ export function LandingPlacementSection() {
       });
   }, []);
 
-  if (loading) {
-    return null;
-  }
-
   return (
     <LandingCourseCarouselSection
       title="Placement guarantee courses"
       courses={courses}
+      loading={loading}
+      skeletonCount={3}
     />
   );
 }

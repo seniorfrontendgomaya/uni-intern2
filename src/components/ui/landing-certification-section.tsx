@@ -22,14 +22,12 @@ export function LandingCertificationSection() {
       });
   }, []);
 
-  if (loading) {
-    return null;
-  }
-
   return (
     <LandingCourseCarouselSection
       title="Certification courses for you"
       courses={courses}
+      loading={loading}
+      skeletonCount={3}
     />
   );
 }
