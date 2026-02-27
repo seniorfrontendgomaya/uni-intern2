@@ -33,8 +33,8 @@ export function LandingHeroSection() {
                 alt={img.alt}
                 fill
                 className="object-cover"
-                sizes="(max-width: 640px) 100vw, 33vw"
-                priority
+                sizes="100vw"
+                priority={index === 1}
               />
             </div>
           ))}
