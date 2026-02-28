@@ -294,7 +294,7 @@ export function EducationSection() {
     const startYear = data.start_date ? `${data.start_date}T00:00:00` : "";
     const endYear = data.is_ongoing ? null : (data.end_date ? `${data.end_date}T00:00:00` : null);
     const current = {
-      name: data.degree || "B.Tech",
+      name: "Graduation/ Post Graduation",
       degree: data.degree || "B.Tech",
       school_name: data.college,
       start_year: startYear,
@@ -305,7 +305,7 @@ export function EducationSection() {
       is_ongoing: data.is_ongoing,
     };
     const initial = {
-      name: edu.name ?? "B.Tech",
+      name: edu.name ?? "Graduation/ Post Graduation",
       degree: edu.degree ?? "B.Tech",
       school_name: edu.school_name ?? "",
       start_year: edu.start_year ? `${String(edu.start_year).slice(0, 10)}T00:00:00` : "",
@@ -522,7 +522,7 @@ export function EducationSection() {
     const endYear = data.is_ongoing ? null : (data.end_date ? `${data.end_date}T00:00:00` : null);
     await createUserEducation({
       education: "graduation/ post graduation",
-      name: data.degree || "B.Tech",
+      name: "Graduation/ Post Graduation",
       degree: data.degree || "B.Tech",
       school_name: data.college,
       start_year: startYear,
@@ -667,7 +667,7 @@ export function EducationSection() {
         const endYear = newForm.is_ongoing ? null : (newForm.end_year ? `${newForm.end_year}T00:00:00` : null);
         payload = {
           education: "graduation/ post graduation",
-          name: newForm.name || "B.Tech",
+          name: "Graduation/ Post Graduation",
           degree: newForm.degree || "B.Tech",
           school_name: newForm.school_name,
           start_year: startYear,
