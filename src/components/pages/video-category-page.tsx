@@ -146,7 +146,7 @@ export function VideoCategoryPage({ basePath = "/superadmin" }: VideoCategoryPag
   const { data: updateVideoCourse } = useUpdateVideoCourse();
   const { data: deleteVideoCourse } = useDeleteVideoCourse();
 
-  const rows = items.map((item, index) => {
+  const rows = (items ?? []).map((item, index) => {
     const fullDescription = item.description ?? "-";
     return {
       id: item.id,

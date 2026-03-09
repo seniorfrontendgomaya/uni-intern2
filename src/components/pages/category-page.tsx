@@ -65,7 +65,7 @@ export function CategoryPage() {
   const { data: updateCategory } = useUpdateCategory();
   const { data: deleteCategory } = useDeleteCategory();
 
-  const rows = items.map((item, index) => ({
+  const rows = (items ?? []).map((item, index) => ({
     id: item.id,
     sr: String((page - 1) * perPage + index + 1),
     name: item.name,

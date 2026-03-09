@@ -64,7 +64,7 @@ export function PerkPage() {
   const { data: updatePerk } = useUpdatePerk();
   const { data: deletePerk } = useDeletePerk();
 
-  const rows = items.map((item, index) => ({
+  const rows = (items ?? []).map((item, index) => ({
     id: item.id,
     sr: String((page - 1) * perPage + index + 1),
     name: item.name,

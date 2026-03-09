@@ -20,7 +20,7 @@ export function JobTypePage() {
 
   return (
     <CompanyClient
-      data={items}
+      data={items ?? []}
       loading={loading || false}
       page={page}
       perPage={perPage}

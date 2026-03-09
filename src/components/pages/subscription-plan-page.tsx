@@ -178,7 +178,7 @@ export function SubscriptionPlanPage({ planTypeId }: SubscriptionPlanPageProps) 
     }
   };
 
-  const rows = items.map((item, index) => ({
+  const rows = (items ?? []).map((item, index) => ({
     id: String(item.id),
     sr: String((page - 1) * perPage + index + 1),
     name: item.name,

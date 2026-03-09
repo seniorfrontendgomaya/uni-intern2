@@ -162,7 +162,7 @@ export default function ReferralPage() {
               ) : (
                 rows.map((row, index) => (
                   <tr
-                    key={row.id}
+                    key={row.id != null ? `referral-${row.id}` : `referral-${index}`}
                     className="border-t border-border bg-card transition hover:bg-muted/40"
                   >
                     <td className="px-4 py-2 text-center">

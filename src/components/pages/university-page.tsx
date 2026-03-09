@@ -145,7 +145,7 @@ export function UniversityPage() {
   const { data: updateUniversity } = useUpdateUniversity();
   const { data: deleteUniversity } = useDeleteUniversity();
 
-  const rows = items.map((item, index) => ({
+  const rows = (items ?? []).map((item, index) => ({
     id: item.id,
     sr: String((page - 1) * perPage + index + 1),
     logo: item.logo ? (

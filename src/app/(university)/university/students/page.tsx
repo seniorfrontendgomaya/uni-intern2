@@ -32,7 +32,12 @@ export default function UniversityStudentsPage() {
     mobile: "",
   });
 
-  const totalPages = Math.max(1, Math.ceil(count / perPage));
+  const rawTotalPages =
+    perPage && Number.isFinite(count / perPage)
+      ? Math.ceil(count / perPage)
+      : 1;
+  const totalPages =
+    Number.isFinite(rawTotalPages) && rawTotalPages > 0 ? rawTotalPages : 1;
   const visiblePages =
     totalPages <= 3
       ? Array.from({ length: totalPages }, (_, index) => index + 1)

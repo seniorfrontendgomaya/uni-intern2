@@ -216,7 +216,7 @@ export function PaymentsPage() {
                             name && name.length > 40 ? `${name.slice(0, 40)}…` : name;
                           return (
                             <tr
-                              key={row.id}
+                              key={row.id != null ? `unreg-${row.id}` : `unreg-${index}`}
                               className="border-t border-border bg-card transition hover:bg-muted/40"
                             >
                               <td className="px-4 py-2.5 text-center text-muted-foreground">
@@ -345,7 +345,7 @@ export function PaymentsPage() {
                       ) : (
                         courseRows.map((row, index) => (
                           <tr
-                            key={row.id}
+                            key={row.id != null ? `course-${row.id}` : `course-${index}`}
                             className="border-t border-border bg-card transition hover:bg-muted/40"
                           >
                             <td className="px-4 py-2.5 text-center text-muted-foreground">

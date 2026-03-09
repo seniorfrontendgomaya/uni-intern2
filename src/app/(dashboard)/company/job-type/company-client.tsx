@@ -53,7 +53,12 @@ export function CompanyClient({
   const { data: deleteJobType } = useDeleteJobType();
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
-  const totalPages = Math.max(1, Math.ceil(count / perPage));
+  const rawTotalPages =
+    perPage && Number.isFinite(count / perPage)
+      ? Math.ceil(count / perPage)
+      : 1;
+  const totalPages =
+    Number.isFinite(rawTotalPages) && rawTotalPages > 0 ? rawTotalPages : 1;
   const showingStart = count === 0 ? 0 : (page - 1) * perPage + 1;
   const showingEnd = Math.min(page * perPage, count);
   const visiblePages = (() => {

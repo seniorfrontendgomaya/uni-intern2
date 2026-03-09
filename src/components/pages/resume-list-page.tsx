@@ -46,7 +46,12 @@ export function ResumeListPage() {
     hasPrev,
   } = useResumeListPaginated(10);
 
-  const totalPages = Math.max(1, Math.ceil(count / perPage));
+  const rawTotalPages =
+    perPage && Number.isFinite(count / perPage)
+      ? Math.ceil(count / perPage)
+      : 1;
+  const totalPages =
+    Number.isFinite(rawTotalPages) && rawTotalPages > 0 ? rawTotalPages : 1;
   const visiblePages =
     totalPages <= 3
       ? Array.from({ length: totalPages }, (_, index) => index + 1)
@@ -106,16 +111,16 @@ export function ResumeListPage() {
               </div>
             </div>
           ))
-        ) : items.length === 0 ? (
+        ) : (items?.length ?? 0) === 0 ? (
           <div className="border bg-card p-8 text-center text-sm text-muted-foreground">
             No record found
           </div>
         ) : (
-          items.map((item) => {
+          (items ?? []).map((item, index) => {
             const resumeUrl = item.resume_url || item.resume || "#";
             return (
               <div
-                key={item.id}
+                key={item.id != null ? `resume-${item.id}` : `resume-${index}`}
                 className="relative overflow-hidden border bg-card p-5 shadow-sm"
               >
                 <div className={`absolute left-0 top-0 h-full w-1 ${accentBar}`} />

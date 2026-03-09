@@ -99,7 +99,12 @@ export function CompaniesPage() {
     [items, page, perPage]
   );
 
-  const totalPages = Math.max(1, Math.ceil(count / perPage));
+  const rawTotalPages =
+    perPage && Number.isFinite(count / perPage)
+      ? Math.ceil(count / perPage)
+      : 1;
+  const totalPages =
+    Number.isFinite(rawTotalPages) && rawTotalPages > 0 ? rawTotalPages : 1;
   const visiblePages =
     totalPages <= 3
       ? Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -258,8 +263,8 @@ export function CompaniesPage() {
                     </td>
                   </tr>
                 ) : (
-                  rows.map((row) => (
-                    <tr key={row.id} className="h-12">
+                  rows.map((row, index) => (
+                    <tr key={row.id != null ? `company-${row.id}` : `company-${index}`} className="h-12">
                       <td className="px-2 py-2 text-center text-xs sm:px-4 sm:text-sm">{row.sr}</td>
                       <td className="px-2 py-2 sm:px-4">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-100 text-xs font-semibold text-emerald-700">

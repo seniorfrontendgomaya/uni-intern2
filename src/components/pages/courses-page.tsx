@@ -132,7 +132,7 @@ export function CoursesPage() {
     refresh,
   } = useCoursesPaginated(10, searchTerm);
 
-  const rows = items.map((item, index) => {
+  const rows = (items ?? []).map((item, index) => {
     const placementValue = item.placement_gurantee;
     const placementNormalized =
       placementValue === true ||

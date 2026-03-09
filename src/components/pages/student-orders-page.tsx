@@ -223,7 +223,7 @@ export function StudentOrdersPage() {
                   ) : (
                     courseRows.map((row, index) => (
                       <tr
-                        key={row.id}
+                        key={row.id != null ? `student-course-${row.id}` : `student-course-${index}`}
                         className="border-t border-border bg-card transition hover:bg-muted/40"
                       >
                         <td className="px-4 py-2.5 text-center text-muted-foreground">
@@ -402,7 +402,7 @@ export function StudentOrdersPage() {
                       ) : (
                         internRows.map((row, index) => (
                           <tr
-                            key={row.id}
+                            key={row.id != null ? `student-intern-${row.id}` : `student-intern-${index}`}
                             className="border-t border-border bg-card transition hover:bg-muted/40"
                           >
                             <td className="px-4 py-2.5 text-center text-muted-foreground">

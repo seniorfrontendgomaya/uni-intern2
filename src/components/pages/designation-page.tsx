@@ -64,7 +64,7 @@ export function DesignationPage() {
   const { data: updateDesignation } = useUpdateDesignation();
   const { data: deleteDesignation } = useDeleteDesignation();
 
-  const rows = items.map((item, index) => ({
+  const rows = (items ?? []).map((item, index) => ({
     id: item.id,
     sr: String((page - 1) * perPage + index + 1),
     name: item.name,

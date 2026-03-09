@@ -307,9 +307,14 @@ export function CrudTable({
 
   const totalRows = rows.length;
   const showCount = rows.length;
-  const totalPages = pagination
-    ? Math.max(1, Math.ceil(pagination.count / pagination.perPage))
-    : 1;
+  const rawTotalPages =
+    pagination && pagination.perPage
+      ? Math.ceil(pagination.count / pagination.perPage)
+      : 1;
+  const totalPages =
+    Number.isFinite(rawTotalPages) && rawTotalPages > 0
+      ? rawTotalPages
+      : 1;
   const visiblePages = pagination
     ? (() => {
         if (totalPages <= 3)
@@ -429,8 +434,8 @@ export function CrudTable({
                 ) : (
                   rows.map((row, index) => (
                       <tr
-                        key={`${row.id ?? row.name ?? index}`}
-                        className="border-t transition hover:bg-brand/10 even:bg-muted/40"
+                        key={`row-${index}`}
+                        className="border-t transition hover:bg-brand/10 even/bg-muted/40"
                       >
                         {columns.map((column) => {
                           if (column.key === "actions") {

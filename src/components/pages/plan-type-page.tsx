@@ -136,7 +136,7 @@ export function PlanTypePage() {
                 ) : (
                   items.map((item, index) => (
                     <tr
-                      key={item.id}
+                      key={item.id != null ? `plan-type-${item.id}` : `plan-type-${index}`}
                       className="border-t border-border bg-card transition hover:bg-muted/40"
                     >
                       <td className="px-4 py-2.5 text-center text-muted-foreground">

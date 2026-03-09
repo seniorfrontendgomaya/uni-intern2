@@ -50,7 +50,12 @@ export function PaidStudentsPage() {
 
   const hasPrev = page > 1;
   const start = (page - 1) * PER_PAGE;
-  const totalPages = Math.max(1, Math.ceil(count / PER_PAGE));
+  const rawTotalPages =
+    PER_PAGE && Number.isFinite(count / PER_PAGE)
+      ? Math.ceil(count / PER_PAGE)
+      : 1;
+  const totalPages =
+    Number.isFinite(rawTotalPages) && rawTotalPages > 0 ? rawTotalPages : 1;
 
   return (
     <div className="w-full space-y-6 px-4 sm:px-0">
@@ -94,7 +99,7 @@ export function PaidStudentsPage() {
                     ) : (
                       students.map((row, index) => (
                         <tr
-                          key={row.id}
+                          key={row.id != null ? `paid-${row.id}` : `paid-${index}`}
                           className="border-t border-border bg-card transition hover:bg-muted/40"
                         >
                           <td className="px-4 py-2.5 text-center text-muted-foreground">
