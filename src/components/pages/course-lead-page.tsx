@@ -83,8 +83,8 @@ export function CourseLeadPage({
     setError(null);
     try {
       const res = await getCourseLeadRequestsPaginated(page, PER_PAGE, debouncedSearch);
-      setRequests(res.data);
-      setCount(res.count);
+      setRequests(res.data ?? []);
+      setCount(res.count ?? 0);
       setHasNextPage(res.hasNextPage);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load course lead requests");
@@ -181,14 +181,14 @@ export function CourseLeadPage({
                     </tr>
                   </thead>
                   <tbody>
-                    {requests.length === 0 ? (
+                    {(requests ?? []).length === 0 ? (
                       <tr>
                         <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                           No course lead requests yet.
                         </td>
                       </tr>
                     ) : (
-                      requests.map((row, index) => (
+                      (requests ?? []).map((row, index) => (
                         <tr
                           key={row.id != null ? `course-lead-${row.id}` : `course-lead-${index}`}
                           className="border-t border-border bg-card transition hover:bg-muted/40"

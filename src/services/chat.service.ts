@@ -171,6 +171,7 @@ export async function getStudentContacts(): Promise<ChatContact[]> {
     headers: authHeaders(),
   });
   if (!res.ok) {
+    if (res.status === 404) return [];
     if (res.status === 401) throw new Error("Unauthorized");
     throw new Error(`Failed to load conversations: ${res.status}`);
   }
@@ -186,6 +187,7 @@ export async function getCompanyContacts(): Promise<ChatContact[]> {
     headers: authHeaders(),
   });
   if (!res.ok) {
+    if (res.status === 404) return [];
     if (res.status === 401) throw new Error("Unauthorized");
     throw new Error(`Failed to load users: ${res.status}`);
   }

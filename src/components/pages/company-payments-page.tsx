@@ -47,8 +47,8 @@ export function CompanyPaymentsPage() {
         PER_PAGE,
         debouncedSearch
       );
-      setRows(res.data);
-      setCount(res.count);
+      setRows(res.data ?? []);
+      setCount(res.count ?? 0);
       setHasNextPage(res.hasNextPage);
     } catch (e) {
       setError(
@@ -116,7 +116,7 @@ export function CompanyPaymentsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.length === 0 ? (
+                    {(rows ?? []).length === 0 ? (
                       <tr>
                         <td
                           colSpan={9}
@@ -126,7 +126,7 @@ export function CompanyPaymentsPage() {
                         </td>
                       </tr>
                     ) : (
-                      rows.map((row, index) => (
+                      (rows ?? []).map((row, index) => (
                         <tr
                           key={row.id != null ? `company-payment-${row.id}` : `company-payment-${index}`}
                           className="border-t border-border bg-card transition hover:bg-muted/40"

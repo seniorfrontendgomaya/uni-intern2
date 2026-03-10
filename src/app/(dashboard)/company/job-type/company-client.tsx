@@ -117,7 +117,7 @@ export function CompanyClient({
                         </td>
                       </tr>
                     ))
-                ) : data.length === 0 ? (
+                ) : (data ?? []).length === 0 ? (
                   <tr className="border-t">
                     <td
                       colSpan={4}
@@ -127,9 +127,9 @@ export function CompanyClient({
                     </td>
                   </tr>
                 ) : (
-                  data.map((item, index) => (
+                  (data ?? []).map((item, index) => (
                       <tr
-                        key={index}
+                        key={item?.id != null ? `jobtype-${item.id}` : `jobtype-${index}`}
                         className="border-t transition hover:bg-brand/10 even:bg-muted/40"
                       >
                         <td className="w-16 px-2 py-2 text-center text-xs sm:px-4 sm:text-sm">
@@ -212,7 +212,7 @@ export function CompanyClient({
                 <div className="flex items-center gap-1">
                   {visiblePages.map((pageNumber) => (
                     <button
-                      key={pageNumber}
+                      key={`page-${pageNumber}`}
                       className="h-8 w-8 rounded-xl border text-xs transition hover:border-brand/40 hover:text-foreground disabled:opacity-60 sm:h-9 sm:w-9 sm:text-sm"
                       onClick={() => onPageSelect?.(pageNumber)}
                       disabled={pageNumber === page}
