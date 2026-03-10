@@ -77,7 +77,7 @@ export const updateUniversity = ({
 };
 
 export const deleteUniversity = (id: string) =>
-  api<UniversityMutationResponse>(`/delete_university/${id}/`, {
+  api<UniversityMutationResponse>(`/update_university/${id}/`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,

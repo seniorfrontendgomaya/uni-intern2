@@ -98,6 +98,10 @@ export function ChatSidebar({
               />
             ))}
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-2 p-6 text-center text-sm text-gray-500">
+            <p>No user found</p>
+          </div>
         ) : (
           filtered.map((contact) => (
             <ContactListItem

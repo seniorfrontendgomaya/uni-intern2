@@ -32,7 +32,7 @@ function DetailSection({
       )}
       {hasItems && (
         <div className="flex flex-wrap gap-1.5">
-          {items.map((name, i) => (
+          {(items ?? []).map((name, i) => (
             <span
               key={i}
               className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground"
