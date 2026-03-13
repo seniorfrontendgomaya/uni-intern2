@@ -224,12 +224,10 @@ const SearchTagInput = ({
     if (!nextName) return;
     if (value.some((item) => String(item.id) === String(option.id))) {
       setInputValue("");
-      setOpen(false);
       return;
     }
     onChange([...value, option]);
     setInputValue("");
-    setOpen(false);
   };
 
   return (
@@ -264,7 +262,14 @@ const SearchTagInput = ({
             className="w-full bg-transparent text-sm outline-none"
             placeholder={placeholder}
             value={inputValue}
-            onChange={(event) => setInputValue(event.target.value)}
+            onChange={(event) => {
+              const next = event.target.value;
+              setInputValue(next);
+              // Ensure search starts immediately while typing, even after a selection
+              if (!open && next.trim().length > 0) {
+                setOpen(true);
+              }
+            }}
             onFocus={() => {
               setOpen(true);
             }}

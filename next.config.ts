@@ -22,12 +22,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "inter.malspy.com",
+        hostname: "cdn.uniintern.com",
         pathname: "/**",
       },
       {
         protocol: "http",
-        hostname: "inter.malspy.com",
+        hostname: "api.uniintern.com",
         pathname: "/**",
       },
       {

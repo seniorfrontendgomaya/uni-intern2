@@ -249,7 +249,7 @@ export default function SubscribeCheckoutPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.g. rajeshdata@gmail.com"
+                placeholder="e.g. adityaraj6220@gmail.com"
                 className="mt-1.5 w-full rounded-xl border border-gray-300 bg-background px-4 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
               />
             </div>
